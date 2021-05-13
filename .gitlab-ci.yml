@@ -1,0 +1,57 @@
+########################################################################################################################
+# This file was generated using python_env, please do not edit directly.
+########################################################################################################################
+variables:
+    DOCKER_REGISTRY: "archive.nic.cz:5000"
+    # Set up pip cache shared between all jobs of the project.
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+    TOX_PARALLEL_NO_SPINNER: 1
+
+cache:
+    paths:
+        - .cache/pip
+
+########################################################################################################################
+# Basic declarations
+.py36: &py36
+    image: "$DOCKER_REGISTRY/python/tox:3.6"
+
+.py37: &py37
+    image: "$DOCKER_REGISTRY/python/tox:3.7"
+
+.py38: &py38
+    image: "$DOCKER_REGISTRY/python/tox:3.8"
+
+.py39: &py39
+    image: "$DOCKER_REGISTRY/python/tox:3.9"
+
+.test: &test
+    before_script:
+        - echo "Active index - $PIP_INDEX_URL"
+        # First, build all virtualenvs without actually executing any tests.
+        - tox --parallel all --notest
+    script:
+        - tox
+
+########################################################################################################################
+# Individual jobs
+licensing:
+    script:
+        - git clone git@gitlab.office.nic.cz:internal-tools/license-check.git --single-branch --depth 1
+        - ./license-check/license-check.sh -v
+
+test:py36:
+    <<: *test
+    <<: *py36
+
+test:py37:
+    <<: *test
+    <<: *py37
+
+test:py38:
+    <<: *test
+    <<: *py38
+
+test:py39:
+    <<: *test
+    <<: *py39
