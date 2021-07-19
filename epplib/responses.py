@@ -18,10 +18,14 @@
 
 """Module providing means to process responses to EPP commands."""
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import List, Optional
 
 from lxml.etree import Element, QName, fromstring  # nosec - TODO: Fix lxml security issues
 
 from epplib.constants import NAMESPACE_EPP
+
+NAMESPACES = {'epp': NAMESPACE_EPP}
 
 
 class Response(ABC):
@@ -39,3 +43,60 @@ class Response(ABC):
     @abstractmethod
     def _parse_payload(self, element: Element) -> None:
         """Parse the actual information from the response."""
+
+    @staticmethod
+    def _find_text(element: Element, path: str) -> str:
+        return element.findtext(path, namespaces=NAMESPACES)
+
+    @staticmethod
+    def _find_all_text(element: Element, path: str) -> List[str]:
+        return [(elem.text or '') for elem in element.findall(path, namespaces=NAMESPACES)]
+
+    @staticmethod
+    def _find_child(element: Element, path: str) -> Optional[str]:
+        found_tags = Response._find_children(element, path)
+        if len(found_tags) > 0:
+            return found_tags[0]
+        else:
+            return None
+
+    @staticmethod
+    def _find_children(element: Element, path: str) -> List[str]:
+        nodes = element.findall(path + '/*', namespaces=NAMESPACES)
+        return [QName(item.tag).localname for item in nodes]
+
+
+# TODO: Make it a data class - move params to init
+class Greeting(Response):
+    """EPP Greeting representation."""
+
+    @dataclass
+    class Statement:
+        purpose: List[str]
+        recipient: List[str]
+        retention: Optional[str]
+        expiry: Optional[str]
+
+    def _parse_payload(self, element: Element) -> None:
+        self.sv_id = self._find_text(element, './epp:svID')
+        self.sv_date = self._find_text(element, './epp:svDate')
+
+        self.versions = self._find_all_text(element, './epp:svcMenu/epp:version')
+        self.langs = self._find_all_text(element, './epp:svcMenu/epp:lang')
+        self.obj_uris = self._find_all_text(element, './epp:svcMenu/epp:objURI')
+
+        self.ext_uris = self._find_all_text(element, './epp:svcMenu/epp:svcExtension/epp:extURI')
+
+        self.access = self._find_child(element, './epp:dcp/epp:access')
+
+        self.statements = [
+            self._parse_statement(item) for item in element.findall('./epp:dcp/epp:statement', namespaces=NAMESPACES)
+        ]
+
+    def _parse_statement(self, element: Element) -> Statement:
+        return self.Statement(
+            purpose=self._find_children(element, './epp:purpose'),
+            recipient=self._find_children(element, './epp:recipient'),
+            retention=self._find_child(element, './epp:retention'),
+            expiry=self._find_child(element, './epp:expiry')
+        )

@@ -23,7 +23,7 @@ from typing import Type
 from lxml.etree import Element, ElementTree, tostring  # nosec - TODO: Fix lxml security issues
 
 from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI, XSI_SCHEMA_LOCATION
-from epplib.responses import Response
+from epplib.responses import Greeting, Response
 
 
 class Request(ABC):
@@ -46,3 +46,13 @@ class Request(ABC):
     @abstractproperty
     def response_class(self) -> Type[Response]:
         """Class of the corresponding response."""
+
+
+class Hello(Request):
+    """EPP Hello."""
+
+    response_class = Greeting
+
+    def _get_payload(self) -> Element:
+        """Get subelements of the epp tag specific for Hello."""
+        return Element('hello')

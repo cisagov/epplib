@@ -16,12 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
+from pathlib import Path
 from unittest import TestCase
 
+from lxml.builder import ElementMaker
 from lxml.etree import Element, QName
 
 from epplib.constants import NAMESPACE_EPP
-from epplib.responses import Response
+from epplib.responses import Greeting, Response
+
+BASE_DATA_PATH = Path(__file__).parent / 'data'
+EM = ElementMaker(namespace=NAMESPACE_EPP, nsmap={'epp': NAMESPACE_EPP})
 
 
 class DummyResponse(Response):
@@ -30,7 +35,6 @@ class DummyResponse(Response):
 
 
 class TestResponse(TestCase):
-
     def test_parse(self):
         data = b'''<?xml version="1.0" encoding="UTF-8"?>
                    <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
@@ -48,3 +52,58 @@ class TestResponse(TestCase):
 
         with self.assertRaisesRegex(ValueError, 'Root element has to be "epp"'):
             DummyResponse(data)
+
+    def test_find_text(self):
+        element = EM.svcMenu(EM.lang('en'), EM.version())
+        self.assertEqual(Response._find_text(element, './epp:lang'), 'en')
+        self.assertEqual(Response._find_text(element, './epp:version'), '')
+        self.assertIsNone(Response._find_text(element, './epp:missing'))
+
+    def test_find_all_text(self):
+        element = EM.svcMenu(EM.lang('en'), EM.lang('cs'), EM.version())
+        self.assertEqual(Response._find_all_text(element, './epp:lang'), ['en', 'cs'])
+        self.assertEqual(Response._find_all_text(element, './epp:version'), [''])
+        self.assertEqual(Response._find_all_text(element, './epp:missing'), [])
+
+    def test_find_child(self):
+        element = EM.statement(EM.purpose(EM.admin()))
+        self.assertEqual(Response._find_child(element, './epp:purpose'), 'admin')
+        self.assertEqual(Response._find_child(element, './epp:recipient'), None)
+
+    def test_find_children(self):
+        element = EM.statement(EM.purpose(EM.admin(), EM.prov()))
+        self.assertEqual(Response._find_children(element, './epp:purpose'), ['admin', 'prov'])
+        self.assertEqual(Response._find_children(element, './epp:recipient'), [])
+
+
+class TestGreeting(TestCase):
+    path = BASE_DATA_PATH / 'greeting.xml'
+
+    def test_parse(self):
+        with open(self.path, 'br') as f:
+            data = f.read()
+        greeting = Greeting(data)
+
+        obj_uris = [
+            'http://www.nic.cz/xml/epp/contact-1.6',
+            'http://www.nic.cz/xml/epp/domain-1.4',
+            'http://www.nic.cz/xml/epp/nsset-1.2',
+            'http://www.nic.cz/xml/epp/keyset-1.3',
+        ]
+
+        self.assertEqual(greeting.sv_id, 'EPP server (DSDng)')
+        self.assertEqual(greeting.sv_date, '2018-05-15T21:05:42+02:00')
+        self.assertEqual(greeting.versions, ['1.0'])
+        self.assertEqual(greeting.langs, ['en', 'cs'])
+        self.assertEqual(greeting.obj_uris, obj_uris)
+        self.assertEqual(greeting.ext_uris, ['http://www.nic.cz/xml/epp/enumval-1.2'])
+
+        self.assertEqual(greeting.access, 'none')
+
+        statement = Greeting.Statement(
+            purpose=['admin', 'prov'],
+            recipient=['public'],
+            retention='stated',
+            expiry='absolute'
+        )
+        self.assertEqual(greeting.statements, [statement])

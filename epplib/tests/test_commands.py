@@ -20,7 +20,7 @@ from unittest import TestCase
 
 from lxml.etree import Element, QName, fromstring
 
-from epplib.commands import Request
+from epplib.commands import Hello, Request
 from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI
 from epplib.responses import Response
 
@@ -56,3 +56,16 @@ class TestRequest(TestCase):
         root = fromstring(DummyRequest().xml())
         self.assertEqual(len(root), 1)
         self.assertEqual(root[0].tag, QName(NAMESPACE_EPP, 'dummy'))
+
+
+class TestHello(TestCase):
+    def test_tag(self):
+        root = fromstring(Hello().xml())
+        self.assertEqual(len(root), 1)
+        self.assertEqual(root[0].tag, QName(NAMESPACE_EPP, 'hello'))
+
+    def test_has_no_content(self):
+        root = fromstring(Hello().xml())
+        hello = root[0]
+        self.assertEqual(len(hello), 0)
+        self.assertEqual(len(hello.attrib), 0)
