@@ -17,11 +17,17 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 """A transport layer to support the Epp client."""
+import socket
+import ssl
 from abc import ABC, abstractmethod
 from os import PathLike
-from typing import Union
+from typing import Optional, Union
 
 PathType = Union[str, PathLike]
+
+
+class TransportError(RuntimeError):
+    """Error to indicate problem while exchanging data with the server."""
 
 
 class Transport(ABC):
@@ -37,8 +43,107 @@ class Transport(ABC):
 
     @abstractmethod
     def send(self, message: bytes) -> None:
-        """Send data to the server."""
+        """Send data to the server.
+
+        Args:
+            message: The message to be sent to the server.
+
+        Raises:
+            TransportError: When an error occurs while sending the data.
+        """
 
     @abstractmethod
     def receive(self) -> bytes:
-        """Receive data from the server."""
+        """Receive data from the server.
+
+        Returns:
+            The raw data received from the server.
+
+        Raises:
+            TransportError: When an error occurs while receiving the data.
+        """
+
+
+class SocketTransport(Transport):
+    """Transport which uses socket to connect to the EPP server.
+
+    Attributes:
+        HEADER_SIZE: Size of the EPP message header in bytes. The header contains the size of the transmitted message.
+        CHUNK_SIZE: Number of bytes to receive from the socket at a time.
+
+    Args:
+        hostname: Hostname of the EPP server.
+        port: Port number.
+        cert_file: Path to the certificate file.
+        key_file: Path to the key file.
+        password: Password to the key file.
+    """
+
+    HEADER_SIZE = 4
+    CHUNK_SIZE = 1024
+
+    def __init__(self, hostname: str, port: int, *, cert_file: PathType = None, key_file: PathType = None,
+                 password: str = None):
+        self.hostname = hostname
+        self.port = port
+        self.cert_file = cert_file
+        self.key_file = key_file
+        self.password = password
+
+        self.socket: Optional[ssl.SSLSocket] = None
+
+    def connect(self) -> None:
+        """Open the connection to the EPP server."""
+        context = ssl.create_default_context()
+        if self.cert_file is not None:
+            context.load_cert_chain(certfile=self.cert_file, keyfile=self.key_file, password=self.password)
+
+        sock = socket.create_connection((self.hostname, self.port))
+        self.socket = context.wrap_socket(sock, server_hostname=self.hostname)
+
+    def close(self) -> None:
+        """Close the connection gracefully."""
+        if self.socket is not None:
+            self.socket.close()
+
+    def send(self, message: bytes) -> None:
+        """Send data to the server.
+
+        Args:
+            message: The message to be sent to the server.
+
+        Raises:
+            TransportError: When an error occurs while sending the data.
+        """
+        if self.socket is None:
+            raise TransportError('Not connected to the server.')
+        message_length = (len(message) + self.HEADER_SIZE).to_bytes(4, 'big')
+        try:
+            self.socket.sendall(message_length + message)
+        except OSError as error:
+            raise TransportError('Socket closed.') from error
+
+    def receive(self) -> bytes:
+        """Receive data from the server.
+
+        Returns:
+            Raw message received from the server.
+
+        Raises:
+            TransportError: When an error occurs while receiving the data.
+        """
+        if self.socket is None:
+            raise TransportError('Not connected to the server.')
+
+        try:
+            header = self.socket.recv(self.HEADER_SIZE)
+            expected_length = int.from_bytes(header, 'big') - self.HEADER_SIZE
+
+            response = bytes()
+            while len(response) < expected_length:
+                response += self.socket.recv(min(self.CHUNK_SIZE, expected_length - len(response)))
+
+            return response
+
+        except OSError as error:
+            raise TransportError('Socket closed.') from error
