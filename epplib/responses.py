@@ -29,7 +29,11 @@ NAMESPACES = {'epp': NAMESPACE_EPP}
 
 
 class Response(ABC):
-    """Base class for responses to EPP commands."""
+    """Base class for responses to EPP commands.
+
+    Args:
+        raw_response: The raw XML response which will be parsed into the Response object.
+    """
 
     def __init__(self, raw_response: bytes):
         root = fromstring(raw_response)
@@ -42,7 +46,11 @@ class Response(ABC):
 
     @abstractmethod
     def _parse_payload(self, element: Element) -> None:
-        """Parse the actual information from the response."""
+        """Parse the actual information from the response.
+
+        Args:
+            element: Child element of the epp element.
+        """
 
     @staticmethod
     def _find_text(element: Element, path: str) -> str:
@@ -68,16 +76,41 @@ class Response(ABC):
 
 # TODO: Make it a data class - move params to init
 class Greeting(Response):
-    """EPP Greeting representation."""
+    """EPP Greeting representation.
+
+    Attributes:
+        sv_id: Content of the epp/greeting/svID element.
+        sv_date: Content of the epp/greeting/svDate element.
+        versions: Content of the epp/greeting/svcMenu/version element.
+        langs: Content of the epp/greeting/svcMenu/lang element.
+        obj_uris: Content of the epp/greeting/svcMenu/objURI element.
+        ext_uris: Content of the epp/greeting/svcMenu/svcExtension/extURI element.
+        access: Content of the epp/greeting/dcp/access element.
+        statements: Content of the epp/greeting/statement element.
+    """
 
     @dataclass
     class Statement:
+        """A dataclass to represent the EPP statement.
+
+        Attributes:
+            purpose: Content of the epp/greeting/statement/purpose element.
+            recipient: Content of the epp/greeting/statement/recipient element.
+            retention: Content of the epp/greeting/statement/retention element.
+            expiry: Content of the epp/greeting/statement/expiry element.
+        """
+
         purpose: List[str]
         recipient: List[str]
         retention: Optional[str]
         expiry: Optional[str]
 
     def _parse_payload(self, element: Element) -> None:
+        """Parse the actual information from the response.
+
+        Args:
+            element: Child element of the epp element.
+        """
         self.sv_id = self._find_text(element, './epp:svID')
         self.sv_date = self._find_text(element, './epp:svDate')
 
@@ -94,6 +127,14 @@ class Greeting(Response):
         ]
 
     def _parse_statement(self, element: Element) -> Statement:
+        """Parse the statement part of Greeting.
+
+        Args:
+            element: Statement element of Greeting.
+
+        Returns:
+            Parsed Statement.
+        """
         return self.Statement(
             purpose=self._find_children(element, './epp:purpose'),
             recipient=self._find_children(element, './epp:recipient'),

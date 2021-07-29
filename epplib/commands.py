@@ -30,7 +30,11 @@ class Request(ABC):
     """Base class for EPP requests."""
 
     def xml(self) -> bytes:
-        """Return xml representation of the Request."""
+        """Return the XML representation of the Request.
+
+        Returns:
+            The XML representation of the Request.
+        """
         root = Element('epp')
         root.set('xmlns', NAMESPACE_EPP)
         root.set('{{{}}}schemaLocation'.format(NAMESPACE_XSI), XSI_SCHEMA_LOCATION)
@@ -41,7 +45,11 @@ class Request(ABC):
 
     @abstractmethod
     def _get_payload(self) -> Element:
-        """Get subelements of the epp tag specific for the given Request subclass."""
+        """Create subelements of the epp tag specific for the given Request subclass.
+
+        Returns:
+            Element with the Request payload.
+        """
 
     @abstractproperty
     def response_class(self) -> Type[Response]:
@@ -54,5 +62,9 @@ class Hello(Request):
     response_class = Greeting
 
     def _get_payload(self) -> Element:
-        """Get subelements of the epp tag specific for Hello."""
+        """Create subelements of the epp tag specific for the given Request subclass.
+
+        Returns:
+            Element with the payload of the Hello command.
+        """
         return Element('hello')
