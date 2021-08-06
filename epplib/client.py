@@ -43,10 +43,18 @@ class Client:
         self.transport = transport
 
     def __enter__(self):
-        self.transport.connect()
+        self.connect()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    def connect(self):
+        """Open the connection to the EPP server."""
+        self.transport.connect()
+
+    def close(self):
+        """Close the connection gracefully."""
         self.transport.close()
 
     def send(self, request: Request) -> Response:

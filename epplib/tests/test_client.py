@@ -82,6 +82,19 @@ class TestClient(TestCase):
             transport.mock_calls
         )
 
+    def test_connect(self):
+        transport = Mock(spec=Transport)
+        Client(transport).connect()
+        transport.connect.assert_called_once_with()
+
+    def test_close(self):
+        transport = Mock(spec=Transport)
+        client = Client(transport)
+
+        client.connect()
+        client.close()
+        transport.close.assert_called_once_with()
+
     def test_receive(self):
         client = Client(DummyTransport())
 
