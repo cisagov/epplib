@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import Any, Dict
 from unittest import TestCase
 
 from lxml.etree import Element, QName, fromstring
@@ -26,8 +27,9 @@ from epplib.responses import Response
 
 
 class DummyResponse(Response):
-    def _parse_payload(self, element) -> None:
-        pass  # pragma: no cover
+    @classmethod
+    def _parse_payload(csl, element) -> Dict[str, Any]:
+        return dict()  # pragma: no cover
 
 
 class DummyRequest(Request):

@@ -15,7 +15,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
-from typing import Type, cast
+from dataclasses import dataclass
+from typing import Any, Dict, Type, cast
 from unittest import TestCase
 from unittest.mock import Mock, call
 
@@ -44,11 +45,17 @@ class DummyTransport(Transport):
         return self.raw_response
 
 
+@dataclass
 class DummyResponse(Response):
-    def __init__(self, raw_response: bytes):
-        self.raw_response = raw_response
 
-    def _parse_payload(self, element) -> None:
+    raw_response: bytes
+
+    @classmethod
+    def parse(cls, raw_response: bytes) -> 'DummyResponse':
+        return cls(raw_response=raw_response)
+
+    @classmethod
+    def _parse_payload(cls, element: Element) -> Dict[str, Any]:
         pass  # pragma: no cover
 
 

@@ -75,5 +75,5 @@ class Client:
             response_class: A class to parse the response.
         """
         response_raw = self.transport.receive()
-        response_parsed = response_class(response_raw)
+        response_parsed = response_class.parse(response_raw)
         return response_parsed
