@@ -28,9 +28,18 @@ PathType = Union[str, PathLike]
 
 
 class Client:
-    """A client to send EPP commands and receive responses."""
+    """A client to send EPP commands and receive responses.
+
+    Attributes:
+        transport: A transport object which is used for communication with the EPP server.
+    """
 
     def __init__(self, transport: Transport):
+        """Init the Client.
+
+        Args:
+            transport: A transport object which is used for communication with the EPP server.
+        """
         self.transport = transport
 
     def __enter__(self):
@@ -41,14 +50,22 @@ class Client:
         self.transport.close()
 
     def send(self, request: Request) -> Response:
-        """Send EPP comands and receive response."""
+        """Send an EPP command and receive a response.
+
+        Args:
+            request: The command to be sent to the server.
+        """
         message = request.xml()
         self.transport.send(message)
 
         return self.receive(request.response_class)
 
     def receive(self, response_class: Type[Response]) -> Response:
-        """Receive response to an EPP command sent to the server."""
+        """Receive a response from the server (possibly without sending a command).
+
+        Args:
+            response_class: A class to parse the response.
+        """
         response_raw = self.transport.receive()
         response_parsed = response_class(response_raw)
         return response_parsed
