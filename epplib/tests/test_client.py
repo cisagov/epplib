@@ -64,7 +64,7 @@ class DummyRequest(Request):
 
     raw_request = b'This is the Request!'
 
-    def xml(self) -> bytes:
+    def xml(self, schema: XMLSchema = None) -> bytes:
         return self.raw_request
 
     def _get_payload(self) -> Element:

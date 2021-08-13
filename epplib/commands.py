@@ -20,7 +20,7 @@
 from abc import ABC, abstractmethod, abstractproperty
 from typing import Type
 
-from lxml.etree import Element, ElementTree, QName, tostring  # nosec - TODO: Fix lxml security issues
+from lxml.etree import Element, ElementTree, QName, XMLSchema, tostring  # nosec - TODO: Fix lxml security issues
 
 from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI, XSI_SCHEMA_LOCATION
 from epplib.responses import Greeting, Response
@@ -29,7 +29,7 @@ from epplib.responses import Greeting, Response
 class Request(ABC):
     """Base class for EPP requests."""
 
-    def xml(self) -> bytes:
+    def xml(self, schema: XMLSchema = None) -> bytes:
         """Return the XML representation of the Request.
 
         Returns:
@@ -40,6 +40,10 @@ class Request(ABC):
         root.append(self._get_payload())
 
         document = ElementTree(root)
+
+        if schema is not None:
+            schema.assertValid(document)
+
         return tostring(document, encoding='utf-8', xml_declaration=True)
 
     @abstractmethod
