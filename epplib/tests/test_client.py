@@ -20,7 +20,7 @@ from typing import Any, Dict, Type, cast
 from unittest import TestCase
 from unittest.mock import Mock, call
 
-from lxml.etree import Element
+from lxml.etree import Element, XMLSchema
 
 from epplib.client import Client
 from epplib.commands import Request
@@ -51,7 +51,7 @@ class DummyResponse(Response):
     raw_response: bytes
 
     @classmethod
-    def parse(cls, raw_response: bytes) -> 'DummyResponse':
+    def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'DummyResponse':
         return cls(raw_response=raw_response)
 
     @classmethod

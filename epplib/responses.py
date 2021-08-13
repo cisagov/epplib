@@ -23,7 +23,7 @@ from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Optional, Sequence, Union, cast
 
 from isodate import Duration, parse_datetime, parse_duration
-from lxml.etree import Element, QName, fromstring  # nosec - TODO: Fix lxml security issues
+from lxml.etree import Element, QName, XMLSchema, fromstring  # nosec - TODO: Fix lxml security issues
 
 from epplib.constants import NAMESPACE_EPP
 
@@ -39,13 +39,17 @@ class Response(ABC):
         pass  # pragma: no cover
 
     @classmethod
-    def parse(cls, raw_response: bytes) -> 'Response':
+    def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'Response':
         """Parse the xml response into the dataclass.
 
         Args:
             raw_response: The raw XML response which will be parsed into the Response object.
+            schema: A XML schema used to validate the parsed Response. No validation is done if schema is None.
         """
         root = fromstring(raw_response)
+
+        if schema is not None:
+            schema.assertValid(root)
 
         if root.tag != QName(NAMESPACE_EPP, 'epp'):
             raise ValueError('Root element has to be "epp". Found: {}'.format(root.tag))
@@ -127,7 +131,12 @@ class Greeting(Response):
 
     @classmethod
     def parse(cls, *args, **kwargs) -> 'Greeting':
-        """Parse the xml response into the Greeting dataclass."""
+        """Parse the xml response into the Greeting dataclass.
+
+        Args:
+            raw_response: The raw XML response which will be parsed into the Response object.
+            schema: A XML schema used to validate the parsed Response. No validation is done if schema is None.
+        """
         return cast('Greeting', super().parse(*args, **kwargs))
 
     @classmethod

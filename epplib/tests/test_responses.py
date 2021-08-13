@@ -25,12 +25,14 @@ from unittest import TestCase
 from freezegun import freeze_time
 from isodate import parse_datetime
 from lxml.builder import ElementMaker
-from lxml.etree import Element, QName
+from lxml.etree import DocumentInvalid, Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE_EPP
 from epplib.responses import Greeting, Response
 
 BASE_DATA_PATH = Path(__file__).parent / 'data'
+SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
+
 EM = ElementMaker(namespace=NAMESPACE_EPP, nsmap={'epp': NAMESPACE_EPP})
 
 
@@ -40,8 +42,8 @@ class DummyResponse(Response):
     tag: str
 
     @classmethod
-    def parse(cls, raw_response) -> 'DummyResponse':
-        return cast(DummyResponse, super().parse(raw_response))
+    def parse(cls, *args, **kwargs) -> 'DummyResponse':
+        return cast(DummyResponse, super().parse(*args, **kwargs))
 
     @classmethod
     def _parse_payload(cls, element: Element) -> Mapping[str, str]:
@@ -66,6 +68,16 @@ class TestResponse(TestCase):
 
         with self.assertRaisesRegex(ValueError, 'Root element has to be "epp"'):
             DummyResponse.parse(data)
+
+    def test_parse_with_schema(self):
+        invalid = b'''<?xml version="1.0" encoding="UTF-8"?>
+                      <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+                          <invalid/>
+                      </epp>'''
+
+        message = "Element '{urn:ietf:params:xml:ns:epp-1.0}invalid': This element is not expected\\."
+        with self.assertRaisesRegex(DocumentInvalid, message):
+            DummyResponse.parse(invalid, SCHEMA)
 
     def test_find_text(self):
         element = EM.svcMenu(EM.lang('en'), EM.version())
@@ -98,7 +110,7 @@ class TestGreeting(TestCase):
 
     def test_parse(self):
         xml = self.greeting_template.replace(b'{expiry}', self.expiry_absolute)
-        greeting = Greeting.parse(xml)
+        greeting = Greeting.parse(xml, SCHEMA)
 
         obj_uris = [
             'http://www.nic.cz/xml/epp/contact-1.6',
@@ -126,7 +138,7 @@ class TestGreeting(TestCase):
 
     def test_parse_expiry_absolute(self):
         xml = self.greeting_template.replace(b'{expiry}', self.expiry_absolute)
-        greeting = Greeting.parse(xml)
+        greeting = Greeting.parse(xml, SCHEMA)
 
         expected = datetime(2021, 5, 4, 3, 14, 15, tzinfo=timezone(timedelta(hours=2)))
         self.assertEqual(greeting.expiry, expected)
@@ -134,14 +146,14 @@ class TestGreeting(TestCase):
     @freeze_time('2021-07-14 12:15')
     def test_parse_expiry_relative(self):
         xml = self.greeting_template.replace(b'{expiry}', self.expiry_relative)
-        greeting = Greeting.parse(xml)
+        greeting = Greeting.parse(xml, SCHEMA)
 
         expected = timedelta(days=1, hours=10, minutes=15, seconds=20)
         self.assertEqual(greeting.expiry, expected)
 
     def test_parse_no_expiry(self):
         xml = self.greeting_template.replace(b'{expiry}', b'')
-        greeting = Greeting.parse(xml)
+        greeting = Greeting.parse(xml, SCHEMA)
 
         self.assertEqual(greeting.expiry, None)
 
