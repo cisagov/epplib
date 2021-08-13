@@ -65,6 +65,7 @@ class DummyRequest(Request):
     raw_request = b'This is the Request!'
 
     def xml(self, schema: XMLSchema = None) -> bytes:
+        self.schema = schema
         return self.raw_request
 
     def _get_payload(self) -> Element:
@@ -115,11 +116,13 @@ class TestClient(TestCase):
 
     def test_send(self):
         transport = Mock(wraps=DummyTransport())
-        client = Client(transport)
+        client = Client(transport, sentinel.schema)
 
         with client:
-            command = DummyRequest()
-            response = client.send(command)
+            request = DummyRequest()
+            response = client.send(request)
+
+        self.assertEqual(request.schema, sentinel.schema)
 
         transport.send.assert_called_with(DummyRequest.raw_request)
 
