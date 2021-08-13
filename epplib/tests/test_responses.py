@@ -17,10 +17,13 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Mapping, cast
 from unittest import TestCase
 
+from freezegun import freeze_time
+from isodate import parse_datetime
 from lxml.builder import ElementMaker
 from lxml.etree import Element, QName
 
@@ -88,12 +91,14 @@ class TestResponse(TestCase):
 
 
 class TestGreeting(TestCase):
-    path = BASE_DATA_PATH / 'greeting.xml'
+    greeting_template = (BASE_DATA_PATH / 'greeting_template.xml').read_bytes()
+
+    expiry_absolute = b'<expiry><absolute>2021-05-04T03:14:15+02:00</absolute></expiry>'
+    expiry_relative = b'<expiry><relative>P0Y0M1DT10H15M20S</relative></expiry>'
 
     def test_parse(self):
-        with open(self.path, 'br') as f:
-            data = f.read()
-        greeting = Greeting.parse(data)
+        xml = self.greeting_template.replace(b'{expiry}', self.expiry_absolute)
+        greeting = Greeting.parse(xml)
 
         obj_uris = [
             'http://www.nic.cz/xml/epp/contact-1.6',
@@ -110,11 +115,60 @@ class TestGreeting(TestCase):
         self.assertEqual(greeting.ext_uris, ['http://www.nic.cz/xml/epp/enumval-1.2'])
 
         self.assertEqual(greeting.access, 'none')
+        self.assertEqual(greeting.expiry, datetime(2021, 5, 4, 3, 14, 15, tzinfo=timezone(timedelta(hours=2))))
 
         statement = Greeting.Statement(
             purpose=['admin', 'prov'],
             recipient=['public'],
             retention='stated',
-            expiry='absolute'
         )
         self.assertEqual(greeting.statements, [statement])
+
+    def test_parse_expiry_absolute(self):
+        xml = self.greeting_template.replace(b'{expiry}', self.expiry_absolute)
+        greeting = Greeting.parse(xml)
+
+        expected = datetime(2021, 5, 4, 3, 14, 15, tzinfo=timezone(timedelta(hours=2)))
+        self.assertEqual(greeting.expiry, expected)
+
+    @freeze_time('2021-07-14 12:15')
+    def test_parse_expiry_relative(self):
+        xml = self.greeting_template.replace(b'{expiry}', self.expiry_relative)
+        greeting = Greeting.parse(xml)
+
+        expected = timedelta(days=1, hours=10, minutes=15, seconds=20)
+        self.assertEqual(greeting.expiry, expected)
+
+    def test_parse_no_expiry(self):
+        xml = self.greeting_template.replace(b'{expiry}', b'')
+        greeting = Greeting.parse(xml)
+
+        self.assertEqual(greeting.expiry, None)
+
+    @freeze_time('2021-07-14 12:15')
+    def test_parse_expiry_duration_conversion(self):
+        # isodate parses time period to timedelta or Duration depending on whether it contains "complicated" intervals.
+
+        expiry_absolute = EM.expiry(EM.absolute('2021-05-04T03:14:15+02:00'))
+        self.assertEqual(
+            Greeting._parse_expiry(expiry_absolute),
+            datetime(2021, 5, 4, 3, 14, 15, tzinfo=timezone(timedelta(hours=2)))
+        )
+
+        expiry_relative_simple = EM.expiry(EM.relative('P0Y0M1DT10H15M20S'))
+        self.assertEqual(
+            Greeting._parse_expiry(expiry_relative_simple),
+            timedelta(days=1, hours=10, minutes=15, seconds=20)
+        )
+
+        expiry_relative_complicated = EM.expiry(EM.relative('P1Y2M3DT4H5M6S'))
+        self.assertEqual(
+            Greeting._parse_expiry(expiry_relative_complicated),
+            parse_datetime('2022-09-17T16:20:06') - parse_datetime('2021-07-14T12:15')
+        )
+
+    def test_parse_expiry_invalid_tag(self):
+        expiry = EM.expiry(EM.invalid('2021-05-04T03:14:15+02:00'))
+        message = 'Expected expiry specification. Found "{urn:ietf:params:xml:ns:epp-1.0}invalid" instead\\.'
+        with self.assertRaisesRegex(ValueError, message):
+            Greeting._parse_expiry(expiry)

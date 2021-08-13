@@ -19,13 +19,16 @@
 """Module providing means to process responses to EPP commands."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Optional, Sequence, Union, cast
 
+from isodate import Duration, parse_datetime, parse_duration
 from lxml.etree import Element, QName, fromstring  # nosec - TODO: Fix lxml security issues
 
 from epplib.constants import NAMESPACE_EPP
 
 NAMESPACES = {'epp': NAMESPACE_EPP}
+GreetingPayloadType = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
 
 
 class Response(ABC):
@@ -37,7 +40,7 @@ class Response(ABC):
 
     @classmethod
     def parse(cls, raw_response: bytes) -> 'Response':
-        """Parse the XML response into the dataclass.
+        """Parse the xml response into the dataclass.
 
         Args:
             raw_response: The raw XML response which will be parsed into the Response object.
@@ -95,6 +98,7 @@ class Greeting(Response):
         ext_uris: Content of the epp/greeting/svcMenu/svcExtension/extURI element.
         access: Content of the epp/greeting/dcp/access element.
         statements: Content of the epp/greeting/statement element.
+        expiry: Content of the epp/greeting/expiry element.
     """
 
     @dataclass
@@ -105,13 +109,11 @@ class Greeting(Response):
             purpose: Content of the epp/greeting/statement/purpose element.
             recipient: Content of the epp/greeting/statement/recipient element.
             retention: Content of the epp/greeting/statement/retention element.
-            expiry: Content of the epp/greeting/statement/expiry element.
         """
 
         purpose: List[str]
         recipient: List[str]
         retention: Optional[str]
-        expiry: Optional[str]
 
     sv_id: str
     sv_date: str
@@ -121,14 +123,15 @@ class Greeting(Response):
     ext_uris: List[str]
     access: str
     statements: List[Statement]
+    expiry: Optional[str]
 
     @classmethod
-    def parse(cls, raw_response: bytes) -> 'Greeting':
+    def parse(cls, *args, **kwargs) -> 'Greeting':
         """Parse the xml response into the Greeting dataclass."""
-        return cast('Greeting', super().parse(raw_response))
+        return cast('Greeting', super().parse(*args, **kwargs))
 
     @classmethod
-    def _parse_payload(cls, element: Element) -> Mapping[str, Union[None, str, Sequence[str], Sequence[Statement]]]:
+    def _parse_payload(cls, element: Element) -> GreetingPayloadType:
         """Parse the actual information from the response.
 
         Args:
@@ -149,6 +152,7 @@ class Greeting(Response):
             'statements': [
                 cls._parse_statement(item) for item in element.findall('./epp:dcp/epp:statement', namespaces=NAMESPACES)
             ],
+            'expiry': cls._parse_expiry(element.find('./epp:dcp/epp:expiry', namespaces=NAMESPACES))
         }
 
         return data
@@ -167,5 +171,34 @@ class Greeting(Response):
             purpose=cls._find_children(element, './epp:purpose'),
             recipient=cls._find_children(element, './epp:recipient'),
             retention=cls._find_child(element, './epp:retention'),
-            expiry=cls._find_child(element, './epp:expiry')
         )
+
+    @classmethod
+    def _parse_expiry(cls, element: Element) -> Union[None, datetime, timedelta]:
+        """Parse the expiry part of Greeting.
+
+        Result depends on wheter the expiry is relativa or absolute. Absolute expiry is returned as datetime whereas
+        relative expiry is returned as timedelta.
+
+        Args:
+            element: Expiry element of Greeting.
+
+        Returns:
+            Parsed expiry expressed as either a point in time or duration until the expiry.
+        """
+        if element is None:
+            return None
+
+        tag = element[0].tag
+        text = element[0].text
+
+        # TODO: Wrap parser errors into nicer exception?
+        if tag == QName(NAMESPACE_EPP, 'absolute'):
+            return parse_datetime(text)
+        elif tag == QName(NAMESPACE_EPP, 'relative'):
+            result = parse_duration(text)
+            if isinstance(result, Duration):
+                result = result.totimedelta(datetime.now())
+            return result
+        else:
+            raise ValueError('Expected expiry specification. Found "{}" instead.'.format(tag))
