@@ -28,7 +28,7 @@ from lxml.etree import Element, QName, XMLSchema, fromstring  # nosec - TODO: Fi
 from epplib.constants import NAMESPACE_EPP
 
 NAMESPACES = {'epp': NAMESPACE_EPP}
-GreetingPayloadType = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
+GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
 
 
 class Response(ABC):
@@ -130,17 +130,17 @@ class Greeting(Response):
     expiry: Optional[str]
 
     @classmethod
-    def parse(cls, *args, **kwargs) -> 'Greeting':
+    def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'Greeting':
         """Parse the xml response into the Greeting dataclass.
 
         Args:
             raw_response: The raw XML response which will be parsed into the Response object.
             schema: A XML schema used to validate the parsed Response. No validation is done if schema is None.
         """
-        return cast('Greeting', super().parse(*args, **kwargs))
+        return cast('Greeting', super().parse(raw_response, schema))
 
     @classmethod
-    def _parse_payload(cls, element: Element) -> GreetingPayloadType:
+    def _parse_payload(cls, element: Element) -> GreetingPayload:
         """Parse the actual information from the response.
 
         Args:
@@ -186,7 +186,7 @@ class Greeting(Response):
     def _parse_expiry(cls, element: Element) -> Union[None, datetime, timedelta]:
         """Parse the expiry part of Greeting.
 
-        Result depends on wheter the expiry is relativa or absolute. Absolute expiry is returned as datetime whereas
+        Result depends on whether the expiry is relative or absolute. Absolute expiry is returned as datetime whereas
         relative expiry is returned as timedelta.
 
         Args:

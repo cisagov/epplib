@@ -20,6 +20,8 @@
 from os import PathLike
 from typing import Type, Union
 
+from lxml.etree import XMLSchema  # nosec - TODO: Fix lxml security issues
+
 from epplib.commands import Request
 from epplib.responses import Response
 from epplib.transport import Transport
@@ -34,13 +36,15 @@ class Client:
         transport: A transport object which is used for communication with the EPP server.
     """
 
-    def __init__(self, transport: Transport):
+    def __init__(self, transport: Transport, schema: XMLSchema = None):
         """Init the Client.
 
         Args:
             transport: A transport object which is used for communication with the EPP server.
+            schema: A XML schema used to validate Responses. No validation is done if schema is None.
         """
         self.transport = transport
+        self.schema = schema
 
     def __enter__(self):
         self.connect()
@@ -75,5 +79,5 @@ class Client:
             response_class: A class to parse the response.
         """
         response_raw = self.transport.receive()
-        response_parsed = response_class.parse(response_raw)
+        response_parsed = response_class.parse(response_raw, self.schema)
         return response_parsed

@@ -42,8 +42,8 @@ class DummyResponse(Response):
     tag: str
 
     @classmethod
-    def parse(cls, *args, **kwargs) -> 'DummyResponse':
-        return cast(DummyResponse, super().parse(*args, **kwargs))
+    def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'DummyResponse':
+        return cast(DummyResponse, super().parse(raw_response, schema))
 
     @classmethod
     def _parse_payload(cls, element: Element) -> Mapping[str, str]:

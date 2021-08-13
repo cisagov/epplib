@@ -18,7 +18,7 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Type, cast
 from unittest import TestCase
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, sentinel
 
 from lxml.etree import Element, XMLSchema
 
@@ -49,10 +49,11 @@ class DummyTransport(Transport):
 class DummyResponse(Response):
 
     raw_response: bytes
+    schema: XMLSchema
 
     @classmethod
     def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'DummyResponse':
-        return cls(raw_response=raw_response)
+        return cls(raw_response=raw_response, schema=schema)
 
     @classmethod
     def _parse_payload(cls, element: Element) -> Dict[str, Any]:
@@ -103,13 +104,14 @@ class TestClient(TestCase):
         transport.close.assert_called_once_with()
 
     def test_receive(self):
-        client = Client(DummyTransport())
+        client = Client(DummyTransport(), sentinel.schema)
 
         with client:
             response = client.receive(DummyResponse)
 
         self.assertEqual(type(response), DummyResponse)
         self.assertEqual(cast(DummyResponse, response).raw_response, DummyTransport.raw_response)
+        self.assertEqual(cast(DummyResponse, response).schema, sentinel.schema)
 
     def test_send(self):
         transport = Mock(wraps=DummyTransport())
