@@ -20,7 +20,7 @@
 from abc import ABC, abstractmethod, abstractproperty
 from typing import Type
 
-from lxml.etree import Element, ElementTree, QName, XMLSchema, tostring  # nosec - TODO: Fix lxml security issues
+from lxml.etree import Element, ElementTree, QName, XMLSchema, tostring
 
 from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI, XSI_SCHEMA_LOCATION
 from epplib.responses import Greeting, Response

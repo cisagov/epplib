@@ -24,9 +24,10 @@ from typing import Any, List, Mapping, Optional, Sequence, Union, cast
 
 from isodate import Duration, parse_datetime, parse_duration
 from isodate.isoerror import ISO8601Error
-from lxml.etree import Element, QName, XMLSchema, fromstring  # nosec - TODO: Fix lxml security issues
+from lxml.etree import Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE_EPP
+from epplib.utils import safe_parse
 
 NAMESPACES = {'epp': NAMESPACE_EPP}
 GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
@@ -62,7 +63,7 @@ class Response(ABC):
             raw_response: The raw XML response which will be parsed into the Response object.
             schema: A XML schema used to validate the parsed Response. No validation is done if schema is None.
         """
-        root = fromstring(raw_response)
+        root = safe_parse(raw_response)
 
         if schema is not None:
             schema.assertValid(root)
@@ -72,15 +73,15 @@ class Response(ABC):
 
         payload = root[0]
         try:
-            data = cls._parse_payload(payload)
+            data = cls._extract_payload(payload)
         except Exception as exception:
             raise ParsingError(raw_response=raw_response) from exception
         return cls(**data)
 
     @classmethod
     @abstractmethod
-    def _parse_payload(cls, element: Element) -> Mapping[str, Any]:
-        """Parse the actual information from the response.
+    def _extract_payload(cls, element: Element) -> Mapping[str, Any]:
+        """Extract the actual information from the response.
 
         Args:
             element: Child element of the epp element.
@@ -159,8 +160,8 @@ class Greeting(Response):
         return cast('Greeting', super().parse(raw_response, schema))
 
     @classmethod
-    def _parse_payload(cls, element: Element) -> GreetingPayload:
-        """Parse the actual information from the response.
+    def _extract_payload(cls, element: Element) -> GreetingPayload:
+        """Extract the actual information from the response.
 
         Args:
             element: Child element of the epp element.
@@ -178,22 +179,25 @@ class Greeting(Response):
             'access': cls._find_child(element, './epp:dcp/epp:access'),
 
             'statements': [
-                cls._parse_statement(item) for item in element.findall('./epp:dcp/epp:statement', namespaces=NAMESPACES)
+                cls._extract_statement(item) for item in element.findall(
+                    './epp:dcp/epp:statement',
+                    namespaces=NAMESPACES
+                )
             ],
-            'expiry': cls._parse_expiry(element.find('./epp:dcp/epp:expiry', namespaces=NAMESPACES))
+            'expiry': cls._extract_expiry(element.find('./epp:dcp/epp:expiry', namespaces=NAMESPACES))
         }
 
         return data
 
     @classmethod
-    def _parse_statement(cls, element: Element) -> Statement:
-        """Parse the statement part of Greeting.
+    def _extract_statement(cls, element: Element) -> Statement:
+        """Extract the statement part of Greeting.
 
         Args:
             element: Statement element of Greeting.
 
         Returns:
-            Parsed Statement.
+            Extracted Statement.
         """
         return cls.Statement(
             purpose=cls._find_children(element, './epp:purpose'),
@@ -202,8 +206,8 @@ class Greeting(Response):
         )
 
     @classmethod
-    def _parse_expiry(cls, element: Element) -> Union[None, datetime, timedelta]:
-        """Parse the expiry part of Greeting.
+    def _extract_expiry(cls, element: Element) -> Union[None, datetime, timedelta]:
+        """Extract the expiry part of Greeting.
 
         Result depends on whether the expiry is relative or absolute. Absolute expiry is returned as datetime whereas
         relative expiry is returned as timedelta.
@@ -212,7 +216,7 @@ class Greeting(Response):
             element: Expiry element of Greeting.
 
         Returns:
-            Parsed expiry expressed as either a point in time or duration until the expiry.
+            Extracted expiry expressed as either a point in time or duration until the expiry.
         """
         if element is None:
             return None

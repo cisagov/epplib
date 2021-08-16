@@ -47,7 +47,7 @@ class DummyResponse(Response):
         return cast(DummyResponse, super().parse(raw_response, schema))
 
     @classmethod
-    def _parse_payload(cls, element: Element) -> Mapping[str, str]:
+    def _extract_payload(cls, element: Element) -> Mapping[str, str]:
         return {'tag': element.tag}
 
 
@@ -87,7 +87,7 @@ class TestResponse(TestCase):
         with self.assertRaisesRegex(DocumentInvalid, message):
             DummyResponse.parse(invalid, SCHEMA)
 
-    @patch('epplib.tests.test_responses.DummyResponse._parse_payload')
+    @patch('epplib.tests.test_responses.DummyResponse._extract_payload')
     def test_wrap_exceptions(self, mock_parse):
         mock_parse.side_effect = ValueError('It is broken!')
         data = b'''<?xml version="1.0" encoding="UTF-8"?>
@@ -176,39 +176,39 @@ class TestGreeting(TestCase):
         self.assertEqual(greeting.expiry, None)
 
     @freeze_time('2021-07-14 12:15')
-    def test_parse_expiry_duration_conversion(self):
+    def test_extract_expiry_duration_conversion(self):
         # isodate parses time period to timedelta or Duration depending on whether it contains "complicated" intervals.
 
         expiry_absolute = EM.expiry(EM.absolute('2021-05-04T03:14:15+02:00'))
         self.assertEqual(
-            Greeting._parse_expiry(expiry_absolute),
+            Greeting._extract_expiry(expiry_absolute),
             datetime(2021, 5, 4, 3, 14, 15, tzinfo=timezone(timedelta(hours=2)))
         )
 
         expiry_relative_simple = EM.expiry(EM.relative('P0Y0M1DT10H15M20S'))
         self.assertEqual(
-            Greeting._parse_expiry(expiry_relative_simple),
+            Greeting._extract_expiry(expiry_relative_simple),
             timedelta(days=1, hours=10, minutes=15, seconds=20)
         )
 
         expiry_relative_complicated = EM.expiry(EM.relative('P1Y2M3DT4H5M6S'))
         self.assertEqual(
-            Greeting._parse_expiry(expiry_relative_complicated),
+            Greeting._extract_expiry(expiry_relative_complicated),
             parse_datetime('2022-09-17T16:20:06') - parse_datetime('2021-07-14T12:15')
         )
 
-    def test_parse_absolute_expiry_error(self):
+    def test_extract_absolute_expiry_error(self):
         expiry = EM.expiry(EM.absolute('Gazpacho!'))
         with self.assertRaisesRegex(ParsingError, 'Could not parse "Gazpacho!" as absolute expiry\\.'):
-            Greeting._parse_expiry(expiry)
+            Greeting._extract_expiry(expiry)
 
-    def test_parse_relative_expiry_error(self):
+    def test_extract_relative_expiry_error(self):
         expiry = EM.expiry(EM.relative('Gazpacho!'))
         with self.assertRaisesRegex(ParsingError, 'Could not parse "Gazpacho!" as relative expiry\\.'):
-            Greeting._parse_expiry(expiry)
+            Greeting._extract_expiry(expiry)
 
-    def test_parse_expiry_invalid_tag(self):
+    def test_extract_expiry_invalid_tag(self):
         expiry = EM.expiry(EM.invalid('2021-05-04T03:14:15+02:00'))
         message = 'Expected expiry specification. Found "{urn:ietf:params:xml:ns:epp-1.0}invalid" instead\\.'
         with self.assertRaisesRegex(ValueError, message):
-            Greeting._parse_expiry(expiry)
+            Greeting._extract_expiry(expiry)
