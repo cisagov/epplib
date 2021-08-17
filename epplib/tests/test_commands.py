@@ -19,10 +19,11 @@
 from pathlib import Path
 from typing import Any, Dict
 from unittest import TestCase
+from unittest.mock import Mock
 
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema, fromstring
 
-from epplib.commands import Hello, Request
+from epplib.commands import Command, Hello, Request
 from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI
 from epplib.responses import Response
 
@@ -39,7 +40,14 @@ class DummyResponse(Response):
 class DummyRequest(Request):
     response_class = DummyResponse
 
-    def _get_payload(self) -> Element:
+    def _get_payload(self, tr_id: str = None) -> Element:
+        return Element(QName(DUMMY_NAMESPACE, 'dummy'))
+
+
+class DummyCommand(Command):
+    response_class = DummyResponse
+
+    def _get_command_payload(self) -> Element:
         return Element(QName(DUMMY_NAMESPACE, 'dummy'))
 
 
@@ -65,12 +73,17 @@ class TestRequest(TestCase):
 
     def test_validate(self):
         with self.assertRaises(DocumentInvalid):
-            DummyRequest().xml(SCHEMA)
+            DummyRequest().xml(schema=SCHEMA)
 
 
 class TestHello(TestCase):
     def test_valid(self):
-        Hello().xml(SCHEMA)
+        mock_schema = Mock()
+        mock_schema.assertValid = Mock()
+        mock_schema.assertValid.side_effect = SCHEMA.assertValid
+
+        Hello().xml(schema=mock_schema)
+        mock_schema.assertValid.assert_called_once()
 
     def test_tag(self):
         root = fromstring(Hello().xml())
@@ -82,3 +95,34 @@ class TestHello(TestCase):
         hello = root[0]
         self.assertEqual(len(hello), 0)
         self.assertEqual(len(hello.attrib), 0)
+
+
+class TestCommand(TestCase):
+    def test_command(self):
+        root = fromstring(DummyCommand().xml())
+        command = root[0]
+
+        self.assertEqual(command.tag, QName(NAMESPACE_EPP, 'command'))
+        self.assertEqual(len(command), 1)
+        self.assertEqual(len(command.attrib), 0)
+
+        self.assertEqual(command[0].tag, QName(DUMMY_NAMESPACE, 'dummy'))
+
+    def test_command_tr_id(self):
+        tr_id = 'tr_id_123'
+        root = fromstring(DummyCommand().xml(tr_id=tr_id))
+        command = root[0]
+
+        self.assertEqual(command.tag, QName(NAMESPACE_EPP, 'command'))
+        self.assertEqual(len(command), 2)
+        self.assertEqual(len(command.attrib), 0)
+
+        NSMAP = {'epp': NAMESPACE_EPP, 'dm': DUMMY_NAMESPACE}
+        self.assertEqual(
+            [element.tag for element in command.findall('./dm:dummy', namespaces=NSMAP)],
+            [QName(DUMMY_NAMESPACE, 'dummy')]
+        )
+        self.assertEqual(
+            [element.text for element in command.findall('./epp:clTRID', namespaces=NSMAP)],
+            [tr_id]
+        )

@@ -74,7 +74,7 @@ class Client:
         Args:
             request: The command to be sent to the server.
         """
-        message = request.xml(self.schema)
+        message = request.xml(schema=self.schema)
         self.transport.send(message)
 
         return self._receive(request.response_class)

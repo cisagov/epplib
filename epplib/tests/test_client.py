@@ -17,7 +17,7 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Type, cast
+from typing import Any, Dict, Optional, Type, cast
 from unittest import TestCase
 from unittest.mock import Mock, call
 
@@ -71,11 +71,11 @@ class DummyRequest(Request):
 
     raw_request = b'This is the Request!'
 
-    def xml(self, schema: XMLSchema = None) -> bytes:
+    def xml(self, tr_id: str = None, schema: XMLSchema = None) -> bytes:
         self.schema = schema
         return self.raw_request
 
-    def _get_payload(self) -> Element:
+    def _get_payload(self, tr_id: Optional[str]) -> Element:
         pass  # pragma: no cover
 
     @property
