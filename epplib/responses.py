@@ -239,3 +239,7 @@ class Greeting(Response):
             return result
         else:
             raise ValueError('Expected expiry specification. Found "{}" instead.'.format(tag))
+
+
+class Result(Response):
+    """EPP Result representation."""

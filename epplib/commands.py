@@ -18,12 +18,13 @@
 
 """Module providing EPP commands."""
 from abc import ABC, abstractmethod, abstractproperty
-from typing import Optional, Type
+from dataclasses import dataclass, field
+from typing import List, Optional, Type
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
 from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI, XSI_SCHEMA_LOCATION
-from epplib.responses import Greeting, Response
+from epplib.responses import Greeting, Response, Result
 
 
 class Request(ABC):
@@ -95,3 +96,56 @@ class Command(Request):
         Returns:
             Element with the Command specific payload.
         """
+
+
+@dataclass
+class Login(Command):
+    """EPP Login command.
+
+    Attributes:
+        cl_id: EPP clID
+        password: EPP pw
+        new_password: EPP newPW
+        version: EPP options/version
+        lang: EPP options/lang
+        obj_uris: EPP/svcs/objURI
+        ext_uris: EPP/svcs/svcExtension/extURI
+    """
+
+    response_class = Result
+
+    cl_id: str
+    password: str
+    obj_uris: List[str]
+    new_password: Optional[str] = None
+    version: str = '1.0'
+    lang: str = 'en'
+    ext_uris: List[str] = field(default_factory=list)
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for Login.
+
+        Returns:
+            Element with the Login specific payload.
+        """
+        root = Element(QName(NAMESPACE_EPP, 'login'))
+
+        SubElement(root, QName(NAMESPACE_EPP, 'clID')).text = self.cl_id
+        SubElement(root, QName(NAMESPACE_EPP, 'pw')).text = self.password
+        if self.new_password is not None:
+            SubElement(root, QName(NAMESPACE_EPP, 'newPW')).text = self.new_password
+
+        options = SubElement(root, QName(NAMESPACE_EPP, 'options'))
+        SubElement(options, QName(NAMESPACE_EPP, 'version')).text = self.version
+        SubElement(options, QName(NAMESPACE_EPP, 'lang')).text = self.lang
+
+        svcs = SubElement(root, QName(NAMESPACE_EPP, 'svcs'))
+        for uri in self.obj_uris:
+            SubElement(svcs, QName(NAMESPACE_EPP, 'objURI')).text = uri
+
+        if len(self.ext_uris) > 0:
+            svc_extension = SubElement(svcs, QName(NAMESPACE_EPP, 'svcExtension'))
+            for uri in self.ext_uris:
+                SubElement(svc_extension, QName(NAMESPACE_EPP, 'extURI')).text = uri
+
+        return root
