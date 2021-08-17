@@ -16,7 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Mapping, cast
 from unittest import TestCase
 
 from lxml.builder import ElementMaker
@@ -29,9 +31,18 @@ BASE_DATA_PATH = Path(__file__).parent / 'data'
 EM = ElementMaker(namespace=NAMESPACE_EPP, nsmap={'epp': NAMESPACE_EPP})
 
 
+@dataclass
 class DummyResponse(Response):
-    def _parse_payload(self, element: Element) -> None:
-        self.tag = element.tag
+
+    tag: str
+
+    @classmethod
+    def parse(cls, raw_response) -> 'DummyResponse':
+        return cast(DummyResponse, super().parse(raw_response))
+
+    @classmethod
+    def _parse_payload(cls, element: Element) -> Mapping[str, str]:
+        return {'tag': element.tag}
 
 
 class TestResponse(TestCase):
@@ -41,7 +52,7 @@ class TestResponse(TestCase):
                        <dummy/>
                    </epp>'''
 
-        response = DummyResponse(data)
+        response = DummyResponse.parse(data)
         self.assertEqual(response.tag, QName(NAMESPACE_EPP, 'dummy'))
 
     def test_raise_if_not_epp(self):
@@ -51,7 +62,7 @@ class TestResponse(TestCase):
                    </other>'''
 
         with self.assertRaisesRegex(ValueError, 'Root element has to be "epp"'):
-            DummyResponse(data)
+            DummyResponse.parse(data)
 
     def test_find_text(self):
         element = EM.svcMenu(EM.lang('en'), EM.version())
@@ -82,7 +93,7 @@ class TestGreeting(TestCase):
     def test_parse(self):
         with open(self.path, 'br') as f:
             data = f.read()
-        greeting = Greeting(data)
+        greeting = Greeting.parse(data)
 
         obj_uris = [
             'http://www.nic.cz/xml/epp/contact-1.6',
