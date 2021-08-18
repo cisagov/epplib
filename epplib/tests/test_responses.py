@@ -29,7 +29,7 @@ from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE_EPP
-from epplib.responses import Greeting, ParsingError, Response
+from epplib.responses import Greeting, ParsingError, Response, Result
 
 BASE_DATA_PATH = Path(__file__).parent / 'data'
 SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
@@ -109,6 +109,12 @@ class TestResponse(TestCase):
         self.assertEqual(Response._find_all_text(element, './epp:version'), [''])
         self.assertEqual(Response._find_all_text(element, './epp:missing'), [])
 
+    def test_find_attrib(self):
+        element = EM.response(EM.result(code='1000'))
+        self.assertEqual(Response._find_attrib(element, './epp:result', 'code'), '1000')
+        self.assertEqual(Response._find_attrib(element, './epp:result', 'other'), None)
+        self.assertEqual(Response._find_attrib(element, './epp:other', 'code'), None)
+
     def test_find_child(self):
         element = EM.statement(EM.purpose(EM.admin()))
         self.assertEqual(Response._find_child(element, './epp:purpose'), 'admin')
@@ -121,7 +127,7 @@ class TestResponse(TestCase):
 
 
 class TestGreeting(TestCase):
-    greeting_template = (BASE_DATA_PATH / 'greeting_template.xml').read_bytes()
+    greeting_template = (BASE_DATA_PATH / 'responses/greeting_template.xml').read_bytes()
 
     expiry_absolute = b'<expiry><absolute>2021-05-04T03:14:15+02:00</absolute></expiry>'
     expiry_relative = b'<expiry><relative>P0Y0M1DT10H15M20S</relative></expiry>'
@@ -212,3 +218,18 @@ class TestGreeting(TestCase):
         message = 'Expected expiry specification. Found "{urn:ietf:params:xml:ns:epp-1.0}invalid" instead\\.'
         with self.assertRaisesRegex(ValueError, message):
             Greeting._extract_expiry(expiry)
+
+
+class TestResult(TestCase):
+
+    def test_parse(self):
+        xml = (BASE_DATA_PATH / 'responses/result.xml').read_bytes()
+        result = Result.parse(xml, SCHEMA)
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(result.message, 'Command completed successfully')
+        self.assertEqual(result.cl_tr_id, 'sdmj001#17-03-06at18:48:03')
+        self.assertEqual(result.sv_tr_id, 'ReqID-0000126633')
+
+    def test_optional_int(self):
+        self.assertEqual(Result._optional_int('1'), 1)
+        self.assertEqual(Result._optional_int(None), None)

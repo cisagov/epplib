@@ -20,7 +20,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, List, Mapping, Optional, Sequence, Union, cast
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Union, cast
 
 from isodate import Duration, parse_datetime, parse_duration
 from isodate.isoerror import ISO8601Error
@@ -94,6 +94,14 @@ class Response(ABC):
     @staticmethod
     def _find_all_text(element: Element, path: str) -> List[str]:
         return [(elem.text or '') for elem in element.findall(path, namespaces=NAMESPACES)]
+
+    @staticmethod
+    def _find_attrib(element: Element, path: str, attrib: str) -> Optional[str]:
+        found = element.find(path, namespaces=NAMESPACES)
+        if found is not None:
+            return found.attrib.get(attrib)
+        else:
+            return None
 
     @staticmethod
     def _find_child(element: Element, path: str) -> Optional[str]:
@@ -241,5 +249,43 @@ class Greeting(Response):
             raise ValueError('Expected expiry specification. Found "{}" instead.'.format(tag))
 
 
+@dataclass
 class Result(Response):
     """EPP Result representation."""
+
+    code: int
+    message: str
+    cl_tr_id: str
+    sv_tr_id: str
+
+    @classmethod
+    def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'Result':
+        """Parse the xml response into the Result dataclass.
+
+        Args:
+            raw_response: The raw XML response which will be parsed into the Response object.
+            schema: A XML schema used to validate the parsed Response. No validation is done if schema is None.
+        """
+        return cast('Result', super().parse(raw_response, schema))
+
+    @classmethod
+    def _extract_payload(cls, element: Element) -> Dict[str, Union[None, int, str]]:
+        """Extract the actual information from the response.
+
+        Args:
+            element: Child element of the epp element.
+        """
+        data: Dict[str, Union[None, int, str]] = {
+            'code': cls._optional_int(cls._find_attrib(element, './epp:result', 'code')),
+            'message': cls._find_text(element, './epp:result/epp:msg'),
+            'cl_tr_id': cls._find_text(element, './epp:trID/epp:clTRID'),
+            'sv_tr_id': cls._find_text(element, './epp:trID/epp:svTRID'),
+        }
+        return data
+
+    @staticmethod
+    def _optional_int(value: Optional[str]) -> Optional[int]:
+        if value is None:
+            return None
+        else:
+            return int(value)

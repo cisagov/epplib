@@ -28,7 +28,7 @@ from epplib.commands import Request
 from epplib.responses import Greeting, Response
 from epplib.transport import Transport
 
-GREETING = (Path(__file__).parent / 'data/greeting_template.xml').read_bytes().replace(b'{expiry}', b'')
+GREETING = (Path(__file__).parent / 'data/responses/greeting_template.xml').read_bytes().replace(b'{expiry}', b'')
 
 
 class DummyTransport(Transport):
