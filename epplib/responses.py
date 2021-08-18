@@ -20,7 +20,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Union, cast
+from typing import Any, ClassVar, Dict, List, Mapping, Optional, Sequence, Union, cast
 
 from isodate import Duration, parse_datetime, parse_duration
 from isodate.isoerror import ISO8601Error
@@ -49,7 +49,13 @@ class ParsingError(Exception):
 
 
 class Response(ABC):
-    """Base class for responses to EPP commands."""
+    """Base class for responses to EPP commands.
+
+    Attributes:
+        tag: Expected tag enclosing the response payload.
+    """
+
+    payload_tag: ClassVar[QName]
 
     # Concrete Responses are supposed to be dataclasses. ABC can not be a dataclass. We need to specify init for typing.
     def __init__(self, *args, **kwargs):
@@ -72,10 +78,13 @@ class Response(ABC):
             raise ValueError('Root element has to be "epp". Found: {}'.format(root.tag))
 
         payload = root[0]
+        if payload.tag != cls.payload_tag:
+            raise ValueError('Expected {} tag. Found {} instead.'.format(cls.payload_tag, payload.tag))
         try:
             data = cls._extract_payload(payload)
         except Exception as exception:
             raise ParsingError(raw_response=raw_response) from exception
+
         return cls(**data)
 
     @classmethod
@@ -146,6 +155,8 @@ class Greeting(Response):
         purpose: List[str]
         recipient: List[str]
         retention: Optional[str]
+
+    payload_tag: ClassVar = QName(NAMESPACE_EPP, 'greeting')
 
     sv_id: str
     sv_date: str
@@ -259,6 +270,8 @@ class Result(Response):
         cl_tr_id: Content of the epp/response/trID/clTRID element.
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
+
+    payload_tag: ClassVar = QName(NAMESPACE_EPP, 'response')
 
     code: int
     message: str
