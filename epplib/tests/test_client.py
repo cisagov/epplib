@@ -19,8 +19,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Type, cast
 from unittest import TestCase
-from unittest.mock import Mock, call
+from unittest.mock import Mock, call, patch
 
+from freezegun import freeze_time
 from lxml.etree import Element, XMLSchema
 
 from epplib.client import Client
@@ -72,6 +73,7 @@ class DummyRequest(Request):
     raw_request = b'This is the Request!'
 
     def xml(self, tr_id: str = None, schema: XMLSchema = None) -> bytes:
+        self.tr_id = tr_id
         self.schema = schema
         return self.raw_request
 
@@ -131,10 +133,14 @@ class TestClient(TestCase):
         self.assertEqual(cast(DummyResponse, response).raw_response, DummyTransport.raw_response)
         self.assertEqual(cast(DummyResponse, response).schema, mock_schema)
 
-    def test_send(self):
+    @freeze_time('2021-05-04 12:21')
+    @patch('epplib.client.choices')
+    def test_send(self, mock_choices):
         transport = Mock(wraps=DummyTransport())
         mock_schema = Mock(spec=XMLSchema)
         mock_schema.assertValid = Mock()  # Otherwise we get AttributeError: Attributes cannot start with 'assert'
+        mock_choices.side_effect = lambda x, k: x[:k]
+
         client = Client(transport, mock_schema)
 
         with client:
@@ -142,6 +148,7 @@ class TestClient(TestCase):
             response = client.send(request)
 
         self.assertEqual(request.schema, mock_schema)
+        self.assertEqual(request.tr_id, 'abcdef#2021-05-04T12:21:00')
 
         transport.send.assert_called_with(DummyRequest.raw_request)
 

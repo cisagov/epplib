@@ -17,7 +17,10 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 """A client to send EPP commands and receive responses."""
+from datetime import datetime
 from os import PathLike
+from random import choices
+from string import ascii_lowercase, digits
 from typing import Optional, Type, Union
 
 from lxml.etree import XMLSchema
@@ -74,7 +77,7 @@ class Client:
         Args:
             request: The command to be sent to the server.
         """
-        message = request.xml(schema=self.schema)
+        message = request.xml(tr_id=self._genereate_tr_id(), schema=self.schema)
         self.transport.send(message)
 
         return self._receive(request.response_class)
@@ -92,3 +95,8 @@ class Client:
             self.greeting = response_parsed
 
         return response_parsed
+
+    def _genereate_tr_id(self) -> str:
+        random = ''.join(choices(ascii_lowercase + digits, k=6))
+        timestamp = datetime.now().isoformat()
+        return '{}#{}'.format(random, timestamp)

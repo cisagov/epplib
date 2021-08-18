@@ -251,7 +251,14 @@ class Greeting(Response):
 
 @dataclass
 class Result(Response):
-    """EPP Result representation."""
+    """EPP Result representation.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        message: Content of the epp/response/result/msg element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
 
     code: int
     message: str
