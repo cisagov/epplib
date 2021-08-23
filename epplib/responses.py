@@ -19,13 +19,32 @@
 """Module providing means to process responses to EPP commands."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Optional, Sequence, Union, cast
 
-from lxml.etree import Element, QName, fromstring  # nosec - TODO: Fix lxml security issues
+from isodate import Duration, parse_datetime, parse_duration
+from isodate.isoerror import ISO8601Error
+from lxml.etree import Element, QName, XMLSchema, fromstring  # nosec - TODO: Fix lxml security issues
 
 from epplib.constants import NAMESPACE_EPP
 
 NAMESPACES = {'epp': NAMESPACE_EPP}
+GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
+
+
+class ParsingError(Exception):
+    """Error to indicate a failure while parsing of the EPP response."""
+
+    def __init__(self, *args, raw_response: Any = None):
+        self.raw_response = raw_response
+        super().__init__(*args)
+
+    def __str__(self):
+        if self.raw_response is None:
+            appendix = ''
+        else:
+            appendix = 'Raw response:\n{!r}'.format(self.raw_response)
+        return super().__str__() + appendix
 
 
 class Response(ABC):
@@ -36,19 +55,26 @@ class Response(ABC):
         pass  # pragma: no cover
 
     @classmethod
-    def parse(cls, raw_response: bytes) -> 'Response':
-        """Parse the XML response into the dataclass.
+    def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'Response':
+        """Parse the xml response into the dataclass.
 
         Args:
             raw_response: The raw XML response which will be parsed into the Response object.
+            schema: A XML schema used to validate the parsed Response. No validation is done if schema is None.
         """
         root = fromstring(raw_response)
+
+        if schema is not None:
+            schema.assertValid(root)
 
         if root.tag != QName(NAMESPACE_EPP, 'epp'):
             raise ValueError('Root element has to be "epp". Found: {}'.format(root.tag))
 
         payload = root[0]
-        data = cls._parse_payload(payload)
+        try:
+            data = cls._parse_payload(payload)
+        except Exception as exception:
+            raise ParsingError(raw_response=raw_response) from exception
         return cls(**data)
 
     @classmethod
@@ -95,6 +121,7 @@ class Greeting(Response):
         ext_uris: Content of the epp/greeting/svcMenu/svcExtension/extURI element.
         access: Content of the epp/greeting/dcp/access element.
         statements: Content of the epp/greeting/statement element.
+        expiry: Content of the epp/greeting/expiry element.
     """
 
     @dataclass
@@ -105,13 +132,11 @@ class Greeting(Response):
             purpose: Content of the epp/greeting/statement/purpose element.
             recipient: Content of the epp/greeting/statement/recipient element.
             retention: Content of the epp/greeting/statement/retention element.
-            expiry: Content of the epp/greeting/statement/expiry element.
         """
 
         purpose: List[str]
         recipient: List[str]
         retention: Optional[str]
-        expiry: Optional[str]
 
     sv_id: str
     sv_date: str
@@ -121,14 +146,20 @@ class Greeting(Response):
     ext_uris: List[str]
     access: str
     statements: List[Statement]
+    expiry: Optional[str]
 
     @classmethod
-    def parse(cls, raw_response: bytes) -> 'Greeting':
-        """Parse the xml response into the Greeting dataclass."""
-        return cast('Greeting', super().parse(raw_response))
+    def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'Greeting':
+        """Parse the xml response into the Greeting dataclass.
+
+        Args:
+            raw_response: The raw XML response which will be parsed into the Response object.
+            schema: A XML schema used to validate the parsed Response. No validation is done if schema is None.
+        """
+        return cast('Greeting', super().parse(raw_response, schema))
 
     @classmethod
-    def _parse_payload(cls, element: Element) -> Mapping[str, Union[None, str, Sequence[str], Sequence[Statement]]]:
+    def _parse_payload(cls, element: Element) -> GreetingPayload:
         """Parse the actual information from the response.
 
         Args:
@@ -149,6 +180,7 @@ class Greeting(Response):
             'statements': [
                 cls._parse_statement(item) for item in element.findall('./epp:dcp/epp:statement', namespaces=NAMESPACES)
             ],
+            'expiry': cls._parse_expiry(element.find('./epp:dcp/epp:expiry', namespaces=NAMESPACES))
         }
 
         return data
@@ -167,5 +199,39 @@ class Greeting(Response):
             purpose=cls._find_children(element, './epp:purpose'),
             recipient=cls._find_children(element, './epp:recipient'),
             retention=cls._find_child(element, './epp:retention'),
-            expiry=cls._find_child(element, './epp:expiry')
         )
+
+    @classmethod
+    def _parse_expiry(cls, element: Element) -> Union[None, datetime, timedelta]:
+        """Parse the expiry part of Greeting.
+
+        Result depends on whether the expiry is relative or absolute. Absolute expiry is returned as datetime whereas
+        relative expiry is returned as timedelta.
+
+        Args:
+            element: Expiry element of Greeting.
+
+        Returns:
+            Parsed expiry expressed as either a point in time or duration until the expiry.
+        """
+        if element is None:
+            return None
+
+        tag = element[0].tag
+        text = element[0].text
+
+        if tag == QName(NAMESPACE_EPP, 'absolute'):
+            try:
+                return parse_datetime(text)
+            except (ISO8601Error, ValueError) as exception:
+                raise ParsingError('Could not parse "{}" as absolute expiry.'.format(text)) from exception
+        elif tag == QName(NAMESPACE_EPP, 'relative'):
+            try:
+                result = parse_duration(text)
+            except (ISO8601Error, ValueError) as exception:
+                raise ParsingError('Could not parse "{}" as relative expiry.'.format(text)) from exception
+            if isinstance(result, Duration):
+                result = result.totimedelta(datetime.now())
+            return result
+        else:
+            raise ValueError('Expected expiry specification. Found "{}" instead.'.format(tag))

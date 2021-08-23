@@ -32,10 +32,8 @@
                 <retention>
                     <stated/>
                 </retention>
-                <expiry>
-                    <absolute/>
-                </expiry>
             </statement>
+            {expiry}
         </dcp>
     </greeting>
 </epp>
