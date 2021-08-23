@@ -197,6 +197,16 @@ class TestGreeting(TestCase):
             parse_datetime('2022-09-17T16:20:06') - parse_datetime('2021-07-14T12:15')
         )
 
+    def test_parse_absolute_expiry_error(self):
+        expiry = EM.expiry(EM.absolute('Gazpacho!'))
+        with self.assertRaisesRegex(ParsingError, 'Could not parse "Gazpacho!" as absolute expiry\\.'):
+            Greeting._parse_expiry(expiry)
+
+    def test_parse_relative_expiry_error(self):
+        expiry = EM.expiry(EM.relative('Gazpacho!'))
+        with self.assertRaisesRegex(ParsingError, 'Could not parse "Gazpacho!" as relative expiry\\.'):
+            Greeting._parse_expiry(expiry)
+
     def test_parse_expiry_invalid_tag(self):
         expiry = EM.expiry(EM.invalid('2021-05-04T03:14:15+02:00'))
         message = 'Expected expiry specification. Found "{urn:ietf:params:xml:ns:epp-1.0}invalid" instead\\.'

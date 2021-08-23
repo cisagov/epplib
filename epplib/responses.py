@@ -23,6 +23,7 @@ from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Optional, Sequence, Union, cast
 
 from isodate import Duration, parse_datetime, parse_duration
+from isodate.isoerror import ISO8601Error
 from lxml.etree import Element, QName, XMLSchema, fromstring  # nosec - TODO: Fix lxml security issues
 
 from epplib.constants import NAMESPACE_EPP
@@ -219,11 +220,16 @@ class Greeting(Response):
         tag = element[0].tag
         text = element[0].text
 
-        # TODO: Wrap parser errors into nicer exception?
         if tag == QName(NAMESPACE_EPP, 'absolute'):
-            return parse_datetime(text)
+            try:
+                return parse_datetime(text)
+            except (ISO8601Error, ValueError) as exception:
+                raise ParsingError('Could not parse "{}" as absolute expiry.'.format(text)) from exception
         elif tag == QName(NAMESPACE_EPP, 'relative'):
-            result = parse_duration(text)
+            try:
+                result = parse_duration(text)
+            except (ISO8601Error, ValueError) as exception:
+                raise ParsingError('Could not parse "{}" as relative expiry.'.format(text)) from exception
             if isinstance(result, Duration):
                 result = result.totimedelta(datetime.now())
             return result
