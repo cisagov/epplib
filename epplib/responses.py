@@ -31,6 +31,21 @@ NAMESPACES = {'epp': NAMESPACE_EPP}
 GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
 
 
+class ParsingError(Exception):
+    """Error to indicate a failure while parsing of the EPP response."""
+
+    def __init__(self, *args, raw_response: Any = None):
+        self.raw_response = raw_response
+        super().__init__(*args)
+
+    def __str__(self):
+        if self.raw_response is None:
+            appendix = ''
+        else:
+            appendix = 'Raw response:\n{!r}'.format(self.raw_response)
+        return super().__str__() + appendix
+
+
 class Response(ABC):
     """Base class for responses to EPP commands."""
 
@@ -55,7 +70,10 @@ class Response(ABC):
             raise ValueError('Root element has to be "epp". Found: {}'.format(root.tag))
 
         payload = root[0]
-        data = cls._parse_payload(payload)
+        try:
+            data = cls._parse_payload(payload)
+        except Exception as exception:
+            raise ParsingError(raw_response=raw_response) from exception
         return cls(**data)
 
     @classmethod

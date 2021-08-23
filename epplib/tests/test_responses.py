@@ -21,6 +21,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Mapping, cast
 from unittest import TestCase
+from unittest.mock import patch
 
 from freezegun import freeze_time
 from isodate import parse_datetime
@@ -28,7 +29,7 @@ from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE_EPP
-from epplib.responses import Greeting, Response
+from epplib.responses import Greeting, ParsingError, Response
 
 BASE_DATA_PATH = Path(__file__).parent / 'data'
 SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
@@ -48,6 +49,13 @@ class DummyResponse(Response):
     @classmethod
     def _parse_payload(cls, element: Element) -> Mapping[str, str]:
         return {'tag': element.tag}
+
+
+class TestParsingError(TestCase):
+    def test_str(self):
+        self.assertEqual(str(ParsingError()), '')
+        self.assertEqual(str(ParsingError('Gazpacho!')), 'Gazpacho!')
+        self.assertEqual(str(ParsingError(raw_response='Gazpacho!')), "Raw response:\n'Gazpacho!'")
 
 
 class TestResponse(TestCase):
@@ -78,6 +86,16 @@ class TestResponse(TestCase):
         message = "Element '{urn:ietf:params:xml:ns:epp-1.0}invalid': This element is not expected\\."
         with self.assertRaisesRegex(DocumentInvalid, message):
             DummyResponse.parse(invalid, SCHEMA)
+
+    @patch('epplib.tests.test_responses.DummyResponse._parse_payload')
+    def test_wrap_exceptions(self, mock_parse):
+        mock_parse.side_effect = ValueError('It is broken!')
+        data = b'''<?xml version="1.0" encoding="UTF-8"?>
+                   <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+                       <dummy/>
+                   </epp>'''
+        with self.assertRaisesRegex(ParsingError, '<dummy\\/>'):
+            DummyResponse.parse(data)
 
     def test_find_text(self):
         element = EM.svcMenu(EM.lang('en'), EM.version())
