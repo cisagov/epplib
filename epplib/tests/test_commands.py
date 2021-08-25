@@ -16,14 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
+from pathlib import Path
 from typing import Any, Dict
 from unittest import TestCase
 
-from lxml.etree import Element, QName, fromstring
+from lxml.etree import DocumentInvalid, Element, QName, XMLSchema, fromstring
 
 from epplib.commands import Hello, Request
 from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI
 from epplib.responses import Response
+
+DUMMY_NAMESPACE = 'dummy:name:space'
+SCHEMA = XMLSchema(file=str(Path(__file__).parent / 'data/schemas/all-2.4.1.xsd'))
 
 
 class DummyResponse(Response):
@@ -36,7 +40,7 @@ class DummyRequest(Request):
     response_class = DummyResponse
 
     def _get_payload(self) -> Element:
-        return Element('dummy')
+        return Element(QName(DUMMY_NAMESPACE, 'dummy'))
 
 
 class TestRequest(TestCase):
@@ -57,10 +61,17 @@ class TestRequest(TestCase):
     def test_get_content(self):
         root = fromstring(DummyRequest().xml())
         self.assertEqual(len(root), 1)
-        self.assertEqual(root[0].tag, QName(NAMESPACE_EPP, 'dummy'))
+        self.assertEqual(root[0].tag, QName(DUMMY_NAMESPACE, 'dummy'))
+
+    def test_validate(self):
+        with self.assertRaises(DocumentInvalid):
+            DummyRequest().xml(SCHEMA)
 
 
 class TestHello(TestCase):
+    def test_valid(self):
+        Hello().xml(SCHEMA)
+
     def test_tag(self):
         root = fromstring(Hello().xml())
         self.assertEqual(len(root), 1)
