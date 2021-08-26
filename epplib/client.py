@@ -18,12 +18,12 @@
 
 """A client to send EPP commands and receive responses."""
 from os import PathLike
-from typing import Type, Union
+from typing import Optional, Type, Union
 
 from lxml.etree import XMLSchema  # nosec - TODO: Fix lxml security issues
 
 from epplib.commands import Request
-from epplib.responses import Response
+from epplib.responses import Greeting, Response
 from epplib.transport import Transport
 
 PathType = Union[str, PathLike]
@@ -34,6 +34,8 @@ class Client:
 
     Attributes:
         transport: A transport object which is used for communication with the EPP server.
+        schema: A XML schema used to validate Responses. No validation is done if schema is None.
+        greeting: The last Greeting received from the EPP server. None if no Greeting was received yet.
     """
 
     def __init__(self, transport: Transport, schema: XMLSchema = None):
@@ -45,6 +47,7 @@ class Client:
         """
         self.transport = transport
         self.schema = schema
+        self.greeting: Optional[Greeting] = None
 
     def __enter__(self):
         self.connect()
@@ -54,8 +57,12 @@ class Client:
         self.close()
 
     def connect(self):
-        """Open the connection to the EPP server."""
+        """Open the connection to the EPP server.
+
+        After the connection is opened the server sends Greeting which is automaticaly received and stored.
+        """
         self.transport.connect()
+        self._receive(Greeting)
 
     def close(self):
         """Close the connection gracefully."""
@@ -70,9 +77,9 @@ class Client:
         message = request.xml(self.schema)
         self.transport.send(message)
 
-        return self.receive(request.response_class)
+        return self._receive(request.response_class)
 
-    def receive(self, response_class: Type[Response]) -> Response:
+    def _receive(self, response_class: Type[Response]) -> Response:
         """Receive a response from the server (possibly without sending a command).
 
         Args:
@@ -80,4 +87,8 @@ class Client:
         """
         response_raw = self.transport.receive()
         response_parsed = response_class.parse(response_raw, self.schema)
+
+        if isinstance(response_parsed, Greeting):
+            self.greeting = response_parsed
+
         return response_parsed
