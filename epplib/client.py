@@ -20,7 +20,7 @@
 from os import PathLike
 from typing import Optional, Type, Union
 
-from lxml.etree import XMLSchema  # nosec - TODO: Fix lxml security issues
+from lxml.etree import XMLSchema
 
 from epplib.commands import Request
 from epplib.responses import Greeting, Response

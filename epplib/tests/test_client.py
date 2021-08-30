@@ -63,7 +63,7 @@ class DummyResponse(Response):
         return cls(raw_response=raw_response, schema=schema)
 
     @classmethod
-    def _parse_payload(cls, element: Element) -> Dict[str, Any]:
+    def _extract_payload(cls, element: Element) -> Dict[str, Any]:
         pass  # pragma: no cover
 
 
