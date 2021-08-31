@@ -26,6 +26,9 @@ def safe_parse(raw_xml: bytes) -> Element:
 
     Args:
         raw_xml: The raw XML response which will be parsed.
+
+    Raises:
+        ValueError: If the XML document contains doctype.
     """
     parser = XMLParser(no_network=True, resolve_entities=False)
     parsed = fromstring(raw_xml, parser=parser)  # nosec - It should be safe with resolve_entities=False.

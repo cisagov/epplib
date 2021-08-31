@@ -68,6 +68,15 @@ class Response(ABC):
         Args:
             raw_response: The raw XML response which will be parsed into the Response object.
             schema: A XML schema used to validate the parsed Response. No validation is done if schema is None.
+
+        Returns:
+            Dataclass representing the EPP response.
+
+        Raises:
+            ValueError: If the root tag is not "epp" or if the tag representing the type of the response is not the one
+                expected by the parser.
+            ParsingError: If parsing fails for whatever reason. ParsingError wraps the original exceptions and adds the
+                raw data received from the server to ease the debugging.
         """
         root = safe_parse(raw_response)
 
@@ -236,6 +245,10 @@ class Greeting(Response):
 
         Returns:
             Extracted expiry expressed as either a point in time or duration until the expiry.
+
+        Raises:
+            ParsingError: If parsing of the expiry date fails.
+            ValueError: If expiry is found but it does not contain "absolute" or "relative" subelement.
         """
         if element is None:
             return None
