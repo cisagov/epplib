@@ -23,7 +23,7 @@ from typing import List, Optional, Type
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
-from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI, XSI_SCHEMA_LOCATION
+from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI, SCHEMA_LOCATION_XSI
 from epplib.responses import Greeting, Response, Result
 
 
@@ -37,7 +37,7 @@ class Request(ABC):
             The XML representation of the Request.
         """
         root = Element(QName(NAMESPACE_EPP, 'epp'))
-        root.set(QName(NAMESPACE_XSI, 'schemaLocation'), XSI_SCHEMA_LOCATION)
+        root.set(QName(NAMESPACE_XSI, 'schemaLocation'), SCHEMA_LOCATION_XSI)
         root.append(self._get_payload(tr_id=tr_id))
 
         document = ElementTree(root)

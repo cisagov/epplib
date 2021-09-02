@@ -21,4 +21,4 @@
 NAMESPACE_EPP = 'urn:ietf:params:xml:ns:epp-1.0'
 NAMESPACE_XSI = 'http://www.w3.org/2001/XMLSchema-instance'
 
-XSI_SCHEMA_LOCATION = 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd'
+SCHEMA_LOCATION_XSI = 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd'
