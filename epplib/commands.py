@@ -23,7 +23,8 @@ from typing import List, Optional, Type
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
-from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI, SCHEMA_LOCATION_XSI
+from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_DOMAIN, NAMESPACE_XSI, SCHEMA_LOCATION_NIC_DOMAIN,
+                              SCHEMA_LOCATION_XSI)
 from epplib.responses import Greeting, Response, Result
 
 
@@ -164,3 +165,31 @@ class Logout(Command):
             Element with the Logout specific payload.
         """
         return Element(QName(NAMESPACE_EPP, 'logout'))
+
+
+@dataclass
+class CheckDomain(Command):
+    """EPP Domain Check command.
+
+    Attributes:
+        domains: List of domains to check.
+    """
+
+    response_class = Result
+
+    domains: List[str]
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for CheckDomain.
+
+        Returns:
+            Element with the Login specific payload.
+        """
+        root = Element(QName(NAMESPACE_EPP, 'check'))
+
+        domain_check = SubElement(root, QName(NAMESPACE_NIC_DOMAIN, 'check'))
+        domain_check.set(QName(NAMESPACE_XSI, 'schemaLocation'), SCHEMA_LOCATION_NIC_DOMAIN)
+        for domain in self.domains:
+            SubElement(domain_check, QName(NAMESPACE_NIC_DOMAIN, 'name')).text = domain
+
+        return root
