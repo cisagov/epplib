@@ -19,7 +19,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Mapping, cast
+from typing import ClassVar, Mapping, cast
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -40,7 +40,8 @@ EM = ElementMaker(namespace=NAMESPACE_EPP, nsmap={'epp': NAMESPACE_EPP})
 @dataclass
 class DummyResponse(Response):
 
-    tag: str
+    payload_tag: ClassVar = QName(NAMESPACE_EPP, 'dummy')
+    payload: str
 
     @classmethod
     def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'DummyResponse':
@@ -48,7 +49,7 @@ class DummyResponse(Response):
 
     @classmethod
     def _extract_payload(cls, element: Element) -> Mapping[str, str]:
-        return {'tag': element.tag}
+        return {'payload': element.tag}
 
 
 class TestParsingError(TestCase):
@@ -66,7 +67,7 @@ class TestResponse(TestCase):
                    </epp>'''
 
         response = DummyResponse.parse(data)
-        self.assertEqual(response.tag, QName(NAMESPACE_EPP, 'dummy'))
+        self.assertEqual(response.payload, QName(NAMESPACE_EPP, 'dummy'))
 
     def test_raise_if_not_epp(self):
         data = b'''<?xml version="1.0" encoding="UTF-8"?>
@@ -75,6 +76,19 @@ class TestResponse(TestCase):
                    </other>'''
 
         with self.assertRaisesRegex(ValueError, 'Root element has to be "epp"'):
+            DummyResponse.parse(data)
+
+    def test_raise_if_unexpected_tag(self):
+        data = b'''<?xml version="1.0" encoding="UTF-8"?>
+                   <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+                       <unexpected/>
+                   </epp>'''
+
+        message = 'Expected {} tag\\. Found {} instead\\.'.format(
+            QName(NAMESPACE_EPP, 'dummy'),
+            QName(NAMESPACE_EPP, 'unexpected')
+        )
+        with self.assertRaisesRegex(ValueError, message):
             DummyResponse.parse(data)
 
     def test_parse_with_schema(self):
