@@ -22,7 +22,7 @@ from unittest import TestCase
 
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema, fromstring
 
-from epplib.commands import Command, Hello, Login, Request
+from epplib.commands import Command, Hello, Login, Logout, Request
 from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI
 from epplib.responses import Response
 from epplib.utils import safe_parse
@@ -33,11 +33,34 @@ NSMAP = {'epp': NAMESPACE_EPP, 'dm': DUMMY_NAMESPACE}
 SCHEMA = XMLSchema(file=str(Path(__file__).parent / 'data/schemas/all-2.4.1.xsd'))
 
 
-def assert_request_valid(request_class: Type[Request], params):
-    """Assert that the generated XML complies with the schema."""
-    request = request_class(**params)  # type: ignore
-    xml = request.xml(tr_id='tr_id_123')
-    SCHEMA.assertValid(safe_parse(xml))
+class XMLTestCase(TestCase):
+    """TestCase with aditional methods for testing xml trees."""
+
+    def assertRequestValid(self, request_class: Type[Request], params: Dict[str, Any]):
+        """Assert that the generated XML complies with the schema."""
+        request = request_class(**params)  # type: ignore
+        xml = request.xml(tr_id='tr_id_123')
+        SCHEMA.assertValid(safe_parse(xml))
+
+    def assertElement(self, root: Element, path: str, text: str = None, attrib: Dict[str, Any] = None,
+                      children: int = None):
+        found = root.findall(path, namespaces=NSMAP)
+        self.assertEqual(len(found), 1)
+        element = found[0]
+        self.assertEqual(element.attrib, attrib or {})
+        self.assertEqual(element.text, text)
+        if children is not None:
+            self.assertEqual(len(element), children)
+
+    def assertManyElements(self, root: Element, path: str, text: List[str] = None):
+        found = root.findall(path, namespaces=NSMAP)
+        self.assertEqual(sorted(text or []), sorted([element.text for element in found]))
+        for element in found:
+            self.assertEqual(element.attrib, {})
+
+    def assertNotPresent(self, root: Element, path: str):
+        found = root.findall(path, namespaces=NSMAP)
+        self.assertEqual(len(found), 0)
 
 
 class DummyResponse(Response):
@@ -85,9 +108,9 @@ class TestRequest(TestCase):
             DummyRequest().xml(schema=SCHEMA)
 
 
-class TestHello(TestCase):
+class TestHello(XMLTestCase):
     def test_valid(self):
-        assert_request_valid(Hello, {})
+        self.assertRequestValid(Hello, {})
 
     def test_tag(self):
         root = fromstring(Hello().xml())
@@ -131,7 +154,7 @@ class TestCommand(TestCase):
         )
 
 
-class TestLogin(TestCase):
+class TestLogin(XMLTestCase):
 
     params: Dict[str, Any] = {
         'cl_id': 'client id',
@@ -143,50 +166,43 @@ class TestLogin(TestCase):
         'ext_uris': ['http://www.nic.cz/xml/epp/enumval-1.2'],
     }
 
-    def _assert_element(self, root: Element, path: str, text: str = None, attrib: Dict[str, Any] = None):
-        found = root.findall(path, namespaces=NSMAP)
-        self.assertEqual(len(found), 1)
-        element = found[0]
-        self.assertEqual(element.attrib, attrib or {})
-        self.assertEqual(element.text, text)
-
-    def _assert_many_elements(self, root: Element, path: str, text: List[str] = None):
-        found = root.findall(path, namespaces=NSMAP)
-        self.assertEqual(sorted(text or []), sorted([element.text for element in found]))
-        for element in found:
-            self.assertEqual(element.attrib, {})
-
-    def _assert_not_present(self, root: Element, path: str):
-        found = root.findall(path, namespaces=NSMAP)
-        self.assertEqual(len(found), 0)
-
     def test_valid_all_params(self):
-        assert_request_valid(Login, self.params)
+        self.assertRequestValid(Login, self.params)
 
     def test_valid_required_params_only(self):
-        assert_request_valid(Login, {k: self.params[k] for k in ['cl_id', 'password', 'obj_uris']})
+        self.assertRequestValid(Login, {k: self.params[k] for k in ['cl_id', 'password', 'obj_uris']})
 
     def test_data_full(self):
         root = fromstring(Login(**self.params).xml())
-        self._assert_element(root, './epp:command/epp:login')
-        self._assert_element(root, './epp:command/epp:login/epp:clID', self.params['cl_id'])
-        self._assert_element(root, './epp:command/epp:login/epp:pw', self.params['password'])
-        self._assert_element(root, './epp:command/epp:login/epp:newPW', self.params['new_password'])
-        self._assert_element(root, './epp:command/epp:login/epp:options/epp:version', self.params['version'])
-        self._assert_element(root, './epp:command/epp:login/epp:options/epp:lang', self.params['lang'])
-        self._assert_many_elements(root, './epp:command/epp:login/epp:svcs/epp:objURI', self.params['obj_uris'])
-        self._assert_many_elements(
+        self.assertElement(root, './epp:command/epp:login')
+        self.assertElement(root, './epp:command/epp:login/epp:clID', self.params['cl_id'])
+        self.assertElement(root, './epp:command/epp:login/epp:pw', self.params['password'])
+        self.assertElement(root, './epp:command/epp:login/epp:newPW', self.params['new_password'])
+        self.assertElement(root, './epp:command/epp:login/epp:options/epp:version', self.params['version'])
+        self.assertElement(root, './epp:command/epp:login/epp:options/epp:lang', self.params['lang'])
+        self.assertManyElements(root, './epp:command/epp:login/epp:svcs/epp:objURI', self.params['obj_uris'])
+        self.assertManyElements(
             root, './epp:command/epp:login/epp:svcs/epp:svcExtension/epp:extURI', self.params['ext_uris']
         )
 
     def test_data_minimal(self):
         minimal_params = {k: self.params[k] for k in ['cl_id', 'password', 'obj_uris']}
         root = fromstring(Login(**minimal_params).xml())
-        self._assert_element(root, './epp:command/epp:login')
-        self._assert_element(root, './epp:command/epp:login/epp:clID', self.params['cl_id'])
-        self._assert_element(root, './epp:command/epp:login/epp:pw', self.params['password'])
-        self._assert_not_present(root, './epp:command/epp:login/epp:newPW')
-        self._assert_element(root, './epp:command/epp:login/epp:options/epp:version', '1.0')
-        self._assert_element(root, './epp:command/epp:login/epp:options/epp:lang', 'en')
-        self._assert_many_elements(root, './epp:command/epp:login/epp:svcs/epp:objURI', self.params['obj_uris'])
-        self._assert_not_present(root, './epp:command/epp:login/epp:svcs/epp:svcExtension/epp:extURI')
+        self.assertElement(root, './epp:command/epp:login')
+        self.assertElement(root, './epp:command/epp:login/epp:clID', self.params['cl_id'])
+        self.assertElement(root, './epp:command/epp:login/epp:pw', self.params['password'])
+        self.assertNotPresent(root, './epp:command/epp:login/epp:newPW')
+        self.assertElement(root, './epp:command/epp:login/epp:options/epp:version', '1.0')
+        self.assertElement(root, './epp:command/epp:login/epp:options/epp:lang', 'en')
+        self.assertManyElements(root, './epp:command/epp:login/epp:svcs/epp:objURI', self.params['obj_uris'])
+        self.assertNotPresent(root, './epp:command/epp:login/epp:svcs/epp:svcExtension/epp:extURI')
+
+
+class TestLogout(XMLTestCase):
+
+    def test_valid(self):
+        self.assertRequestValid(Logout, {})
+
+    def test_data(self):
+        root = fromstring(Logout().xml())
+        self.assertElement(root, './epp:command/epp:logout', children=0)

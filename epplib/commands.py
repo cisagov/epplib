@@ -149,3 +149,18 @@ class Login(Command):
                 SubElement(svc_extension, QName(NAMESPACE_EPP, 'extURI')).text = uri
 
         return root
+
+
+@dataclass
+class Logout(Command):
+    """EPP Logout command."""
+
+    response_class = Result
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for Logout.
+
+        Returns:
+            Element with the Logout specific payload.
+        """
+        return Element(QName(NAMESPACE_EPP, 'logout'))
