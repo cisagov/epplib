@@ -29,7 +29,7 @@ from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE_EPP
-from epplib.responses import Greeting, ParsingError, Response, Result, ResultCheckDomain
+from epplib.responses import CheckContactResult, CheckDomainResult, Greeting, ParsingError, Response, Result
 
 BASE_DATA_PATH = Path(__file__).parent / 'data'
 SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
@@ -40,7 +40,7 @@ EM = ElementMaker(namespace=NAMESPACE_EPP, nsmap={'epp': NAMESPACE_EPP})
 @dataclass
 class DummyResponse(Response):
 
-    payload_tag: ClassVar = QName(NAMESPACE_EPP, 'dummy')
+    _payload_tag: ClassVar = QName(NAMESPACE_EPP, 'dummy')
     payload: str
 
     @classmethod
@@ -57,6 +57,47 @@ class TestParsingError(TestCase):
         self.assertEqual(str(ParsingError()), '')
         self.assertEqual(str(ParsingError('Gazpacho!')), 'Gazpacho!')
         self.assertEqual(str(ParsingError(raw_response='Gazpacho!')), "Raw response:\n'Gazpacho!'")
+
+
+class TestParseXMLMixin(TestCase):
+    def test_find_text(self):
+        element = EM.svcMenu(EM.lang('en'), EM.version())
+        self.assertEqual(Response._find_text(element, './epp:lang'), 'en')
+        self.assertEqual(Response._find_text(element, './epp:version'), '')
+        self.assertIsNone(Response._find_text(element, './epp:missing'))
+
+    def test_find_all_text(self):
+        element = EM.svcMenu(EM.lang('en'), EM.lang('cs'), EM.version())
+        self.assertEqual(Response._find_all_text(element, './epp:lang'), ['en', 'cs'])
+        self.assertEqual(Response._find_all_text(element, './epp:version'), [''])
+        self.assertEqual(Response._find_all_text(element, './epp:missing'), [])
+
+    def test_find_attrib(self):
+        element = EM.response(EM.result(code='1000'))
+        self.assertEqual(Response._find_attrib(element, './epp:result', 'code'), '1000')
+        self.assertEqual(Response._find_attrib(element, './epp:result', 'other'), None)
+        self.assertEqual(Response._find_attrib(element, './epp:other', 'code'), None)
+
+    def test_find_child(self):
+        element = EM.statement(EM.purpose(EM.admin()))
+        self.assertEqual(Response._find_child(element, './epp:purpose'), 'admin')
+        self.assertEqual(Response._find_child(element, './epp:recipient'), None)
+
+    def test_find_children(self):
+        element = EM.statement(EM.purpose(EM.admin(), EM.prov()))
+        self.assertEqual(Response._find_children(element, './epp:purpose'), ['admin', 'prov'])
+        self.assertEqual(Response._find_children(element, './epp:recipient'), [])
+
+    def test_optional_int(self):
+        self.assertEqual(Result._optional_int('1'), 1)
+        self.assertEqual(Result._optional_int(None), None)
+
+    def test_str_to_bool(self):
+        self.assertEqual(Result._str_to_bool(None), None)
+        self.assertEqual(Result._str_to_bool('1'), True)
+        self.assertEqual(Result._str_to_bool('0'), False)
+        with self.assertRaisesRegex(ValueError, 'Value "other" is not in the list of known boolean values\\.'):
+            Result._str_to_bool('other')
 
 
 class TestResponse(TestCase):
@@ -110,34 +151,6 @@ class TestResponse(TestCase):
                    </epp>'''
         with self.assertRaisesRegex(ParsingError, '<dummy\\/>'):
             DummyResponse.parse(data)
-
-    def test_find_text(self):
-        element = EM.svcMenu(EM.lang('en'), EM.version())
-        self.assertEqual(Response._find_text(element, './epp:lang'), 'en')
-        self.assertEqual(Response._find_text(element, './epp:version'), '')
-        self.assertIsNone(Response._find_text(element, './epp:missing'))
-
-    def test_find_all_text(self):
-        element = EM.svcMenu(EM.lang('en'), EM.lang('cs'), EM.version())
-        self.assertEqual(Response._find_all_text(element, './epp:lang'), ['en', 'cs'])
-        self.assertEqual(Response._find_all_text(element, './epp:version'), [''])
-        self.assertEqual(Response._find_all_text(element, './epp:missing'), [])
-
-    def test_find_attrib(self):
-        element = EM.response(EM.result(code='1000'))
-        self.assertEqual(Response._find_attrib(element, './epp:result', 'code'), '1000')
-        self.assertEqual(Response._find_attrib(element, './epp:result', 'other'), None)
-        self.assertEqual(Response._find_attrib(element, './epp:other', 'code'), None)
-
-    def test_find_child(self):
-        element = EM.statement(EM.purpose(EM.admin()))
-        self.assertEqual(Response._find_child(element, './epp:purpose'), 'admin')
-        self.assertEqual(Response._find_child(element, './epp:recipient'), None)
-
-    def test_find_children(self):
-        element = EM.statement(EM.purpose(EM.admin(), EM.prov()))
-        self.assertEqual(Response._find_children(element, './epp:purpose'), ['admin', 'prov'])
-        self.assertEqual(Response._find_children(element, './epp:recipient'), [])
 
 
 class TestGreeting(TestCase):
@@ -244,31 +257,38 @@ class TestResult(TestCase):
         self.assertEqual(result.cl_tr_id, 'sdmj001#17-03-06at18:48:03')
         self.assertEqual(result.sv_tr_id, 'ReqID-0000126633')
 
-    def test_optional_int(self):
-        self.assertEqual(Result._optional_int('1'), 1)
-        self.assertEqual(Result._optional_int(None), None)
 
-    def test_str_to_bool(self):
-        self.assertEqual(Result._str_to_bool(None), None)
-        self.assertEqual(Result._str_to_bool('1'), True)
-        self.assertEqual(Result._str_to_bool('0'), False)
-        with self.assertRaisesRegex(ValueError, 'Value "other" is not in the list of known boolean values\\.'):
-            Result._str_to_bool('other')
-
-
-class TestResultCheckDomain(TestCase):
+class TestCheckDomainResult(TestCase):
 
     def test_parse(self):
         xml = (BASE_DATA_PATH / 'responses/result_check_domain.xml').read_bytes()
-        result = ResultCheckDomain.parse(xml, SCHEMA)
+        result = CheckDomainResult.parse(xml, SCHEMA)
         expected = [
-            ResultCheckDomain.Domain('mydomain.cz', True),
-            ResultCheckDomain.Domain('somedomain.cz', False, 'already registered.'),
+            CheckDomainResult.Domain('mydomain.cz', True),
+            CheckDomainResult.Domain('somedomain.cz', False, 'already registered.'),
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(ResultCheckDomain, result).data, expected)
+        self.assertEqual(cast(CheckDomainResult, result).data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
-        result = ResultCheckDomain.parse(xml, SCHEMA)
+        result = CheckDomainResult.parse(xml, SCHEMA)
+        self.assertEqual(result.code, 2002)
+
+
+class TestCheckContactResult(TestCase):
+
+    def test_parse(self):
+        xml = (BASE_DATA_PATH / 'responses/result_check_contact.xml').read_bytes()
+        result = CheckContactResult.parse(xml, SCHEMA)
+        expected = [
+            CheckContactResult.Contact('CID-MYOWN', False, 'already registered.'),
+            CheckContactResult.Contact('CID-NONE', True),
+        ]
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(CheckContactResult, result).data, expected)
+
+    def test_parse_error(self):
+        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        result = CheckContactResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)

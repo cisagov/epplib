@@ -20,17 +20,19 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, ClassVar, Dict, List, Mapping, Optional, Sequence, Union, cast
+from typing import Any, ClassVar, Generic, List, Mapping, Optional, Sequence, Type, TypeVar, Union, cast
 
 from isodate import Duration, parse_datetime, parse_duration
 from isodate.isoerror import ISO8601Error
 from lxml.etree import Element, QName, XMLSchema
 
-from epplib.constants import NAMESPACE_EPP, NAMESPACE_NIC_DOMAIN
+from epplib.constants import NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN
 from epplib.utils import safe_parse
 
-NAMESPACES = {'epp': NAMESPACE_EPP, 'domain': NAMESPACE_NIC_DOMAIN}
+NAMESPACES = {'epp': NAMESPACE_EPP, 'contact': NAMESPACE_NIC_CONTACT, 'domain': NAMESPACE_NIC_DOMAIN}
 GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
+
+T = TypeVar('T', bound='ResultData')
 
 
 class ParsingError(Exception):
@@ -48,14 +50,66 @@ class ParsingError(Exception):
         return super().__str__() + appendix
 
 
-class Response(ABC):
+class ParseXMLMixin:
+    """Mixin to simplify XML parsing."""
+
+    @staticmethod
+    def _find_text(element: Element, path: str) -> str:
+        return element.findtext(path, namespaces=NAMESPACES)
+
+    @staticmethod
+    def _find_all_text(element: Element, path: str) -> List[str]:
+        return [(elem.text or '') for elem in element.findall(path, namespaces=NAMESPACES)]
+
+    @staticmethod
+    def _find_attrib(element: Element, path: str, attrib: str) -> Optional[str]:
+        found = element.find(path, namespaces=NAMESPACES)
+        if found is not None:
+            return found.attrib.get(attrib)
+        else:
+            return None
+
+    @staticmethod
+    def _find_child(element: Element, path: str) -> Optional[str]:
+        found_tags = Response._find_children(element, path)
+        if len(found_tags) > 0:
+            return found_tags[0]
+        else:
+            return None
+
+    @staticmethod
+    def _find_children(element: Element, path: str) -> List[str]:
+        nodes = element.findall(path + '/*', namespaces=NAMESPACES)
+        return [QName(item.tag).localname for item in nodes]
+
+    @staticmethod
+    def _optional_int(value: Optional[str]) -> Optional[int]:
+        if value is None:
+            return None
+        else:
+            return int(value)
+
+    @staticmethod
+    def _str_to_bool(value: Optional[str]) -> Optional[bool]:
+        """Convert str '0' or '1' to the corresponding bool value."""
+        if value is None:
+            return None
+        elif value == '1':
+            return True
+        elif value == '0':
+            return False
+        else:
+            raise ValueError('Value "{}" is not in the list of known boolean values.'.format(value))
+
+
+class Response(ParseXMLMixin, ABC):
     """Base class for responses to EPP commands.
 
     Attributes:
         tag: Expected tag enclosing the response payload.
     """
 
-    payload_tag: ClassVar[QName]
+    _payload_tag: ClassVar[QName]
 
     # Concrete Responses are supposed to be dataclasses. ABC can not be a dataclass. We need to specify init for typing.
     def __init__(self, *args, **kwargs):
@@ -87,8 +141,8 @@ class Response(ABC):
             raise ValueError('Root element has to be "epp". Found: {}'.format(root.tag))
 
         payload = root[0]
-        if payload.tag != cls.payload_tag:
-            raise ValueError('Expected {} tag. Found {} instead.'.format(cls.payload_tag, payload.tag))
+        if payload.tag != cls._payload_tag:
+            raise ValueError('Expected {} tag. Found {} instead.'.format(cls._payload_tag, payload.tag))
         try:
             data = cls._extract_payload(payload)
         except Exception as exception:
@@ -104,35 +158,6 @@ class Response(ABC):
         Args:
             element: Child element of the epp element.
         """
-
-    @staticmethod
-    def _find_text(element: Element, path: str) -> str:
-        return element.findtext(path, namespaces=NAMESPACES)
-
-    @staticmethod
-    def _find_all_text(element: Element, path: str) -> List[str]:
-        return [(elem.text or '') for elem in element.findall(path, namespaces=NAMESPACES)]
-
-    @staticmethod
-    def _find_attrib(element: Element, path: str, attrib: str) -> Optional[str]:
-        found = element.find(path, namespaces=NAMESPACES)
-        if found is not None:
-            return found.attrib.get(attrib)
-        else:
-            return None
-
-    @staticmethod
-    def _find_child(element: Element, path: str) -> Optional[str]:
-        found_tags = Response._find_children(element, path)
-        if len(found_tags) > 0:
-            return found_tags[0]
-        else:
-            return None
-
-    @staticmethod
-    def _find_children(element: Element, path: str) -> List[str]:
-        nodes = element.findall(path + '/*', namespaces=NAMESPACES)
-        return [QName(item.tag).localname for item in nodes]
 
 
 @dataclass
@@ -165,7 +190,7 @@ class Greeting(Response):
         recipient: List[str]
         retention: Optional[str]
 
-    payload_tag: ClassVar = QName(NAMESPACE_EPP, 'greeting')
+    _payload_tag: ClassVar = QName(NAMESPACE_EPP, 'greeting')
 
     sv_id: str
     sv_date: str
@@ -273,21 +298,33 @@ class Greeting(Response):
             raise ValueError('Expected expiry specification. Found "{}" instead.'.format(tag))
 
 
+class ResultData(ParseXMLMixin, ABC):
+    """Base class for data obtained from epp/response/resData element."""
+
+    @classmethod
+    @abstractmethod
+    def extract(cls, element: Element) -> 'ResultData':
+        """Extract params for own init from the element."""
+
+
 @dataclass
-class Result(Response):
+class Result(Response, Generic[T]):
     """EPP Result representation.
 
     Attributes:
         code: Code attribute of the epp/response/result element.
         message: Content of the epp/response/result/msg element.
+        data: Content of the epp/response/result/resData element.
         cl_tr_id: Content of the epp/response/trID/clTRID element.
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    payload_tag: ClassVar = QName(NAMESPACE_EPP, 'response')
+    _payload_tag: ClassVar = QName(NAMESPACE_EPP, 'response')
+    _res_data_class: ClassVar[Type[T]]
 
     code: int
     message: str
+    data: Sequence[T]
     cl_tr_id: str
     sv_tr_id: str
 
@@ -302,42 +339,61 @@ class Result(Response):
         return cast('Result', super().parse(raw_response, schema))
 
     @classmethod
-    def _extract_payload(cls, element: Element) -> Mapping[str, Union[None, int, str, List[Any]]]:
+    def _extract_payload(cls, element: Element) -> Mapping[str, Union[None, int, str, Sequence[Any]]]:
         """Extract the actual information from the response.
 
         Args:
             element: Child element of the epp element.
         """
-        data: Dict[str, Union[None, int, str]] = {
+        data = {
             'code': cls._optional_int(cls._find_attrib(element, './epp:result', 'code')),
             'message': cls._find_text(element, './epp:result/epp:msg'),
+            'data': cls._extract_data(element.find('./epp:resData', namespaces=NAMESPACES)),
             'cl_tr_id': cls._find_text(element, './epp:trID/epp:clTRID'),
             'sv_tr_id': cls._find_text(element, './epp:trID/epp:svTRID'),
         }
         return data
 
-    @staticmethod
-    def _optional_int(value: Optional[str]) -> Optional[int]:
-        if value is None:
-            return None
-        else:
-            return int(value)
+    @classmethod
+    def _extract_data(cls, element: Optional[Element]) -> Optional[Sequence[T]]:
+        """Extract the content of the resData element.
 
-    @staticmethod
-    def _str_to_bool(value: Optional[str]) -> Optional[bool]:
-        """Convert str '0' or '1' to the corresponding bool value."""
-        if value is None:
-            return None
-        elif value == '1':
-            return True
-        elif value == '0':
-            return False
-        else:
-            raise ValueError('Value "{}" is not in the list of known boolean values.'.format(value))
+        Args:
+            element: resData epp element.
+        """
+        return None
+
+
+class CheckResult(Result[T]):
+    """Represents EPP Result which responds to the Check command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        message: Content of the epp/response/result/msg element.
+        data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    _res_data_path: ClassVar[str]
+
+    @classmethod
+    def _extract_data(cls, element: Optional[Element]) -> Sequence[T]:
+        """Extract the content of the resData element.
+
+        Args:
+            element: resData epp element.
+        """
+        data = []
+        if element is not None:
+            for item in element.findall(cls._res_data_path, namespaces=NAMESPACES):
+                item_data = cls._res_data_class.extract(item)
+                data.append(item_data)
+        return data
 
 
 @dataclass
-class ResultCheckDomain(Result):
+class CheckDomainResult(CheckResult):
     """Represents EPP Result which responds to the Check domain command.
 
     Attributes:
@@ -349,7 +405,7 @@ class ResultCheckDomain(Result):
     """
 
     @dataclass
-    class Domain:
+    class Domain(ResultData):
         """Dataclass representing domain availability in the check domain result.
 
         Attributes:
@@ -362,26 +418,55 @@ class ResultCheckDomain(Result):
         available: Optional[bool]
         reason: Optional[str] = None
 
-    data: List[Domain]
+        @classmethod
+        def extract(cls, element: Element) -> 'CheckDomainResult.Domain':
+            """Extract params for own init from the element."""
+            params = (
+                cls._find_text(element, './domain:name'),
+                cls._str_to_bool(cls._find_attrib(element, './domain:name', 'avail')),
+                cls._find_text(element, './domain:reason'),
+            )
+            return cls(*params)
 
-    @classmethod
-    def _extract_payload(cls, element: Element) -> Mapping[str, Union[None, int, str, List[Any]]]:
-        payload = super()._extract_payload(element)
-        data = cls._extract_data(element.find('./epp:resData', namespaces=NAMESPACES))
-        return {**payload, 'data': data}
+    _res_data_path: ClassVar[str] = './domain:chkData/domain:cd'
+    _res_data_class: ClassVar = Domain
 
-    @classmethod
-    def _extract_data(cls, element: Optional[Element]) -> List[Domain]:
-        """Extract the content of the resData element.
 
-        Args:
-            element: resData epp element.
+@dataclass
+class CheckContactResult(CheckResult):
+    """Represents EPP Result which responds to the Check contact command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        message: Content of the epp/response/result/msg element.
+        data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    @dataclass
+    class Contact(ResultData):
+        """Dataclass representing contact availability in the check contact result.
+
+        Attributes:
+            id: Content of the epp/response/resData/chkData/cd/id element.
+            available: Avail attribute of the epp/response/resData/chkData/cd/id element.
+            reason: Content of the epp/response/resData/chkData/cd/reason element.
         """
-        data = []
-        if element is not None:
-            for cd in element.findall('./domain:chkData/domain:cd', namespaces=NAMESPACES):
-                name = cls._find_text(cd, './domain:name')
-                available = cls._str_to_bool(cls._find_attrib(cd, './domain:name', 'avail'))
-                reason = cls._find_text(cd, './domain:reason')
-                data.append(cls.Domain(name, available, reason))
-        return data
+
+        id: str
+        available: Optional[bool]
+        reason: Optional[str] = None
+
+        @classmethod
+        def extract(cls, element: Element) -> 'CheckContactResult.Contact':
+            """Extract params for own init from the element."""
+            params = (
+                cls._find_text(element, './contact:id'),
+                cls._str_to_bool(cls._find_attrib(element, './contact:id', 'avail')),
+                cls._find_text(element, './contact:reason'),
+            )
+            return cls(*params)
+
+    _res_data_path = './contact:chkData/contact:cd'
+    _res_data_class: ClassVar = Contact
