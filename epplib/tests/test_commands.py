@@ -16,14 +16,16 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
+from itertools import zip_longest
 from pathlib import Path
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, Type
 from unittest import TestCase
 
+from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema, fromstring
 
 from epplib.commands import Command, Hello, Login, Logout, Request
-from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI
+from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI, XSI_SCHEMA_LOCATION
 from epplib.responses import Response
 from epplib.utils import safe_parse
 
@@ -31,6 +33,14 @@ DUMMY_NAMESPACE = 'dummy:name:space'
 NSMAP = {'epp': NAMESPACE_EPP, 'dm': DUMMY_NAMESPACE}
 
 SCHEMA = XMLSchema(file=str(Path(__file__).parent / 'data/schemas/all-2.4.1.xsd'))
+EM = ElementMaker(namespace=NAMESPACE_EPP)
+
+
+def make_epp_root(*elements, **kwargs) -> Element:
+    """Create root element of EPP so we do not have to repeat boilerplate code."""
+    attrib = {QName(NAMESPACE_XSI, 'schemaLocation'): XSI_SCHEMA_LOCATION}
+    attrib.update(kwargs)
+    return EM.epp(*elements, attrib)
 
 
 class XMLTestCase(TestCase):
@@ -42,25 +52,12 @@ class XMLTestCase(TestCase):
         xml = request.xml(tr_id='tr_id_123')
         SCHEMA.assertValid(safe_parse(xml))
 
-    def assertElement(self, root: Element, path: str, text: str = None, attrib: Dict[str, Any] = None,
-                      children: int = None):
-        found = root.findall(path, namespaces=NSMAP)
-        self.assertEqual(len(found), 1)
-        element = found[0]
-        self.assertEqual(element.attrib, attrib or {})
-        self.assertEqual(element.text, text)
-        if children is not None:
-            self.assertEqual(len(element), children)
-
-    def assertManyElements(self, root: Element, path: str, text: List[str] = None):
-        found = root.findall(path, namespaces=NSMAP)
-        self.assertEqual(sorted(text or []), sorted([element.text for element in found]))
-        for element in found:
-            self.assertEqual(element.attrib, {})
-
-    def assertNotPresent(self, root: Element, path: str):
-        found = root.findall(path, namespaces=NSMAP)
-        self.assertEqual(len(found), 0)
+    def assertXMLEqual(self, doc_1: Element, doc_2: Element) -> None:
+        self.assertEqual(doc_1.tag, doc_2.tag)
+        self.assertEqual(doc_1.attrib, doc_2.attrib)
+        self.assertEqual(doc_1.text, doc_2.text)
+        for child_1, child_2 in zip_longest(doc_1, doc_2):
+            self.assertXMLEqual(child_1, child_2)
 
 
 class DummyResponse(Response):
@@ -112,16 +109,10 @@ class TestHello(XMLTestCase):
     def test_valid(self):
         self.assertRequestValid(Hello, {})
 
-    def test_tag(self):
+    def test_xml(self):
         root = fromstring(Hello().xml())
-        self.assertEqual(len(root), 1)
-        self.assertEqual(root[0].tag, QName(NAMESPACE_EPP, 'hello'))
-
-    def test_has_no_content(self):
-        root = fromstring(Hello().xml())
-        hello = root[0]
-        self.assertEqual(len(hello), 0)
-        self.assertEqual(len(hello.attrib), 0)
+        expected = make_epp_root(EM.hello())
+        self.assertXMLEqual(root, expected)
 
 
 class TestCommand(TestCase):
@@ -172,30 +163,48 @@ class TestLogin(XMLTestCase):
     def test_valid_required_params_only(self):
         self.assertRequestValid(Login, {k: self.params[k] for k in ['cl_id', 'password', 'obj_uris']})
 
-    def test_data_full(self):
+    def test_xml_full(self):
         root = fromstring(Login(**self.params).xml())
-        self.assertElement(root, './epp:command/epp:login')
-        self.assertElement(root, './epp:command/epp:login/epp:clID', self.params['cl_id'])
-        self.assertElement(root, './epp:command/epp:login/epp:pw', self.params['password'])
-        self.assertElement(root, './epp:command/epp:login/epp:newPW', self.params['new_password'])
-        self.assertElement(root, './epp:command/epp:login/epp:options/epp:version', self.params['version'])
-        self.assertElement(root, './epp:command/epp:login/epp:options/epp:lang', self.params['lang'])
-        self.assertManyElements(root, './epp:command/epp:login/epp:svcs/epp:objURI', self.params['obj_uris'])
-        self.assertManyElements(
-            root, './epp:command/epp:login/epp:svcs/epp:svcExtension/epp:extURI', self.params['ext_uris']
+        expected = make_epp_root(
+            EM.command(
+                EM.login(
+                    EM.clID(self.params['cl_id']),
+                    EM.pw(self.params['password']),
+                    EM.newPW(self.params['new_password']),
+                    EM.options(
+                        EM.version(self.params['version']),
+                        EM.lang(self.params['lang']),
+                    ),
+                    EM.svcs(
+                        *[EM.objURI(item) for item in self.params['obj_uris']],
+                        EM.svcExtension(
+                            *[EM.extURI(item) for item in self.params['ext_uris']],
+                        ),
+                    ),
+                ),
+            ),
         )
+        self.assertXMLEqual(root, expected)
 
-    def test_data_minimal(self):
+    def test_xml_minimal(self):
         minimal_params = {k: self.params[k] for k in ['cl_id', 'password', 'obj_uris']}
         root = fromstring(Login(**minimal_params).xml())
-        self.assertElement(root, './epp:command/epp:login')
-        self.assertElement(root, './epp:command/epp:login/epp:clID', self.params['cl_id'])
-        self.assertElement(root, './epp:command/epp:login/epp:pw', self.params['password'])
-        self.assertNotPresent(root, './epp:command/epp:login/epp:newPW')
-        self.assertElement(root, './epp:command/epp:login/epp:options/epp:version', '1.0')
-        self.assertElement(root, './epp:command/epp:login/epp:options/epp:lang', 'en')
-        self.assertManyElements(root, './epp:command/epp:login/epp:svcs/epp:objURI', self.params['obj_uris'])
-        self.assertNotPresent(root, './epp:command/epp:login/epp:svcs/epp:svcExtension/epp:extURI')
+        expected = make_epp_root(
+            EM.command(
+                EM.login(
+                    EM.clID(self.params['cl_id']),
+                    EM.pw(self.params['password']),
+                    EM.options(
+                        EM.version('1.0'),
+                        EM.lang('en'),
+                    ),
+                    EM.svcs(
+                        *[EM.objURI(item) for item in self.params['obj_uris']],
+                    ),
+                ),
+            ),
+        )
+        self.assertXMLEqual(root, expected)
 
 
 class TestLogout(XMLTestCase):
@@ -203,6 +212,7 @@ class TestLogout(XMLTestCase):
     def test_valid(self):
         self.assertRequestValid(Logout, {})
 
-    def test_data(self):
+    def test_xml(self):
         root = fromstring(Logout().xml())
-        self.assertElement(root, './epp:command/epp:logout', children=0)
+        expected = make_epp_root(EM.command(EM.logout))
+        self.assertXMLEqual(root, expected)
