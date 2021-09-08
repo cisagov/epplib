@@ -26,10 +26,10 @@ from isodate import Duration, parse_datetime, parse_duration
 from isodate.isoerror import ISO8601Error
 from lxml.etree import Element, QName, XMLSchema
 
-from epplib.constants import NAMESPACE_EPP
+from epplib.constants import NAMESPACE_EPP, NAMESPACE_NIC_DOMAIN
 from epplib.utils import safe_parse
 
-NAMESPACES = {'epp': NAMESPACE_EPP}
+NAMESPACES = {'epp': NAMESPACE_EPP, 'domain': NAMESPACE_NIC_DOMAIN}
 GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
 
 
@@ -302,7 +302,7 @@ class Result(Response):
         return cast('Result', super().parse(raw_response, schema))
 
     @classmethod
-    def _extract_payload(cls, element: Element) -> Dict[str, Union[None, int, str]]:
+    def _extract_payload(cls, element: Element) -> Mapping[str, Union[None, int, str, List[Any]]]:
         """Extract the actual information from the response.
 
         Args:
@@ -322,3 +322,66 @@ class Result(Response):
             return None
         else:
             return int(value)
+
+    @staticmethod
+    def _str_to_bool(value: Optional[str]) -> Optional[bool]:
+        """Convert str '0' or '1' to the corresponding bool value."""
+        if value is None:
+            return None
+        elif value == '1':
+            return True
+        elif value == '0':
+            return False
+        else:
+            raise ValueError('Value "{}" is not in the list of known boolean values.'.format(value))
+
+
+@dataclass
+class ResultCheckDomain(Result):
+    """Represents EPP Result which responds to the Check domain command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        message: Content of the epp/response/result/msg element.
+        data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    @dataclass
+    class Domain:
+        """Dataclass representing domain availability in the check domain result.
+
+        Attributes:
+            name: Content of the epp/response/resData/chkData/cd/name element.
+            available: Avail attribute of the epp/response/resData/chkData/cd/name element.
+            reason: Content of the epp/response/resData/chkData/cd/reason element.
+        """
+
+        name: str
+        available: Optional[bool]
+        reason: Optional[str] = None
+
+    data: List[Domain]
+
+    @classmethod
+    def _extract_payload(cls, element: Element) -> Mapping[str, Union[None, int, str, List[Any]]]:
+        payload = super()._extract_payload(element)
+        data = cls._extract_data(element.find('./epp:resData', namespaces=NAMESPACES))
+        return {**payload, 'data': data}
+
+    @classmethod
+    def _extract_data(cls, element: Optional[Element]) -> List[Domain]:
+        """Extract the content of the resData element.
+
+        Args:
+            element: resData epp element.
+        """
+        data = []
+        if element is not None:
+            for cd in element.findall('./domain:chkData/domain:cd', namespaces=NAMESPACES):
+                name = cls._find_text(cd, './domain:name')
+                available = cls._str_to_bool(cls._find_attrib(cd, './domain:name', 'avail'))
+                reason = cls._find_text(cd, './domain:reason')
+                data.append(cls.Domain(name, available, reason))
+        return data

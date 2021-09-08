@@ -29,7 +29,7 @@ from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE_EPP
-from epplib.responses import Greeting, ParsingError, Response, Result
+from epplib.responses import Greeting, ParsingError, Response, Result, ResultCheckDomain
 
 BASE_DATA_PATH = Path(__file__).parent / 'data'
 SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
@@ -247,3 +247,28 @@ class TestResult(TestCase):
     def test_optional_int(self):
         self.assertEqual(Result._optional_int('1'), 1)
         self.assertEqual(Result._optional_int(None), None)
+
+    def test_str_to_bool(self):
+        self.assertEqual(Result._str_to_bool(None), None)
+        self.assertEqual(Result._str_to_bool('1'), True)
+        self.assertEqual(Result._str_to_bool('0'), False)
+        with self.assertRaisesRegex(ValueError, 'Value "other" is not in the list of known boolean values\\.'):
+            Result._str_to_bool('other')
+
+
+class TestResultCheckDomain(TestCase):
+
+    def test_parse(self):
+        xml = (BASE_DATA_PATH / 'responses/result_check_domain.xml').read_bytes()
+        result = ResultCheckDomain.parse(xml, SCHEMA)
+        expected = [
+            ResultCheckDomain.Domain('mydomain.cz', True),
+            ResultCheckDomain.Domain('somedomain.cz', False, 'already registered.'),
+        ]
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(ResultCheckDomain, result).data, expected)
+
+    def test_parse_error(self):
+        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        result = ResultCheckDomain.parse(xml, SCHEMA)
+        self.assertEqual(result.code, 2002)

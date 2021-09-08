@@ -25,7 +25,7 @@ from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostr
 
 from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_DOMAIN, NAMESPACE_XSI, SCHEMA_LOCATION_NIC_DOMAIN,
                               SCHEMA_LOCATION_XSI)
-from epplib.responses import Greeting, Response, Result
+from epplib.responses import Greeting, Response, Result, ResultCheckDomain
 
 
 class Request(ABC):
@@ -175,7 +175,7 @@ class CheckDomain(Command):
         domains: List of domains to check.
     """
 
-    response_class = Result
+    response_class = ResultCheckDomain
 
     domains: List[str]
 
