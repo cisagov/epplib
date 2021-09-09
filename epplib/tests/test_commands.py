@@ -24,13 +24,14 @@ from unittest import TestCase
 from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema, fromstring
 
-from epplib.commands import Command, Hello, Login, Logout, Request
-from epplib.constants import NAMESPACE_EPP, NAMESPACE_XSI, XSI_SCHEMA_LOCATION
+from epplib.commands import CheckDomain, Command, Hello, Login, Logout, Request
+from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_DOMAIN, NAMESPACE_XSI, SCHEMA_LOCATION_NIC_DOMAIN,
+                              SCHEMA_LOCATION_XSI)
 from epplib.responses import Response
 from epplib.utils import safe_parse
 
 DUMMY_NAMESPACE = 'dummy:name:space'
-NSMAP = {'epp': NAMESPACE_EPP, 'dm': DUMMY_NAMESPACE}
+NSMAP = {'dm': DUMMY_NAMESPACE, 'epp': NAMESPACE_EPP, 'domain': NAMESPACE_NIC_DOMAIN}
 
 SCHEMA = XMLSchema(file=str(Path(__file__).parent / 'data/schemas/all-2.4.1.xsd'))
 EM = ElementMaker(namespace=NAMESPACE_EPP)
@@ -38,7 +39,7 @@ EM = ElementMaker(namespace=NAMESPACE_EPP)
 
 def make_epp_root(*elements, **kwargs) -> Element:
     """Create root element of EPP so we do not have to repeat boilerplate code."""
-    attrib = {QName(NAMESPACE_XSI, 'schemaLocation'): XSI_SCHEMA_LOCATION}
+    attrib = {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_XSI}
     attrib.update(kwargs)
     return EM.epp(*elements, attrib)
 
@@ -215,4 +216,26 @@ class TestLogout(XMLTestCase):
     def test_xml(self):
         root = fromstring(Logout().xml())
         expected = make_epp_root(EM.command(EM.logout))
+        self.assertXMLEqual(root, expected)
+
+
+class TestCheckDomain(XMLTestCase):
+    domains = ['domain.cz', 'other.com']
+
+    def test_valid(self):
+        self.assertRequestValid(CheckDomain, {'domains': self.domains})
+
+    def test_data(self):
+        root = fromstring(CheckDomain(self.domains).xml())
+        domain = ElementMaker(namespace=NAMESPACE_NIC_DOMAIN)
+        expected = make_epp_root(
+            EM.command(
+                EM.check(
+                    domain.check(
+                        {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_NIC_DOMAIN},
+                        *[domain.name(item) for item in self.domains]
+                    )
+                )
+            )
+        )
         self.assertXMLEqual(root, expected)

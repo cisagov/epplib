@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd">
+<response>
+   <result code="1000">
+      <msg>Command completed successfully</msg>
+   </result>
+   <resData>
+      <domain:chkData xmlns:domain="http://www.nic.cz/xml/epp/domain-1.4"
+       xsi:schemaLocation="http://www.nic.cz/xml/epp/domain-1.4 domain-1.4.2.xsd">
+         <domain:cd>
+            <domain:name avail="1">mydomain.cz</domain:name>
+         </domain:cd>
+         <domain:cd>
+            <domain:name avail="0">somedomain.cz</domain:name>
+            <domain:reason>already registered.</domain:reason>
+         </domain:cd>
+      </domain:chkData>
+   </resData>
+   <trID>
+      <clTRID>dnix002#17-07-11at11:23:46</clTRID>
+      <svTRID>ReqID-0000139726</svTRID>
+   </trID>
+</response>
+</epp>
