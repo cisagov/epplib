@@ -29,8 +29,8 @@ from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE_EPP
-from epplib.responses import (CheckContactResult, CheckDomainResult, CheckNssetResult, Greeting, ParsingError, Response,
-                              Result)
+from epplib.responses import (CheckContactResult, CheckDomainResult, CheckKeysetResult, CheckNssetResult, Greeting,
+                              ParsingError, Response, Result)
 
 BASE_DATA_PATH = Path(__file__).parent / 'data'
 SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
@@ -310,4 +310,22 @@ class TestResultCheckNsset(TestCase):
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
         result = CheckNssetResult.parse(xml, SCHEMA)
+        self.assertEqual(result.code, 2002)
+
+
+class TestResultCheckKeyset(TestCase):
+
+    def test_parse(self):
+        xml = (BASE_DATA_PATH / 'responses/result_check_keyset.xml').read_bytes()
+        result = CheckKeysetResult.parse(xml, SCHEMA)
+        expected = [
+            CheckKeysetResult.Keyset('KID-MYKEYSET', False, 'already registered.'),
+            CheckKeysetResult.Keyset('KID-NONE', True),
+        ]
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(CheckKeysetResult, result).data, expected)
+
+    def test_parse_error(self):
+        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        result = CheckKeysetResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
