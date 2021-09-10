@@ -24,9 +24,9 @@ from unittest import TestCase
 from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema, fromstring
 
-from epplib.commands import CheckDomain, Command, Hello, Login, Logout, Request
-from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_DOMAIN, NAMESPACE_XSI, SCHEMA_LOCATION_NIC_DOMAIN,
-                              SCHEMA_LOCATION_XSI)
+from epplib.commands import CheckContact, CheckDomain, Command, Hello, Login, Logout, Request
+from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_XSI,
+                              SCHEMA_LOCATION_NIC_CONTACT, SCHEMA_LOCATION_NIC_DOMAIN, SCHEMA_LOCATION_XSI)
 from epplib.responses import Response
 from epplib.utils import safe_parse
 
@@ -234,6 +234,28 @@ class TestCheckDomain(XMLTestCase):
                     domain.check(
                         {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_NIC_DOMAIN},
                         *[domain.name(item) for item in self.domains]
+                    )
+                )
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestCheckContact(XMLTestCase):
+    contacts = ['CID-MYOWN', 'CID-NONE']
+
+    def test_valid(self):
+        self.assertRequestValid(CheckContact, {'contacts': self.contacts})
+
+    def test_data(self):
+        root = fromstring(CheckContact(self.contacts).xml())
+        contact = ElementMaker(namespace=NAMESPACE_NIC_CONTACT)
+        expected = make_epp_root(
+            EM.command(
+                EM.check(
+                    contact.check(
+                        {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_NIC_CONTACT},
+                        *[contact.id(item) for item in self.contacts]
                     )
                 )
             )
