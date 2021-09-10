@@ -24,9 +24,10 @@ from unittest import TestCase
 from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema, fromstring
 
-from epplib.commands import CheckContact, CheckDomain, Command, Hello, Login, Logout, Request
-from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_XSI,
-                              SCHEMA_LOCATION_NIC_CONTACT, SCHEMA_LOCATION_NIC_DOMAIN, SCHEMA_LOCATION_XSI)
+from epplib.commands import CheckContact, CheckDomain, CheckNsset, Command, Hello, Login, Logout, Request
+from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_NSSET,
+                              NAMESPACE_XSI, SCHEMA_LOCATION_NIC_CONTACT, SCHEMA_LOCATION_NIC_DOMAIN,
+                              SCHEMA_LOCATION_NIC_NSSET, SCHEMA_LOCATION_XSI)
 from epplib.responses import Response
 from epplib.utils import safe_parse
 
@@ -256,6 +257,28 @@ class TestCheckContact(XMLTestCase):
                     contact.check(
                         {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_NIC_CONTACT},
                         *[contact.id(item) for item in self.contacts]
+                    )
+                )
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestCheckNsset(XMLTestCase):
+    nssets = ['NID-MYNSSET', 'NID-NONE']
+
+    def test_valid(self):
+        self.assertRequestValid(CheckNsset, {'nssets': self.nssets})
+
+    def test_data(self):
+        root = fromstring(CheckNsset(self.nssets).xml())
+        nsset = ElementMaker(namespace=NAMESPACE_NIC_NSSET)
+        expected = make_epp_root(
+            EM.command(
+                EM.check(
+                    nsset.check(
+                        {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_NIC_NSSET},
+                        *[nsset.id(item) for item in self.nssets]
                     )
                 )
             )

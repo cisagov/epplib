@@ -19,13 +19,14 @@
 """Module providing EPP commands."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import ClassVar, List, Optional, Type
+from typing import ClassVar, List, Optional, Sequence, Type
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
-from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_XSI,
-                              SCHEMA_LOCATION_NIC_CONTACT, SCHEMA_LOCATION_NIC_DOMAIN, SCHEMA_LOCATION_XSI)
-from epplib.responses import CheckContactResult, CheckDomainResult, Greeting, Response, Result
+from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_NSSET,
+                              NAMESPACE_XSI, SCHEMA_LOCATION_NIC_CONTACT, SCHEMA_LOCATION_NIC_DOMAIN,
+                              SCHEMA_LOCATION_NIC_NSSET, SCHEMA_LOCATION_XSI)
+from epplib.responses import CheckContactResult, CheckDomainResult, CheckNssetResult, Greeting, Response, Result
 
 
 class Request(ABC):
@@ -165,8 +166,27 @@ class Logout(Command):
         return Element(QName(NAMESPACE_EPP, 'logout'))
 
 
+class Check(Command):
+    """Base class for EPP Check commands."""
+
+    def _get_check_payload(self, namespace: str, schema_location: str, tag: str, items: Sequence[str]) -> Element:
+        """Create subelements of the command tag specific for the Check command.
+
+        Returns:
+            Element with a list of items to check.
+        """
+        root = Element(QName(NAMESPACE_EPP, 'check'))
+
+        item_check = SubElement(root, QName(namespace, 'check'))
+        item_check.set(QName(NAMESPACE_XSI, 'schemaLocation'), schema_location)
+        for item in items:
+            SubElement(item_check, QName(namespace, tag)).text = item
+
+        return root
+
+
 @dataclass
-class CheckDomain(Command):
+class CheckDomain(Check):
     """EPP Domain Check command.
 
     Attributes:
@@ -174,7 +194,6 @@ class CheckDomain(Command):
     """
 
     response_class = CheckDomainResult
-
     domains: List[str]
 
     def _get_command_payload(self) -> Element:
@@ -183,18 +202,11 @@ class CheckDomain(Command):
         Returns:
             Element with a list of domains to check.
         """
-        root = Element(QName(NAMESPACE_EPP, 'check'))
-
-        domain_check = SubElement(root, QName(NAMESPACE_NIC_DOMAIN, 'check'))
-        domain_check.set(QName(NAMESPACE_XSI, 'schemaLocation'), SCHEMA_LOCATION_NIC_DOMAIN)
-        for domain in self.domains:
-            SubElement(domain_check, QName(NAMESPACE_NIC_DOMAIN, 'name')).text = domain
-
-        return root
+        return self._get_check_payload(NAMESPACE_NIC_DOMAIN, SCHEMA_LOCATION_NIC_DOMAIN, 'name', self.domains)
 
 
 @dataclass
-class CheckContact(Command):
+class CheckContact(Check):
     """EPP Check contact command.
 
     Attributes:
@@ -211,11 +223,25 @@ class CheckContact(Command):
         Returns:
             Element with a list of contacts to check.
         """
-        root = Element(QName(NAMESPACE_EPP, 'check'))
+        return self._get_check_payload(NAMESPACE_NIC_CONTACT, SCHEMA_LOCATION_NIC_CONTACT, 'id', self.contacts)
 
-        contact_check = SubElement(root, QName(NAMESPACE_NIC_CONTACT, 'check'))
-        contact_check.set(QName(NAMESPACE_XSI, 'schemaLocation'), SCHEMA_LOCATION_NIC_CONTACT)
-        for contact in self.contacts:
-            SubElement(contact_check, QName(NAMESPACE_NIC_CONTACT, 'id')).text = contact
 
-        return root
+@dataclass
+class CheckNsset(Check):
+    """EPP Check nsset command.
+
+    Attributes:
+        nssets: List of nssets to check.
+    """
+
+    response_class = CheckNssetResult
+
+    nssets: List[str]
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for CheckNsset.
+
+        Returns:
+            Element with a list of nssets to check.
+        """
+        return self._get_check_payload(NAMESPACE_NIC_NSSET, SCHEMA_LOCATION_NIC_NSSET, 'id', self.nssets)
