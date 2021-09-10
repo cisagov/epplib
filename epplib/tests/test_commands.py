@@ -24,10 +24,11 @@ from unittest import TestCase
 from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema, fromstring
 
-from epplib.commands import CheckContact, CheckDomain, CheckNsset, Command, Hello, Login, Logout, Request
-from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_NSSET,
-                              NAMESPACE_XSI, SCHEMA_LOCATION_NIC_CONTACT, SCHEMA_LOCATION_NIC_DOMAIN,
-                              SCHEMA_LOCATION_NIC_NSSET, SCHEMA_LOCATION_XSI)
+from epplib.commands import CheckContact, CheckDomain, CheckKeyset, CheckNsset, Command, Hello, Login, Logout, Request
+from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_KEYSET,
+                              NAMESPACE_NIC_NSSET, NAMESPACE_XSI, SCHEMA_LOCATION_NIC_CONTACT,
+                              SCHEMA_LOCATION_NIC_DOMAIN, SCHEMA_LOCATION_NIC_KEYSET, SCHEMA_LOCATION_NIC_NSSET,
+                              SCHEMA_LOCATION_XSI)
 from epplib.responses import Response
 from epplib.utils import safe_parse
 
@@ -279,6 +280,28 @@ class TestCheckNsset(XMLTestCase):
                     nsset.check(
                         {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_NIC_NSSET},
                         *[nsset.id(item) for item in self.nssets]
+                    )
+                )
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestCheckKeyset(XMLTestCase):
+    keysets = ['KID-MYKEYSET', 'KID-NONE']
+
+    def test_valid(self):
+        self.assertRequestValid(CheckKeyset, {'keysets': self.keysets})
+
+    def test_data(self):
+        root = fromstring(CheckKeyset(self.keysets).xml())
+        keyset = ElementMaker(namespace=NAMESPACE_NIC_KEYSET)
+        expected = make_epp_root(
+            EM.command(
+                EM.check(
+                    keyset.check(
+                        {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_NIC_KEYSET},
+                        *[keyset.id(item) for item in self.keysets]
                     )
                 )
             )
