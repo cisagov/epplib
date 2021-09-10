@@ -17,9 +17,9 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 """Module providing EPP commands."""
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import List, Optional, Type
+from typing import ClassVar, List, Optional, Type
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
@@ -30,6 +30,8 @@ from epplib.responses import Greeting, Response, Result, ResultCheckDomain
 
 class Request(ABC):
     """Base class for EPP requests."""
+
+    response_class: ClassVar[Type[Response]]
 
     def xml(self, tr_id: str = None, schema: XMLSchema = None) -> bytes:
         """Return the XML representation of the Request.
@@ -55,10 +57,6 @@ class Request(ABC):
         Returns:
             Element with the Request payload.
         """
-
-    @abstractproperty
-    def response_class(self) -> Type[Response]:
-        """Class of the corresponding response."""
 
 
 class Hello(Request):
