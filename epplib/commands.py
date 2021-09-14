@@ -23,9 +23,9 @@ from typing import ClassVar, List, Optional, Type
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
-from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_DOMAIN, NAMESPACE_XSI, SCHEMA_LOCATION_NIC_DOMAIN,
-                              SCHEMA_LOCATION_XSI)
-from epplib.responses import Greeting, Response, Result, ResultCheckDomain
+from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_XSI,
+                              SCHEMA_LOCATION_NIC_CONTACT, SCHEMA_LOCATION_NIC_DOMAIN, SCHEMA_LOCATION_XSI)
+from epplib.responses import CheckContactResult, CheckDomainResult, Greeting, Response, Result
 
 
 class Request(ABC):
@@ -173,7 +173,7 @@ class CheckDomain(Command):
         domains: List of domains to check.
     """
 
-    response_class = ResultCheckDomain
+    response_class = CheckDomainResult
 
     domains: List[str]
 
@@ -181,7 +181,7 @@ class CheckDomain(Command):
         """Create subelements of the command tag specific for CheckDomain.
 
         Returns:
-            Element with the Login specific payload.
+            Element with a list of domains to check.
         """
         root = Element(QName(NAMESPACE_EPP, 'check'))
 
@@ -189,5 +189,33 @@ class CheckDomain(Command):
         domain_check.set(QName(NAMESPACE_XSI, 'schemaLocation'), SCHEMA_LOCATION_NIC_DOMAIN)
         for domain in self.domains:
             SubElement(domain_check, QName(NAMESPACE_NIC_DOMAIN, 'name')).text = domain
+
+        return root
+
+
+@dataclass
+class CheckContact(Command):
+    """EPP Check contact command.
+
+    Attributes:
+        contacts: List of contacts to check.
+    """
+
+    response_class = CheckContactResult
+
+    contacts: List[str]
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for CheckContact.
+
+        Returns:
+            Element with a list of contacts to check.
+        """
+        root = Element(QName(NAMESPACE_EPP, 'check'))
+
+        contact_check = SubElement(root, QName(NAMESPACE_NIC_CONTACT, 'check'))
+        contact_check.set(QName(NAMESPACE_XSI, 'schemaLocation'), SCHEMA_LOCATION_NIC_CONTACT)
+        for contact in self.contacts:
+            SubElement(contact_check, QName(NAMESPACE_NIC_CONTACT, 'id')).text = contact
 
         return root
