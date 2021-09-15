@@ -25,23 +25,20 @@ from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema, fromstring
 
 from epplib.commands import CheckContact, CheckDomain, CheckKeyset, CheckNsset, Command, Hello, Login, Logout, Request
-from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_KEYSET,
-                              NAMESPACE_NIC_NSSET, NAMESPACE_XSI, SCHEMA_LOCATION_NIC_CONTACT,
-                              SCHEMA_LOCATION_NIC_DOMAIN, SCHEMA_LOCATION_NIC_KEYSET, SCHEMA_LOCATION_NIC_NSSET,
-                              SCHEMA_LOCATION_XSI)
+from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.responses import Response
 from epplib.utils import safe_parse
 
 DUMMY_NAMESPACE = 'dummy:name:space'
-NSMAP = {'dm': DUMMY_NAMESPACE, 'epp': NAMESPACE_EPP, 'domain': NAMESPACE_NIC_DOMAIN}
+NSMAP = {'dm': DUMMY_NAMESPACE, 'epp': NAMESPACE.EPP, 'domain': NAMESPACE.NIC_DOMAIN}
 
 SCHEMA = XMLSchema(file=str(Path(__file__).parent / 'data/schemas/all-2.4.1.xsd'))
-EM = ElementMaker(namespace=NAMESPACE_EPP)
+EM = ElementMaker(namespace=NAMESPACE.EPP)
 
 
 def make_epp_root(*elements, **kwargs) -> Element:
     """Create root element of EPP so we do not have to repeat boilerplate code."""
-    attrib = {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_XSI}
+    attrib = {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.XSI}
     attrib.update(kwargs)
     return EM.epp(*elements, attrib)
 
@@ -89,12 +86,12 @@ class TestRequest(TestCase):
 
     def test_root_tag(self):
         root = fromstring(DummyRequest().xml())
-        self.assertEqual(root.tag, QName(NAMESPACE_EPP, 'epp'))
+        self.assertEqual(root.tag, QName(NAMESPACE.EPP, 'epp'))
 
     def test_schema_location(self):
         root = fromstring(DummyRequest().xml())
         expected = {
-            QName(NAMESPACE_XSI, 'schemaLocation'): 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd'
+            QName(NAMESPACE.XSI, 'schemaLocation'): 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd'
         }
         self.assertEqual(root.attrib, expected)
 
@@ -123,7 +120,7 @@ class TestCommand(TestCase):
         root = fromstring(DummyCommand().xml())
         command = root[0]
 
-        self.assertEqual(command.tag, QName(NAMESPACE_EPP, 'command'))
+        self.assertEqual(command.tag, QName(NAMESPACE.EPP, 'command'))
         self.assertEqual(len(command), 1)
         self.assertEqual(len(command.attrib), 0)
 
@@ -134,7 +131,7 @@ class TestCommand(TestCase):
         root = fromstring(DummyCommand().xml(tr_id=tr_id))
         command = root[0]
 
-        self.assertEqual(command.tag, QName(NAMESPACE_EPP, 'command'))
+        self.assertEqual(command.tag, QName(NAMESPACE.EPP, 'command'))
         self.assertEqual(len(command), 2)
         self.assertEqual(len(command.attrib), 0)
 
@@ -229,12 +226,12 @@ class TestCheckDomain(XMLTestCase):
 
     def test_data(self):
         root = fromstring(CheckDomain(self.domains).xml())
-        domain = ElementMaker(namespace=NAMESPACE_NIC_DOMAIN)
+        domain = ElementMaker(namespace=NAMESPACE.NIC_DOMAIN)
         expected = make_epp_root(
             EM.command(
                 EM.check(
                     domain.check(
-                        {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_NIC_DOMAIN},
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
                         *[domain.name(item) for item in self.domains]
                     )
                 )
@@ -251,12 +248,12 @@ class TestCheckContact(XMLTestCase):
 
     def test_data(self):
         root = fromstring(CheckContact(self.contacts).xml())
-        contact = ElementMaker(namespace=NAMESPACE_NIC_CONTACT)
+        contact = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
         expected = make_epp_root(
             EM.command(
                 EM.check(
                     contact.check(
-                        {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_NIC_CONTACT},
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
                         *[contact.id(item) for item in self.contacts]
                     )
                 )
@@ -273,12 +270,12 @@ class TestCheckNsset(XMLTestCase):
 
     def test_data(self):
         root = fromstring(CheckNsset(self.nssets).xml())
-        nsset = ElementMaker(namespace=NAMESPACE_NIC_NSSET)
+        nsset = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
         expected = make_epp_root(
             EM.command(
                 EM.check(
                     nsset.check(
-                        {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_NIC_NSSET},
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
                         *[nsset.id(item) for item in self.nssets]
                     )
                 )
@@ -295,12 +292,12 @@ class TestCheckKeyset(XMLTestCase):
 
     def test_data(self):
         root = fromstring(CheckKeyset(self.keysets).xml())
-        keyset = ElementMaker(namespace=NAMESPACE_NIC_KEYSET)
+        keyset = ElementMaker(namespace=NAMESPACE.NIC_KEYSET)
         expected = make_epp_root(
             EM.command(
                 EM.check(
                     keyset.check(
-                        {QName(NAMESPACE_XSI, 'schemaLocation'): SCHEMA_LOCATION_NIC_KEYSET},
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
                         *[keyset.id(item) for item in self.keysets]
                     )
                 )

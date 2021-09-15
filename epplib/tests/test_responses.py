@@ -28,20 +28,20 @@ from isodate import parse_datetime
 from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema
 
-from epplib.constants import NAMESPACE_EPP
+from epplib.constants import NAMESPACE
 from epplib.responses import (CheckContactResult, CheckDomainResult, CheckKeysetResult, CheckNssetResult, Greeting,
                               ParsingError, Response, Result)
 
 BASE_DATA_PATH = Path(__file__).parent / 'data'
 SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
 
-EM = ElementMaker(namespace=NAMESPACE_EPP, nsmap={'epp': NAMESPACE_EPP})
+EM = ElementMaker(namespace=NAMESPACE.EPP, nsmap={'epp': NAMESPACE.EPP})
 
 
 @dataclass
 class DummyResponse(Response):
 
-    _payload_tag: ClassVar = QName(NAMESPACE_EPP, 'dummy')
+    _payload_tag: ClassVar = QName(NAMESPACE.EPP, 'dummy')
     payload: str
 
     @classmethod
@@ -109,7 +109,7 @@ class TestResponse(TestCase):
                    </epp>'''
 
         response = DummyResponse.parse(data)
-        self.assertEqual(response.payload, QName(NAMESPACE_EPP, 'dummy'))
+        self.assertEqual(response.payload, QName(NAMESPACE.EPP, 'dummy'))
 
     def test_raise_if_not_epp(self):
         data = b'''<?xml version="1.0" encoding="UTF-8"?>
@@ -127,8 +127,8 @@ class TestResponse(TestCase):
                    </epp>'''
 
         message = 'Expected {} tag\\. Found {} instead\\.'.format(
-            QName(NAMESPACE_EPP, 'dummy'),
-            QName(NAMESPACE_EPP, 'unexpected')
+            QName(NAMESPACE.EPP, 'dummy'),
+            QName(NAMESPACE.EPP, 'unexpected')
         )
         with self.assertRaisesRegex(ValueError, message):
             DummyResponse.parse(data)

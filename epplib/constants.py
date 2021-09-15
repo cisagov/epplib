@@ -18,15 +18,21 @@
 
 """Constants shared accross epplib."""
 
-NAMESPACE_EPP = 'urn:ietf:params:xml:ns:epp-1.0'
-NAMESPACE_XSI = 'http://www.w3.org/2001/XMLSchema-instance'
-NAMESPACE_NIC_CONTACT = 'http://www.nic.cz/xml/epp/contact-1.6'
-NAMESPACE_NIC_DOMAIN = 'http://www.nic.cz/xml/epp/domain-1.4'
-NAMESPACE_NIC_KEYSET = 'http://www.nic.cz/xml/epp/keyset-1.3'
-NAMESPACE_NIC_NSSET = 'http://www.nic.cz/xml/epp/nsset-1.2'
+from types import SimpleNamespace
 
-SCHEMA_LOCATION_XSI = 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd'
-SCHEMA_LOCATION_NIC_CONTACT = 'http://www.nic.cz/xml/epp/contact-1.6 contact-1.6.2.xsd'
-SCHEMA_LOCATION_NIC_DOMAIN = 'http://www.nic.cz/xml/epp/domain-1.4 domain-1.4.2.xsd'
-SCHEMA_LOCATION_NIC_KEYSET = 'http://www.nic.cz/xml/epp/keyset-1.3 keyset-1.3.2.xsd'
-SCHEMA_LOCATION_NIC_NSSET = 'http://www.nic.cz/xml/epp/nsset-1.2 nsset-1.2.2.xsd'
+NAMESPACE = SimpleNamespace(
+    EPP='urn:ietf:params:xml:ns:epp-1.0',
+    XSI='http://www.w3.org/2001/XMLSchema-instance',
+    NIC_CONTACT='http://www.nic.cz/xml/epp/contact-1.6',
+    NIC_DOMAIN='http://www.nic.cz/xml/epp/domain-1.4',
+    NIC_KEYSET='http://www.nic.cz/xml/epp/keyset-1.3',
+    NIC_NSSET='http://www.nic.cz/xml/epp/nsset-1.2',
+)
+
+SCHEMA_LOCATION = SimpleNamespace(
+    XSI='urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
+    NIC_CONTACT='http://www.nic.cz/xml/epp/contact-1.6 contact-1.6.2.xsd',
+    NIC_DOMAIN='http://www.nic.cz/xml/epp/domain-1.4 domain-1.4.2.xsd',
+    NIC_KEYSET='http://www.nic.cz/xml/epp/keyset-1.3 keyset-1.3.2.xsd',
+    NIC_NSSET='http://www.nic.cz/xml/epp/nsset-1.2 nsset-1.2.2.xsd',
+)

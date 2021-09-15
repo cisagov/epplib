@@ -26,16 +26,15 @@ from isodate import Duration, parse_datetime, parse_duration
 from isodate.isoerror import ISO8601Error
 from lxml.etree import Element, QName, XMLSchema
 
-from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_KEYSET,
-                              NAMESPACE_NIC_NSSET)
+from epplib.constants import NAMESPACE
 from epplib.utils import safe_parse
 
 NAMESPACES = {
-    'epp': NAMESPACE_EPP,
-    'contact': NAMESPACE_NIC_CONTACT,
-    'domain': NAMESPACE_NIC_DOMAIN,
-    'keyset': NAMESPACE_NIC_KEYSET,
-    'nsset': NAMESPACE_NIC_NSSET,
+    'epp': NAMESPACE.EPP,
+    'contact': NAMESPACE.NIC_CONTACT,
+    'domain': NAMESPACE.NIC_DOMAIN,
+    'keyset': NAMESPACE.NIC_KEYSET,
+    'nsset': NAMESPACE.NIC_NSSET,
 }
 
 GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
@@ -145,7 +144,7 @@ class Response(ParseXMLMixin, ABC):
         if schema is not None:
             schema.assertValid(root)
 
-        if root.tag != QName(NAMESPACE_EPP, 'epp'):
+        if root.tag != QName(NAMESPACE.EPP, 'epp'):
             raise ValueError('Root element has to be "epp". Found: {}'.format(root.tag))
 
         payload = root[0]
@@ -198,7 +197,7 @@ class Greeting(Response):
         recipient: List[str]
         retention: Optional[str]
 
-    _payload_tag: ClassVar = QName(NAMESPACE_EPP, 'greeting')
+    _payload_tag: ClassVar = QName(NAMESPACE.EPP, 'greeting')
 
     sv_id: str
     sv_date: str
@@ -289,12 +288,12 @@ class Greeting(Response):
         tag = element[0].tag
         text = element[0].text
 
-        if tag == QName(NAMESPACE_EPP, 'absolute'):
+        if tag == QName(NAMESPACE.EPP, 'absolute'):
             try:
                 return parse_datetime(text)
             except (ISO8601Error, ValueError) as exception:
                 raise ParsingError('Could not parse "{}" as absolute expiry.'.format(text)) from exception
-        elif tag == QName(NAMESPACE_EPP, 'relative'):
+        elif tag == QName(NAMESPACE.EPP, 'relative'):
             try:
                 result = parse_duration(text)
             except (ISO8601Error, ValueError) as exception:
@@ -327,7 +326,7 @@ class Result(Response, Generic[T]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _payload_tag: ClassVar = QName(NAMESPACE_EPP, 'response')
+    _payload_tag: ClassVar = QName(NAMESPACE.EPP, 'response')
     _res_data_class: ClassVar[Type[T]]
 
     code: int
