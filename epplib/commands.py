@@ -23,10 +23,7 @@ from typing import ClassVar, List, Optional, Sequence, Type
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
-from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_KEYSET,
-                              NAMESPACE_NIC_NSSET, NAMESPACE_XSI, SCHEMA_LOCATION_NIC_CONTACT,
-                              SCHEMA_LOCATION_NIC_DOMAIN, SCHEMA_LOCATION_NIC_KEYSET, SCHEMA_LOCATION_NIC_NSSET,
-                              SCHEMA_LOCATION_XSI)
+from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.responses import (CheckContactResult, CheckDomainResult, CheckKeysetResult, CheckNssetResult, Greeting,
                               Response, Result)
 
@@ -42,8 +39,8 @@ class Request(ABC):
         Returns:
             The XML representation of the Request.
         """
-        root = Element(QName(NAMESPACE_EPP, 'epp'))
-        root.set(QName(NAMESPACE_XSI, 'schemaLocation'), SCHEMA_LOCATION_XSI)
+        root = Element(QName(NAMESPACE.EPP, 'epp'))
+        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.XSI)
         root.append(self._get_payload(tr_id=tr_id))
 
         document = ElementTree(root)
@@ -73,7 +70,7 @@ class Hello(Request):
         Returns:
             Element with the payload of the Hello command.
         """
-        return Element(QName(NAMESPACE_EPP, 'hello'))
+        return Element(QName(NAMESPACE.EPP, 'hello'))
 
 
 class Command(Request):
@@ -85,10 +82,10 @@ class Command(Request):
         Returns:
             Element with the Command payload.
         """
-        command_element = Element(QName(NAMESPACE_EPP, 'command'))
+        command_element = Element(QName(NAMESPACE.EPP, 'command'))
         command_element.append(self._get_command_payload())
         if tr_id is not None:
-            SubElement(command_element, QName(NAMESPACE_EPP, 'clTRID')).text = tr_id
+            SubElement(command_element, QName(NAMESPACE.EPP, 'clTRID')).text = tr_id
         return command_element
 
     @abstractmethod
@@ -130,25 +127,25 @@ class Login(Command):
         Returns:
             Element with the Login specific payload.
         """
-        root = Element(QName(NAMESPACE_EPP, 'login'))
+        root = Element(QName(NAMESPACE.EPP, 'login'))
 
-        SubElement(root, QName(NAMESPACE_EPP, 'clID')).text = self.cl_id
-        SubElement(root, QName(NAMESPACE_EPP, 'pw')).text = self.password
+        SubElement(root, QName(NAMESPACE.EPP, 'clID')).text = self.cl_id
+        SubElement(root, QName(NAMESPACE.EPP, 'pw')).text = self.password
         if self.new_password is not None:
-            SubElement(root, QName(NAMESPACE_EPP, 'newPW')).text = self.new_password
+            SubElement(root, QName(NAMESPACE.EPP, 'newPW')).text = self.new_password
 
-        options = SubElement(root, QName(NAMESPACE_EPP, 'options'))
-        SubElement(options, QName(NAMESPACE_EPP, 'version')).text = self.version
-        SubElement(options, QName(NAMESPACE_EPP, 'lang')).text = self.lang
+        options = SubElement(root, QName(NAMESPACE.EPP, 'options'))
+        SubElement(options, QName(NAMESPACE.EPP, 'version')).text = self.version
+        SubElement(options, QName(NAMESPACE.EPP, 'lang')).text = self.lang
 
-        svcs = SubElement(root, QName(NAMESPACE_EPP, 'svcs'))
+        svcs = SubElement(root, QName(NAMESPACE.EPP, 'svcs'))
         for uri in self.obj_uris:
-            SubElement(svcs, QName(NAMESPACE_EPP, 'objURI')).text = uri
+            SubElement(svcs, QName(NAMESPACE.EPP, 'objURI')).text = uri
 
         if len(self.ext_uris) > 0:
-            svc_extension = SubElement(svcs, QName(NAMESPACE_EPP, 'svcExtension'))
+            svc_extension = SubElement(svcs, QName(NAMESPACE.EPP, 'svcExtension'))
             for uri in self.ext_uris:
-                SubElement(svc_extension, QName(NAMESPACE_EPP, 'extURI')).text = uri
+                SubElement(svc_extension, QName(NAMESPACE.EPP, 'extURI')).text = uri
 
         return root
 
@@ -165,7 +162,7 @@ class Logout(Command):
         Returns:
             Element with the Logout specific payload.
         """
-        return Element(QName(NAMESPACE_EPP, 'logout'))
+        return Element(QName(NAMESPACE.EPP, 'logout'))
 
 
 class Check(Command):
@@ -177,10 +174,10 @@ class Check(Command):
         Returns:
             Element with a list of items to check.
         """
-        root = Element(QName(NAMESPACE_EPP, 'check'))
+        root = Element(QName(NAMESPACE.EPP, 'check'))
 
         item_check = SubElement(root, QName(namespace, 'check'))
-        item_check.set(QName(NAMESPACE_XSI, 'schemaLocation'), schema_location)
+        item_check.set(QName(NAMESPACE.XSI, 'schemaLocation'), schema_location)
         for item in items:
             SubElement(item_check, QName(namespace, tag)).text = item
 
@@ -204,7 +201,7 @@ class CheckDomain(Check):
         Returns:
             Element with a list of domains to check.
         """
-        return self._get_check_payload(NAMESPACE_NIC_DOMAIN, SCHEMA_LOCATION_NIC_DOMAIN, 'name', self.domains)
+        return self._get_check_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.domains)
 
 
 @dataclass
@@ -225,7 +222,7 @@ class CheckContact(Check):
         Returns:
             Element with a list of contacts to check.
         """
-        return self._get_check_payload(NAMESPACE_NIC_CONTACT, SCHEMA_LOCATION_NIC_CONTACT, 'id', self.contacts)
+        return self._get_check_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.contacts)
 
 
 @dataclass
@@ -246,7 +243,7 @@ class CheckNsset(Check):
         Returns:
             Element with a list of nssets to check.
         """
-        return self._get_check_payload(NAMESPACE_NIC_NSSET, SCHEMA_LOCATION_NIC_NSSET, 'id', self.nssets)
+        return self._get_check_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.nssets)
 
 
 @dataclass
@@ -267,4 +264,4 @@ class CheckKeyset(Check):
         Returns:
             Element with a list of keysets to check.
         """
-        return self._get_check_payload(NAMESPACE_NIC_KEYSET, SCHEMA_LOCATION_NIC_KEYSET, 'id', self.keysets)
+        return self._get_check_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.keysets)
