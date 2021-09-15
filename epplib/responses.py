@@ -26,10 +26,16 @@ from isodate import Duration, parse_datetime, parse_duration
 from isodate.isoerror import ISO8601Error
 from lxml.etree import Element, QName, XMLSchema
 
-from epplib.constants import NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN
+from epplib.constants import NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_NSSET
 from epplib.utils import safe_parse
 
-NAMESPACES = {'epp': NAMESPACE_EPP, 'contact': NAMESPACE_NIC_CONTACT, 'domain': NAMESPACE_NIC_DOMAIN}
+NAMESPACES = {
+    'epp': NAMESPACE_EPP,
+    'contact': NAMESPACE_NIC_CONTACT,
+    'domain': NAMESPACE_NIC_DOMAIN,
+    'nsset': NAMESPACE_NIC_NSSET,
+}
+
 GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
 
 T = TypeVar('T', bound='ResultData')
@@ -470,3 +476,43 @@ class CheckContactResult(CheckResult):
 
     _res_data_path = './contact:chkData/contact:cd'
     _res_data_class: ClassVar = Contact
+
+
+@dataclass
+class CheckNssetResult(CheckResult):
+    """Represents EPP Result which responds to the Check nsset command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        message: Content of the epp/response/result/msg element.
+        data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    @dataclass
+    class Nsset(ResultData):
+        """Dataclass representing nsset availability in the check nsset result.
+
+        Attributes:
+            id: Content of the epp/response/resData/chkData/cd/id element.
+            available: Avail attribute of the epp/response/resData/chkData/cd/id element.
+            reason: Content of the epp/response/resData/chkData/cd/reason element.
+        """
+
+        id: str
+        available: Optional[bool]
+        reason: Optional[str] = None
+
+        @classmethod
+        def extract(cls, element: Element) -> 'CheckNssetResult.Nsset':
+            """Extract params for own init from the element."""
+            params = (
+                cls._find_text(element, './nsset:id'),
+                cls._str_to_bool(cls._find_attrib(element, './nsset:id', 'avail')),
+                cls._find_text(element, './nsset:reason'),
+            )
+            return cls(*params)
+
+    _res_data_path = './nsset:chkData/nsset:cd'
+    _res_data_class: ClassVar = Nsset

@@ -29,7 +29,8 @@ from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE_EPP
-from epplib.responses import CheckContactResult, CheckDomainResult, Greeting, ParsingError, Response, Result
+from epplib.responses import (CheckContactResult, CheckDomainResult, CheckNssetResult, Greeting, ParsingError, Response,
+                              Result)
 
 BASE_DATA_PATH = Path(__file__).parent / 'data'
 SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
@@ -291,4 +292,22 @@ class TestCheckContactResult(TestCase):
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
         result = CheckContactResult.parse(xml, SCHEMA)
+        self.assertEqual(result.code, 2002)
+
+
+class TestResultCheckNsset(TestCase):
+
+    def test_parse(self):
+        xml = (BASE_DATA_PATH / 'responses/result_check_nsset.xml').read_bytes()
+        result = CheckNssetResult.parse(xml, SCHEMA)
+        expected = [
+            CheckNssetResult.Nsset('NID-MYNSSET', False, 'already registered.'),
+            CheckNssetResult.Nsset('NID-NONE', True),
+        ]
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(CheckNssetResult, result).data, expected)
+
+    def test_parse_error(self):
+        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        result = CheckNssetResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
