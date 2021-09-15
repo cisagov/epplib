@@ -25,7 +25,7 @@ from epplib.commands import Hello, Login, Logout, Request
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE
 from epplib.responses import Response
-from epplib.tests.common import EM, SCHEMA, XMLTestCase, make_epp_root
+from epplib.tests.utils import EM, SCHEMA, XMLTestCase, make_epp_root
 
 DUMMY_NAMESPACE = 'dummy:name:space'
 NSMAP = {'dm': DUMMY_NAMESPACE, 'epp': NAMESPACE.EPP}

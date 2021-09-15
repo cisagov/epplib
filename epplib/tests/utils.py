@@ -28,7 +28,9 @@ from epplib.commands import Request
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.utils import safe_parse
 
-SCHEMA = XMLSchema(file=str(Path(__file__).parent / 'data/schemas/all-2.4.1.xsd'))
+BASE_DATA_PATH = Path(__file__).parent / 'data'
+SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
+
 EM = ElementMaker(namespace=NAMESPACE.EPP)
 
 

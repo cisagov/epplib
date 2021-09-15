@@ -21,7 +21,7 @@ from lxml.etree import QName, fromstring
 
 from epplib.commands import CheckContact, CheckDomain, CheckKeyset, CheckNsset
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.tests.common import EM, XMLTestCase, make_epp_root
+from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
 
 class TestCheckDomain(XMLTestCase):

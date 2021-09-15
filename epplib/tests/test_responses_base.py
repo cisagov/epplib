@@ -18,24 +18,17 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 from typing import ClassVar, Mapping, cast
 from unittest import TestCase
 from unittest.mock import patch
 
 from freezegun import freeze_time
 from isodate import parse_datetime
-from lxml.builder import ElementMaker
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE
-from epplib.responses import (CheckContactResult, CheckDomainResult, CheckKeysetResult, CheckNssetResult, Greeting,
-                              ParsingError, Response, Result)
-
-BASE_DATA_PATH = Path(__file__).parent / 'data'
-SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
-
-EM = ElementMaker(namespace=NAMESPACE.EPP, nsmap={'epp': NAMESPACE.EPP})
+from epplib.responses import Greeting, ParsingError, Response, Result
+from epplib.tests.utils import BASE_DATA_PATH, EM, SCHEMA
 
 
 @dataclass
@@ -143,7 +136,7 @@ class TestResponse(TestCase):
         with self.assertRaisesRegex(DocumentInvalid, message):
             DummyResponse.parse(invalid, SCHEMA)
 
-    @patch('epplib.tests.test_responses.DummyResponse._extract_payload')
+    @patch('epplib.tests.test_responses_base.DummyResponse._extract_payload')
     def test_wrap_exceptions(self, mock_parse):
         mock_parse.side_effect = ValueError('It is broken!')
         data = b'''<?xml version="1.0" encoding="UTF-8"?>
@@ -257,75 +250,3 @@ class TestResult(TestCase):
         self.assertEqual(result.message, 'Command completed successfully')
         self.assertEqual(result.cl_tr_id, 'sdmj001#17-03-06at18:48:03')
         self.assertEqual(result.sv_tr_id, 'ReqID-0000126633')
-
-
-class TestCheckDomainResult(TestCase):
-
-    def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_check_domain.xml').read_bytes()
-        result = CheckDomainResult.parse(xml, SCHEMA)
-        expected = [
-            CheckDomainResult.Domain('mydomain.cz', True),
-            CheckDomainResult.Domain('somedomain.cz', False, 'already registered.'),
-        ]
-        self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckDomainResult, result).data, expected)
-
-    def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
-        result = CheckDomainResult.parse(xml, SCHEMA)
-        self.assertEqual(result.code, 2002)
-
-
-class TestCheckContactResult(TestCase):
-
-    def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_check_contact.xml').read_bytes()
-        result = CheckContactResult.parse(xml, SCHEMA)
-        expected = [
-            CheckContactResult.Contact('CID-MYOWN', False, 'already registered.'),
-            CheckContactResult.Contact('CID-NONE', True),
-        ]
-        self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckContactResult, result).data, expected)
-
-    def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
-        result = CheckContactResult.parse(xml, SCHEMA)
-        self.assertEqual(result.code, 2002)
-
-
-class TestResultCheckNsset(TestCase):
-
-    def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_check_nsset.xml').read_bytes()
-        result = CheckNssetResult.parse(xml, SCHEMA)
-        expected = [
-            CheckNssetResult.Nsset('NID-MYNSSET', False, 'already registered.'),
-            CheckNssetResult.Nsset('NID-NONE', True),
-        ]
-        self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckNssetResult, result).data, expected)
-
-    def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
-        result = CheckNssetResult.parse(xml, SCHEMA)
-        self.assertEqual(result.code, 2002)
-
-
-class TestResultCheckKeyset(TestCase):
-
-    def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_check_keyset.xml').read_bytes()
-        result = CheckKeysetResult.parse(xml, SCHEMA)
-        expected = [
-            CheckKeysetResult.Keyset('KID-MYKEYSET', False, 'already registered.'),
-            CheckKeysetResult.Keyset('KID-NONE', True),
-        ]
-        self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckKeysetResult, result).data, expected)
-
-    def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
-        result = CheckKeysetResult.parse(xml, SCHEMA)
-        self.assertEqual(result.code, 2002)
