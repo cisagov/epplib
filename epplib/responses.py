@@ -26,13 +26,15 @@ from isodate import Duration, parse_datetime, parse_duration
 from isodate.isoerror import ISO8601Error
 from lxml.etree import Element, QName, XMLSchema
 
-from epplib.constants import NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_NSSET
+from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_KEYSET,
+                              NAMESPACE_NIC_NSSET)
 from epplib.utils import safe_parse
 
 NAMESPACES = {
     'epp': NAMESPACE_EPP,
     'contact': NAMESPACE_NIC_CONTACT,
     'domain': NAMESPACE_NIC_DOMAIN,
+    'keyset': NAMESPACE_NIC_KEYSET,
     'nsset': NAMESPACE_NIC_NSSET,
 }
 
@@ -516,3 +518,43 @@ class CheckNssetResult(CheckResult):
 
     _res_data_path = './nsset:chkData/nsset:cd'
     _res_data_class: ClassVar = Nsset
+
+
+@dataclass
+class CheckKeysetResult(CheckResult):
+    """Represents EPP Result which responds to the Check keyset command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        message: Content of the epp/response/result/msg element.
+        data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    @dataclass
+    class Keyset(ResultData):
+        """Dataclass representing keyset availability in the check keyset result.
+
+        Attributes:
+            id: Content of the epp/response/resData/chkData/cd/id element.
+            available: Avail attribute of the epp/response/resData/chkData/cd/id element.
+            reason: Content of the epp/response/resData/chkData/cd/reason element.
+        """
+
+        id: str
+        available: Optional[bool]
+        reason: Optional[str] = None
+
+        @classmethod
+        def extract(cls, element: Element) -> 'CheckKeysetResult.Keyset':
+            """Extract params for own init from the element."""
+            params = (
+                cls._find_text(element, './keyset:id'),
+                cls._str_to_bool(cls._find_attrib(element, './keyset:id', 'avail')),
+                cls._find_text(element, './keyset:reason'),
+            )
+            return cls(*params)
+
+    _res_data_path = './keyset:chkData/keyset:cd'
+    _res_data_class: ClassVar = Keyset

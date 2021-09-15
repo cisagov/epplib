@@ -23,10 +23,12 @@ from typing import ClassVar, List, Optional, Sequence, Type
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
-from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_NSSET,
-                              NAMESPACE_XSI, SCHEMA_LOCATION_NIC_CONTACT, SCHEMA_LOCATION_NIC_DOMAIN,
-                              SCHEMA_LOCATION_NIC_NSSET, SCHEMA_LOCATION_XSI)
-from epplib.responses import CheckContactResult, CheckDomainResult, CheckNssetResult, Greeting, Response, Result
+from epplib.constants import (NAMESPACE_EPP, NAMESPACE_NIC_CONTACT, NAMESPACE_NIC_DOMAIN, NAMESPACE_NIC_KEYSET,
+                              NAMESPACE_NIC_NSSET, NAMESPACE_XSI, SCHEMA_LOCATION_NIC_CONTACT,
+                              SCHEMA_LOCATION_NIC_DOMAIN, SCHEMA_LOCATION_NIC_KEYSET, SCHEMA_LOCATION_NIC_NSSET,
+                              SCHEMA_LOCATION_XSI)
+from epplib.responses import (CheckContactResult, CheckDomainResult, CheckKeysetResult, CheckNssetResult, Greeting,
+                              Response, Result)
 
 
 class Request(ABC):
@@ -245,3 +247,24 @@ class CheckNsset(Check):
             Element with a list of nssets to check.
         """
         return self._get_check_payload(NAMESPACE_NIC_NSSET, SCHEMA_LOCATION_NIC_NSSET, 'id', self.nssets)
+
+
+@dataclass
+class CheckKeyset(Check):
+    """EPP Check keyset command.
+
+    Attributes:
+        keysets: List of keysets to check.
+    """
+
+    response_class = CheckKeysetResult
+
+    keysets: List[str]
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for CheckKeyset.
+
+        Returns:
+            Element with a list of keysets to check.
+        """
+        return self._get_check_payload(NAMESPACE_NIC_KEYSET, SCHEMA_LOCATION_NIC_KEYSET, 'id', self.keysets)
