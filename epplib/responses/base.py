@@ -20,7 +20,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, ClassVar, Generic, List, Mapping, Optional, Sequence, Type, TypeVar, Union, cast
+from typing import Any, Callable, ClassVar, Generic, List, Mapping, Optional, Sequence, Type, TypeVar, Union, cast
 
 from isodate import Duration, parse_datetime, parse_duration
 from isodate.isoerror import ISO8601Error
@@ -40,6 +40,7 @@ NAMESPACES = {
 GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
 
 T = TypeVar('T', bound='ResultData')
+U = TypeVar('U')
 
 
 class ParsingError(Exception):
@@ -90,11 +91,12 @@ class ParseXMLMixin:
         return [QName(item.tag).localname for item in nodes]
 
     @staticmethod
-    def _optional_int(value: Optional[str]) -> Optional[int]:
-        if value is None:
+    def _optional(function: Callable[[str], U], param: Optional[str]) -> Optional[U]:
+        """Return function(param) if param is not None otherwise return None."""
+        if param is None:
             return None
         else:
-            return int(value)
+            return function(param)
 
     @staticmethod
     def _str_to_bool(value: Optional[str]) -> Optional[bool]:
@@ -354,7 +356,7 @@ class Result(Response, Generic[T]):
             element: Child element of the epp element.
         """
         data = {
-            'code': cls._optional_int(cls._find_attrib(element, './epp:result', 'code')),
+            'code': cls._optional(int, cls._find_attrib(element, './epp:result', 'code')),
             'message': cls._find_text(element, './epp:result/epp:msg'),
             'data': cls._extract_data(element.find('./epp:resData', namespaces=NAMESPACES)),
             'cl_tr_id': cls._find_text(element, './epp:trID/epp:clTRID'),
