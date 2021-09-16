@@ -16,13 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
+from difflib import unified_diff
 from itertools import zip_longest
 from pathlib import Path
-from typing import Any, Dict, Type
+from typing import Any, Dict, List, Type
 from unittest import TestCase
 
 from lxml.builder import ElementMaker
-from lxml.etree import Element, QName, XMLSchema
+from lxml.etree import Element, QName, XMLSchema, tostring
 
 from epplib.commands import Request
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
@@ -51,8 +52,33 @@ class XMLTestCase(TestCase):
         SCHEMA.assertValid(safe_parse(xml))
 
     def assertXMLEqual(self, doc_1: Element, doc_2: Element) -> None:
+        try:
+            self._assertXMLEqual(doc_1, doc_2)
+        except AssertionError as error:  # pragma: no cover - Only called when the test fails.
+            message = self._xml_diff(doc_1, doc_2)
+            raise AssertionError('XML documents are different:\n' + message) from error
+
+    def _assertXMLEqual(self, doc_1: Element, doc_2: Element) -> None:
+        """Recursive version of assertXMLEqual where we do not catch the exceptions so we can do it at the top level."""
         self.assertEqual(doc_1.tag, doc_2.tag)
         self.assertEqual(doc_1.attrib, doc_2.attrib)
         self.assertEqual(doc_1.text, doc_2.text)
         for child_1, child_2 in zip_longest(doc_1, doc_2):
-            self.assertXMLEqual(child_1, child_2)
+            # zip_longest returns Nones when sequence lengths differ.
+            self.assertIsNotNone(child_1)
+            self.assertIsNotNone(child_2)
+            self._assertXMLEqual(child_1, child_2)
+
+    def _xml_diff(self, doc_1: Element, doc_2: Element) -> str:  # pragma: no cover - Only called when the test fails.
+        """Compare str representation of XML documents and return the diff."""
+        rep_1 = self._prepare_for_diff(doc_1)
+        rep_2 = self._prepare_for_diff(doc_2)
+
+        diff = unified_diff(rep_1, rep_2)
+        return ''.join(diff)
+
+    def _prepare_for_diff(self, doc: Element) -> List[str]:  # pragma: no cover - Only called when the test fails.
+        """Convert Element to unified_diff input format."""
+        string = tostring(doc, pretty_print=True, encoding='unicode')
+        lines = string.splitlines(keepends=True)
+        return lines
