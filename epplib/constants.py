@@ -18,6 +18,7 @@
 
 """Constants shared accross epplib."""
 
+from enum import Enum
 from types import SimpleNamespace
 
 NAMESPACE = SimpleNamespace(
@@ -36,3 +37,10 @@ SCHEMA_LOCATION = SimpleNamespace(
     NIC_KEYSET='http://www.nic.cz/xml/epp/keyset-1.3 keyset-1.3.2.xsd',
     NIC_NSSET='http://www.nic.cz/xml/epp/nsset-1.2 nsset-1.2.2.xsd',
 )
+
+
+class Unit(str, Enum):
+    """Unit for create domain period."""
+
+    MONTH = 'm'
+    YEAR = 'y'

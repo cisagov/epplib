@@ -20,12 +20,14 @@
 
 from .base import Hello, Login, Logout, Request
 from .check import CheckContact, CheckDomain, CheckKeyset, CheckNsset
+from .create import CreateDomain
 
 __all__ = [
     'CheckContact',
     'CheckDomain',
     'CheckKeyset',
     'CheckNsset',
+    'CreateDomain',
     'Hello',
     'Login',
     'Logout',

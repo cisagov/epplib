@@ -19,7 +19,7 @@
 from difflib import unified_diff
 from itertools import zip_longest
 from pathlib import Path
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Sequence, Type, TypeVar
 from unittest import TestCase
 
 from lxml.builder import ElementMaker
@@ -28,6 +28,9 @@ from lxml.etree import Element, QName, XMLSchema, tostring
 from epplib.commands import Request
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.utils import safe_parse
+
+T = TypeVar('T')
+U = TypeVar('U')
 
 BASE_DATA_PATH = Path(__file__).parent / 'data'
 SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
@@ -40,6 +43,11 @@ def make_epp_root(*elements, **kwargs) -> Element:
     attrib = {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.XSI}
     attrib.update(kwargs)
     return EM.epp(*elements, attrib)
+
+
+def sub_dict(source: Dict[T, U], keys: Sequence[T]) -> Dict[T, U]:
+    """Return a dictionary containing only listed keys."""
+    return {k: source[k] for k in keys}
 
 
 class XMLTestCase(TestCase):
