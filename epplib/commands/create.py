@@ -18,6 +18,7 @@
 
 """Module providing EPP commands."""
 from dataclasses import dataclass
+from datetime import date
 from typing import Optional
 
 from lxml.etree import Element, QName, SubElement
@@ -53,6 +54,9 @@ class CreateDomain(Command):
     admin: Optional[str] = None
     authInfo: Optional[str] = None
 
+    enumval_val_expiration_date: Optional[date] = None
+    enumval_publish: Optional[bool] = None
+
     def _get_command_payload(self) -> Element:
         """Create subelements of the command tag specific for CreateDomain.
 
@@ -78,3 +82,17 @@ class CreateDomain(Command):
             SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.authInfo
 
         return create
+
+    def _get_extension_payload(self) -> Optional[Element]:
+        create = Element(QName(NAMESPACE.NIC_ENUMVAL, 'create'))
+        create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_ENUMVAL)
+        if self.enumval_val_expiration_date is not None:
+            expiration_date = SubElement(create, QName(NAMESPACE.NIC_ENUMVAL, 'valExDate'))
+            expiration_date.text = str(self.enumval_val_expiration_date)
+        if self.enumval_publish is not None:
+            SubElement(create, QName(NAMESPACE.NIC_ENUMVAL, 'publish')).text = str(self.enumval_publish).lower()
+
+        if len(create) > 0:
+            return create
+        else:
+            return None
