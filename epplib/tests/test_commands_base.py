@@ -16,48 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-from itertools import zip_longest
-from pathlib import Path
-from typing import Any, Dict, Type
+from typing import Any, Dict
 from unittest import TestCase
 
-from lxml.builder import ElementMaker
-from lxml.etree import DocumentInvalid, Element, QName, XMLSchema, fromstring
+from lxml.etree import DocumentInvalid, Element, QName, fromstring
 
-from epplib.commands import CheckContact, CheckDomain, CheckKeyset, CheckNsset, Command, Hello, Login, Logout, Request
-from epplib.constants import NAMESPACE, SCHEMA_LOCATION
+from epplib.commands import Hello, Login, Logout, Request
+from epplib.commands.base import Command
+from epplib.constants import NAMESPACE
 from epplib.responses import Response
-from epplib.utils import safe_parse
+from epplib.tests.utils import EM, SCHEMA, XMLTestCase, make_epp_root
 
 DUMMY_NAMESPACE = 'dummy:name:space'
-NSMAP = {'dm': DUMMY_NAMESPACE, 'epp': NAMESPACE.EPP, 'domain': NAMESPACE.NIC_DOMAIN}
-
-SCHEMA = XMLSchema(file=str(Path(__file__).parent / 'data/schemas/all-2.4.1.xsd'))
-EM = ElementMaker(namespace=NAMESPACE.EPP)
-
-
-def make_epp_root(*elements, **kwargs) -> Element:
-    """Create root element of EPP so we do not have to repeat boilerplate code."""
-    attrib = {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.XSI}
-    attrib.update(kwargs)
-    return EM.epp(*elements, attrib)
-
-
-class XMLTestCase(TestCase):
-    """TestCase with aditional methods for testing xml trees."""
-
-    def assertRequestValid(self, request_class: Type[Request], params: Dict[str, Any]):
-        """Assert that the generated XML complies with the schema."""
-        request = request_class(**params)  # type: ignore
-        xml = request.xml(tr_id='tr_id_123')
-        SCHEMA.assertValid(safe_parse(xml))
-
-    def assertXMLEqual(self, doc_1: Element, doc_2: Element) -> None:
-        self.assertEqual(doc_1.tag, doc_2.tag)
-        self.assertEqual(doc_1.attrib, doc_2.attrib)
-        self.assertEqual(doc_1.text, doc_2.text)
-        for child_1, child_2 in zip_longest(doc_1, doc_2):
-            self.assertXMLEqual(child_1, child_2)
+NSMAP = {'dm': DUMMY_NAMESPACE, 'epp': NAMESPACE.EPP}
 
 
 class DummyResponse(Response):
@@ -215,92 +186,4 @@ class TestLogout(XMLTestCase):
     def test_xml(self):
         root = fromstring(Logout().xml())
         expected = make_epp_root(EM.command(EM.logout))
-        self.assertXMLEqual(root, expected)
-
-
-class TestCheckDomain(XMLTestCase):
-    domains = ['domain.cz', 'other.com']
-
-    def test_valid(self):
-        self.assertRequestValid(CheckDomain, {'domains': self.domains})
-
-    def test_data(self):
-        root = fromstring(CheckDomain(self.domains).xml())
-        domain = ElementMaker(namespace=NAMESPACE.NIC_DOMAIN)
-        expected = make_epp_root(
-            EM.command(
-                EM.check(
-                    domain.check(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        *[domain.name(item) for item in self.domains]
-                    )
-                )
-            )
-        )
-        self.assertXMLEqual(root, expected)
-
-
-class TestCheckContact(XMLTestCase):
-    contacts = ['CID-MYOWN', 'CID-NONE']
-
-    def test_valid(self):
-        self.assertRequestValid(CheckContact, {'contacts': self.contacts})
-
-    def test_data(self):
-        root = fromstring(CheckContact(self.contacts).xml())
-        contact = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
-        expected = make_epp_root(
-            EM.command(
-                EM.check(
-                    contact.check(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
-                        *[contact.id(item) for item in self.contacts]
-                    )
-                )
-            )
-        )
-        self.assertXMLEqual(root, expected)
-
-
-class TestCheckNsset(XMLTestCase):
-    nssets = ['NID-MYNSSET', 'NID-NONE']
-
-    def test_valid(self):
-        self.assertRequestValid(CheckNsset, {'nssets': self.nssets})
-
-    def test_data(self):
-        root = fromstring(CheckNsset(self.nssets).xml())
-        nsset = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
-        expected = make_epp_root(
-            EM.command(
-                EM.check(
-                    nsset.check(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
-                        *[nsset.id(item) for item in self.nssets]
-                    )
-                )
-            )
-        )
-        self.assertXMLEqual(root, expected)
-
-
-class TestCheckKeyset(XMLTestCase):
-    keysets = ['KID-MYKEYSET', 'KID-NONE']
-
-    def test_valid(self):
-        self.assertRequestValid(CheckKeyset, {'keysets': self.keysets})
-
-    def test_data(self):
-        root = fromstring(CheckKeyset(self.keysets).xml())
-        keyset = ElementMaker(namespace=NAMESPACE.NIC_KEYSET)
-        expected = make_epp_root(
-            EM.command(
-                EM.check(
-                    keyset.check(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
-                        *[keyset.id(item) for item in self.keysets]
-                    )
-                )
-            )
-        )
         self.assertXMLEqual(root, expected)

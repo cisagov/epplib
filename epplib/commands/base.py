@@ -16,16 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module providing EPP commands."""
+"""Module providing base EPP commands."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import ClassVar, List, Optional, Sequence, Type
+from typing import ClassVar, List, Optional, Type
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.responses import (CheckContactResult, CheckDomainResult, CheckKeysetResult, CheckNssetResult, Greeting,
-                              Response, Result)
+from epplib.responses import Greeting, Response, Result
 
 
 class Request(ABC):
@@ -163,105 +162,3 @@ class Logout(Command):
             Element with the Logout specific payload.
         """
         return Element(QName(NAMESPACE.EPP, 'logout'))
-
-
-class Check(Command):
-    """Base class for EPP Check commands."""
-
-    def _get_check_payload(self, namespace: str, schema_location: str, tag: str, items: Sequence[str]) -> Element:
-        """Create subelements of the command tag specific for the Check command.
-
-        Returns:
-            Element with a list of items to check.
-        """
-        root = Element(QName(NAMESPACE.EPP, 'check'))
-
-        item_check = SubElement(root, QName(namespace, 'check'))
-        item_check.set(QName(NAMESPACE.XSI, 'schemaLocation'), schema_location)
-        for item in items:
-            SubElement(item_check, QName(namespace, tag)).text = item
-
-        return root
-
-
-@dataclass
-class CheckDomain(Check):
-    """EPP Domain Check command.
-
-    Attributes:
-        domains: List of domains to check.
-    """
-
-    response_class = CheckDomainResult
-    domains: List[str]
-
-    def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CheckDomain.
-
-        Returns:
-            Element with a list of domains to check.
-        """
-        return self._get_check_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.domains)
-
-
-@dataclass
-class CheckContact(Check):
-    """EPP Check contact command.
-
-    Attributes:
-        contacts: List of contacts to check.
-    """
-
-    response_class = CheckContactResult
-
-    contacts: List[str]
-
-    def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CheckContact.
-
-        Returns:
-            Element with a list of contacts to check.
-        """
-        return self._get_check_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.contacts)
-
-
-@dataclass
-class CheckNsset(Check):
-    """EPP Check nsset command.
-
-    Attributes:
-        nssets: List of nssets to check.
-    """
-
-    response_class = CheckNssetResult
-
-    nssets: List[str]
-
-    def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CheckNsset.
-
-        Returns:
-            Element with a list of nssets to check.
-        """
-        return self._get_check_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.nssets)
-
-
-@dataclass
-class CheckKeyset(Check):
-    """EPP Check keyset command.
-
-    Attributes:
-        keysets: List of keysets to check.
-    """
-
-    response_class = CheckKeysetResult
-
-    keysets: List[str]
-
-    def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CheckKeyset.
-
-        Returns:
-            Element with a list of keysets to check.
-        """
-        return self._get_check_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.keysets)
