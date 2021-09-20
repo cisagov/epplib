@@ -53,6 +53,12 @@ class TestParsingError(TestCase):
 
 
 class TestParseXMLMixin(TestCase):
+    def test_find_all(self):
+        element = EM.svcMenu(EM.lang('en'), EM.lang('cs'), EM.version())
+        self.assertEqual([item.text for item in Response._find_all(element, './epp:lang')], ['en', 'cs'])
+        self.assertEqual([item.text for item in Response._find_all(element, './epp:version')], [None])
+        self.assertEqual([item.text for item in Response._find_all(element, './epp:missing')], [])
+
     def test_find_text(self):
         element = EM.svcMenu(EM.lang('en'), EM.version())
         self.assertEqual(Response._find_text(element, './epp:lang'), 'en')
@@ -263,5 +269,6 @@ class TestResult(TestCase):
         result = Result.parse(xml, SCHEMA)
         self.assertEqual(result.code, 1000)
         self.assertEqual(result.message, 'Command completed successfully')
+        self.assertEqual(result.data, None)
         self.assertEqual(result.cl_tr_id, 'sdmj001#17-03-06at18:48:03')
         self.assertEqual(result.sv_tr_id, 'ReqID-0000126633')

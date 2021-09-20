@@ -76,6 +76,10 @@ class ParseXMLMixin:
     )
 
     @staticmethod
+    def _find_all(element: Element, path: str) -> List[Element]:
+        return element.findall(path, namespaces=NAMESPACES)
+
+    @staticmethod
     def _find_text(element: Element, path: str) -> str:
         return element.findtext(path, namespaces=NAMESPACES)
 
@@ -374,7 +378,7 @@ class Result(Response, Generic[T]):
 
     _payload_tag: ClassVar = QName(NAMESPACE.EPP, 'response')
     _res_data_class: ClassVar[Optional[Type[T]]] = None
-    _res_data_path: ClassVar[str]
+    _res_data_path: ClassVar[Optional[str]] = None
 
     code: int
     message: str
@@ -393,7 +397,7 @@ class Result(Response, Generic[T]):
         return cast('Result', super().parse(raw_response, schema))
 
     @classmethod
-    def _extract_payload(cls, element: Element) -> Mapping[str, Union[None, int, str, Sequence[Any]]]:
+    def _extract_payload(cls, element: Element) -> Mapping[str, Any]:
         """Extract the actual information from the response.
 
         Args:
@@ -415,12 +419,11 @@ class Result(Response, Generic[T]):
         Args:
             element: resData epp element.
         """
-        if cls._res_data_class is None:
+        if (element is None) or (cls._res_data_path is None) or (cls._res_data_class is None):
             data = None
         else:
             data = []
-            if element is not None:
-                for item in element.findall(cls._res_data_path, namespaces=NAMESPACES):
-                    item_data = cls._res_data_class.extract(item)
-                    data.append(item_data)
+            for item in element.findall(cls._res_data_path, namespaces=NAMESPACES):
+                item_data = cls._res_data_class.extract(item)
+                data.append(item_data)
         return data
