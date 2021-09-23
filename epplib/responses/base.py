@@ -17,13 +17,15 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 """Module providing base classes to EPP command responses."""
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any, Callable, ClassVar, Generic, List, Mapping, Optional, Sequence, Type, TypeVar, Union, cast
+from datetime import date, datetime
+from typing import (Any, Callable, ClassVar, Generic, List, Mapping, Optional, Pattern, Sequence, Type, TypeVar, Union,
+                    cast)
 
-from isodate import Duration, parse_datetime, parse_duration
-from isodate.isoerror import ISO8601Error
+from dateutil.parser import parse as parse_datetime
+from dateutil.relativedelta import relativedelta
 from lxml.etree import Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE
@@ -37,10 +39,11 @@ NAMESPACES = {
     'nsset': NAMESPACE.NIC_NSSET,
 }
 
-GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, str, timedelta]]
+GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, relativedelta, str]]
 
 T = TypeVar('T', bound='ResultData')
 U = TypeVar('U')
+N = TypeVar('N')
 
 
 class ParsingError(Exception):
@@ -60,6 +63,17 @@ class ParsingError(Exception):
 
 class ParseXMLMixin:
     """Mixin to simplify XML parsing."""
+
+    duration_regex: ClassVar[Pattern] = re.compile(
+        (
+            r'^(?P<sign>-)?P(?P<years>\d+Y)?(?P<months>\d+M)?(?P<days>\d+D)?'
+            r'(T'
+            r'(?P<hours>\d+H)?(?P<minutes>\d+M)?'
+            r'((?P<seconds>\d+)(?P<microseconds>\.\d+)?S)?'
+            r')?$'
+        ),
+        re.ASCII
+    )
 
     @staticmethod
     def _find_text(element: Element, path: str) -> str:
@@ -97,6 +111,39 @@ class ParseXMLMixin:
             return None
         else:
             return function(param)
+
+    @staticmethod
+    def _parse_date(value: str) -> date:
+        return parse_datetime(value).date()
+
+    @classmethod
+    def _parse_duration(cls, value: str) -> relativedelta:
+        """Parse duration in the 'PnYnMnDTnHnMnS' form.
+
+        Args:
+            value: String to be parsed.
+
+        Returns:
+            Duration expressed as relativedelta.
+
+        Raises:
+            ValueError: If the value can not be parsed.
+        """
+        value = value.strip()
+        match = cls.duration_regex.fullmatch(value)
+        if match:
+            groups = match.groupdict()
+            sign = -1 if groups.pop('sign') else 1
+
+            seconds = groups.pop('seconds', None)
+            microseconds = groups.pop('microseconds', None)
+
+            params = {k: int(v[:-1]) for k, v in groups.items() if v is not None}
+            params['seconds'] = int(seconds) if seconds is not None else 0
+            params['microseconds'] = int(10**6 * float(microseconds)) if microseconds is not None else 0
+            return sign * relativedelta(**params)  # type: ignore
+        else:
+            raise ValueError('Can not parse string "{}" as duration.'.format(value))
 
     @staticmethod
     def _str_to_bool(value: Optional[str]) -> Optional[bool]:
@@ -268,7 +315,7 @@ class Greeting(Response):
         )
 
     @classmethod
-    def _extract_expiry(cls, element: Element) -> Union[None, datetime, timedelta]:
+    def _extract_expiry(cls, element: Element) -> Union[None, datetime, relativedelta]:
         """Extract the expiry part of Greeting.
 
         Result depends on whether the expiry is relative or absolute. Absolute expiry is returned as datetime whereas
@@ -293,16 +340,13 @@ class Greeting(Response):
         if tag == QName(NAMESPACE.EPP, 'absolute'):
             try:
                 return parse_datetime(text)
-            except (ISO8601Error, ValueError) as exception:
+            except ValueError as exception:
                 raise ParsingError('Could not parse "{}" as absolute expiry.'.format(text)) from exception
         elif tag == QName(NAMESPACE.EPP, 'relative'):
             try:
-                result = parse_duration(text)
-            except (ISO8601Error, ValueError) as exception:
+                return cls._parse_duration(text)
+            except ValueError as exception:
                 raise ParsingError('Could not parse "{}" as relative expiry.'.format(text)) from exception
-            if isinstance(result, Duration):
-                result = result.totimedelta(datetime.now())
-            return result
         else:
             raise ValueError('Expected expiry specification. Found "{}" instead.'.format(tag))
 

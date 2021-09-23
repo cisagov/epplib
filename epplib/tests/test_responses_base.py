@@ -17,13 +17,12 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import ClassVar, Mapping, cast
 from unittest import TestCase
 from unittest.mock import patch
 
-from freezegun import freeze_time
-from isodate import parse_datetime
+from dateutil.relativedelta import relativedelta
 from lxml.etree import DocumentInvalid, Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE
@@ -85,6 +84,45 @@ class TestParseXMLMixin(TestCase):
     def test_optional(self):
         self.assertEqual(Result._optional(int, '1'), 1)
         self.assertEqual(Result._optional(int, None), None)
+
+    def test_parse_date(self):
+        self.assertEqual(Response._parse_date('2021-07-21'), date(2021, 7, 21))
+
+    def test_parse_duration_valid(self):
+        data = (
+            ('P1Y', relativedelta(years=1)),
+            ('P2M', relativedelta(months=2)),
+            ('P3D', relativedelta(days=3)),
+            ('PT4H', relativedelta(hours=4)),
+            ('PT5M', relativedelta(minutes=5)),
+            ('PT6S', relativedelta(seconds=6)),
+            ('PT6.5S', relativedelta(seconds=6, microseconds=500000)),
+            ('PT6.05S', relativedelta(seconds=6, microseconds=50000)),
+            ('P2MT5M', relativedelta(months=2, minutes=5)),
+            ('P1Y2M3DT4H5M6S', relativedelta(years=1, months=2, days=3, hours=4, minutes=5, seconds=6)),
+            ('-P1Y', relativedelta(years=-1)),
+            ('-P1YT2H', relativedelta(years=-1, hours=-2)),
+        )
+        for item, expected in data:
+            with self.subTest(item=item):
+                self.assertEqual(Response._parse_duration(item), expected)
+
+    def test_parse_duration_invalid(self):
+        data = (
+            'invalid',
+            'PY',
+            'P1.5Y',
+            'P1Z',
+            'PT1Z',
+            'P2M5M',
+            'P2M5H',
+            '1Y',
+        )
+        message = 'Can not parse string "{}" as duration\\.'
+        for item in data:
+            with self.subTest(item=item):
+                with self.assertRaisesRegex(ValueError, message.format(item)):
+                    Response._parse_duration(item)
 
     def test_str_to_bool(self):
         self.assertEqual(Result._str_to_bool(None), None)
@@ -188,12 +226,11 @@ class TestGreeting(TestCase):
         expected = datetime(2021, 5, 4, 3, 14, 15, tzinfo=timezone(timedelta(hours=2)))
         self.assertEqual(greeting.expiry, expected)
 
-    @freeze_time('2021-07-14 12:15')
     def test_parse_expiry_relative(self):
         xml = self.greeting_template.replace(b'{expiry}', self.expiry_relative)
         greeting = Greeting.parse(xml, SCHEMA)
 
-        expected = timedelta(days=1, hours=10, minutes=15, seconds=20)
+        expected = relativedelta(days=1, hours=10, minutes=15, seconds=20)
         self.assertEqual(greeting.expiry, expected)
 
     def test_parse_no_expiry(self):
@@ -201,28 +238,6 @@ class TestGreeting(TestCase):
         greeting = Greeting.parse(xml, SCHEMA)
 
         self.assertEqual(greeting.expiry, None)
-
-    @freeze_time('2021-07-14 12:15')
-    def test_extract_expiry_duration_conversion(self):
-        # isodate parses time period to timedelta or Duration depending on whether it contains "complicated" intervals.
-
-        expiry_absolute = EM.expiry(EM.absolute('2021-05-04T03:14:15+02:00'))
-        self.assertEqual(
-            Greeting._extract_expiry(expiry_absolute),
-            datetime(2021, 5, 4, 3, 14, 15, tzinfo=timezone(timedelta(hours=2)))
-        )
-
-        expiry_relative_simple = EM.expiry(EM.relative('P0Y0M1DT10H15M20S'))
-        self.assertEqual(
-            Greeting._extract_expiry(expiry_relative_simple),
-            timedelta(days=1, hours=10, minutes=15, seconds=20)
-        )
-
-        expiry_relative_complicated = EM.expiry(EM.relative('P1Y2M3DT4H5M6S'))
-        self.assertEqual(
-            Greeting._extract_expiry(expiry_relative_complicated),
-            parse_datetime('2022-09-17T16:20:06') - parse_datetime('2021-07-14T12:15')
-        )
 
     def test_extract_absolute_expiry_error(self):
         expiry = EM.expiry(EM.absolute('Gazpacho!'))
