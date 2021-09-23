@@ -19,43 +19,15 @@
 """Module providing responses to EPP check commands."""
 
 from dataclasses import dataclass
-from typing import ClassVar, Optional, Sequence
+from typing import ClassVar, Optional
 
 from lxml.etree import Element
 
-from epplib.responses.base import NAMESPACES, Result, ResultData, T
-
-
-class CheckResult(Result[T]):
-    """Represents EPP Result which responds to the Check command.
-
-    Attributes:
-        code: Code attribute of the epp/response/result element.
-        message: Content of the epp/response/result/msg element.
-        data: Content of the epp/response/result/resData element.
-        cl_tr_id: Content of the epp/response/trID/clTRID element.
-        sv_tr_id: Content of the epp/response/trID/svTRID element.
-    """
-
-    _res_data_path: ClassVar[str]
-
-    @classmethod
-    def _extract_data(cls, element: Optional[Element]) -> Sequence[T]:
-        """Extract the content of the resData element.
-
-        Args:
-            element: resData epp element.
-        """
-        data = []
-        if element is not None:
-            for item in element.findall(cls._res_data_path, namespaces=NAMESPACES):
-                item_data = cls._res_data_class.extract(item)
-                data.append(item_data)
-        return data
+from epplib.responses.base import Result, ResultData
 
 
 @dataclass
-class CheckDomainResult(CheckResult):
+class CheckDomainResult(Result):
     """Represents EPP Result which responds to the Check domain command.
 
     Attributes:
@@ -95,7 +67,7 @@ class CheckDomainResult(CheckResult):
 
 
 @dataclass
-class CheckContactResult(CheckResult):
+class CheckContactResult(Result):
     """Represents EPP Result which responds to the Check contact command.
 
     Attributes:
@@ -135,7 +107,7 @@ class CheckContactResult(CheckResult):
 
 
 @dataclass
-class CheckNssetResult(CheckResult):
+class CheckNssetResult(Result):
     """Represents EPP Result which responds to the Check nsset command.
 
     Attributes:
@@ -175,7 +147,7 @@ class CheckNssetResult(CheckResult):
 
 
 @dataclass
-class CheckKeysetResult(CheckResult):
+class CheckKeysetResult(Result):
     """Represents EPP Result which responds to the Check keyset command.
 
     Attributes:

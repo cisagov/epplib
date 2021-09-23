@@ -16,7 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import Any, Dict
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
 from unittest import TestCase
 
 from lxml.etree import DocumentInvalid, Element, QName, fromstring
@@ -28,7 +29,7 @@ from epplib.responses import Response
 from epplib.tests.utils import EM, SCHEMA, XMLTestCase, make_epp_root
 
 DUMMY_NAMESPACE = 'dummy:name:space'
-NSMAP = {'dm': DUMMY_NAMESPACE, 'epp': NAMESPACE.EPP}
+EXTENSION_NAMESPACE = 'extension:name:space'
 
 
 class DummyResponse(Response):
@@ -44,11 +45,23 @@ class DummyRequest(Request):
         return Element(QName(DUMMY_NAMESPACE, 'dummy'))
 
 
+@dataclass
 class DummyCommand(Command):
     response_class = DummyResponse
 
     def _get_command_payload(self) -> Element:
         return Element(QName(DUMMY_NAMESPACE, 'dummy'))
+
+
+@dataclass
+class ExtendedDummyCommand(Command):
+    response_class = DummyResponse
+
+    def _get_command_payload(self) -> Element:
+        return Element(QName(DUMMY_NAMESPACE, 'dummy'))
+
+    def _get_extension_payload(self) -> Optional[Element]:
+        return Element(QName(EXTENSION_NAMESPACE, 'dummy_ext'))
 
 
 class TestRequest(TestCase):
@@ -86,34 +99,42 @@ class TestHello(XMLTestCase):
         self.assertXMLEqual(root, expected)
 
 
-class TestCommand(TestCase):
-    def test_command(self):
+class TestCommand(XMLTestCase):
+    def test_command_no_extension(self):
         root = fromstring(DummyCommand().xml())
-        command = root[0]
+        expected = make_epp_root(
+            EM.command(
+                EM(str(QName(DUMMY_NAMESPACE, 'dummy'))),
+            )
+        )
+        self.assertXMLEqual(root, expected)
 
-        self.assertEqual(command.tag, QName(NAMESPACE.EPP, 'command'))
-        self.assertEqual(len(command), 1)
-        self.assertEqual(len(command.attrib), 0)
-
-        self.assertEqual(command[0].tag, QName(DUMMY_NAMESPACE, 'dummy'))
+    def test_command_extension(self):
+        root = fromstring(ExtendedDummyCommand().xml())
+        expected = make_epp_root(
+            EM.command(
+                EM(str(QName(DUMMY_NAMESPACE, 'dummy'))),
+                EM.extension(
+                    EM(str(QName(EXTENSION_NAMESPACE, 'dummy_ext')))
+                )
+            )
+        )
+        self.assertXMLEqual(root, expected)
 
     def test_command_tr_id(self):
         tr_id = 'tr_id_123'
-        root = fromstring(DummyCommand().xml(tr_id=tr_id))
-        command = root[0]
+        root = fromstring(ExtendedDummyCommand().xml(tr_id=tr_id))
 
-        self.assertEqual(command.tag, QName(NAMESPACE.EPP, 'command'))
-        self.assertEqual(len(command), 2)
-        self.assertEqual(len(command.attrib), 0)
-
-        self.assertEqual(
-            [element.tag for element in command.findall('./dm:dummy', namespaces=NSMAP)],
-            [QName(DUMMY_NAMESPACE, 'dummy')]
+        expected = make_epp_root(
+            EM.command(
+                EM(str(QName(DUMMY_NAMESPACE, 'dummy'))),
+                EM.extension(
+                    EM(str(QName(EXTENSION_NAMESPACE, 'dummy_ext')))
+                ),
+                EM.clTRID(tr_id),
+            )
         )
-        self.assertEqual(
-            [element.text for element in command.findall('./epp:clTRID', namespaces=NSMAP)],
-            [tr_id]
-        )
+        self.assertXMLEqual(root, expected)
 
 
 class TestLogin(XMLTestCase):

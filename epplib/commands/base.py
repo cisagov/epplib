@@ -83,6 +83,13 @@ class Command(Request):
         """
         command_element = Element(QName(NAMESPACE.EPP, 'command'))
         command_element.append(self._get_command_payload())
+
+        extension_payload = self._get_extension_payload()
+        if extension_payload is not None:
+            extension_tag = Element(QName(NAMESPACE.EPP, 'extension'))
+            extension_tag.append(extension_payload)
+            command_element.append(extension_tag)
+
         if tr_id is not None:
             SubElement(command_element, QName(NAMESPACE.EPP, 'clTRID')).text = tr_id
         return command_element
@@ -94,6 +101,14 @@ class Command(Request):
         Returns:
             Element with the Command specific payload.
         """
+
+    def _get_extension_payload(self) -> Optional[Element]:
+        """Create extension subelements of the command tag specific to the given Command subclass.
+
+        Returns:
+            Element with the Command specific extension payload.
+        """
+        return None
 
 
 @dataclass

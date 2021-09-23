@@ -20,12 +20,14 @@
 
 from .base import Greeting, ParsingError, Response, Result, ResultData
 from .check import CheckContactResult, CheckDomainResult, CheckKeysetResult, CheckNssetResult
+from .create import CreateDomainResult
 
 __all__ = [
     'CheckContactResult',
     'CheckDomainResult',
     'CheckKeysetResult',
     'CheckNssetResult',
+    'CreateDomainResult',
     'Greeting',
     'ParsingError',
     'Response',

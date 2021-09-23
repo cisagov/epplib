@@ -82,9 +82,9 @@ class TestParseXMLMixin(TestCase):
         self.assertEqual(Response._find_children(element, './epp:purpose'), ['admin', 'prov'])
         self.assertEqual(Response._find_children(element, './epp:recipient'), [])
 
-    def test_optional_int(self):
-        self.assertEqual(Result._optional_int('1'), 1)
-        self.assertEqual(Result._optional_int(None), None)
+    def test_optional(self):
+        self.assertEqual(Result._optional(int, '1'), 1)
+        self.assertEqual(Result._optional(int, None), None)
 
     def test_str_to_bool(self):
         self.assertEqual(Result._str_to_bool(None), None)
