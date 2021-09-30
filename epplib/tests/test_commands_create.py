@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-from datetime import date
 from typing import Any, Dict
 
 from lxml.builder import ElementMaker
@@ -37,8 +36,6 @@ class TestCreateDomain(XMLTestCase):
         'registrant': 'CID-MYOWN',
         'admin': 'CID-ADMIN1',
         'authInfo': '12345',
-        'enumval_val_expiration_date': date(2021, 1, 1),
-        'enumval_publish': True,
     }
     required = ['name', 'registrant']
 
@@ -49,7 +46,6 @@ class TestCreateDomain(XMLTestCase):
     def test_data_full(self):
         root = fromstring(CreateDomain(**self.params).xml())
         domain = ElementMaker(namespace=NAMESPACE.NIC_DOMAIN)
-        enumval = ElementMaker(namespace=NAMESPACE.NIC_ENUMVAL)
         expected = make_epp_root(
             EM.command(
                 EM.create(
@@ -64,13 +60,6 @@ class TestCreateDomain(XMLTestCase):
                         domain.authInfo(self.params['authInfo']),
                     ),
                 ),
-                EM.extension(
-                    enumval.create(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_ENUMVAL},
-                        enumval.valExDate('2021-01-01'),
-                        enumval.publish('true'),
-                    )
-                )
             )
         )
         self.assertXMLEqual(root, expected)

@@ -19,13 +19,14 @@
 from difflib import unified_diff
 from itertools import zip_longest
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Type, TypeVar
+from typing import Any, Dict, List, Sequence, Type, TypeVar, cast
 from unittest import TestCase
 
 from lxml.builder import ElementMaker
 from lxml.etree import Element, QName, XMLSchema, tostring
 
-from epplib.commands import Request
+from epplib.commands import Command, Request
+from epplib.commands.extensions import CommandExtension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.utils import safe_parse
 
@@ -53,9 +54,12 @@ def sub_dict(source: Dict[T, U], keys: Sequence[T]) -> Dict[T, U]:
 class XMLTestCase(TestCase):
     """TestCase with aditional methods for testing xml trees."""
 
-    def assertRequestValid(self, request_class: Type[Request], params: Dict[str, Any]):
+    def assertRequestValid(self, request_class: Type[Request], params: Dict[str, Any],
+                           extension: CommandExtension = None):
         """Assert that the generated XML complies with the schema."""
         request = request_class(**params)  # type: ignore
+        if extension is not None:
+            cast(Command, request).add_extension(extension)
         xml = request.xml(tr_id='tr_id_123')
         SCHEMA.assertValid(safe_parse(xml))
 

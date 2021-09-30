@@ -19,10 +19,11 @@
 """Module providing base EPP commands."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import ClassVar, List, Optional, Type
+from typing import ClassVar, List, Optional, Sequence, Type
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
+from epplib.commands.extensions import CommandExtension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.responses import Greeting, Response, Result
 
@@ -75,6 +76,17 @@ class Hello(Request):
 class Command(Request):
     """Base class for EPP Commands."""
 
+    def __post_init__(self):
+        self.extensions: List[CommandExtension] = []
+
+    def add_extension(self, extension: CommandExtension) -> None:
+        """Add extension to the EPP Command.
+
+        Args:
+            extension: Extension to be added.
+        """
+        self.extensions.append(extension)
+
     def _get_payload(self, tr_id: str = None) -> Element:
         """Create subelements of the epp tag specific for the given Command.
 
@@ -85,9 +97,9 @@ class Command(Request):
         command_element.append(self._get_command_payload())
 
         extension_payload = self._get_extension_payload()
-        if extension_payload is not None:
+        if extension_payload:
             extension_tag = Element(QName(NAMESPACE.EPP, 'extension'))
-            extension_tag.append(extension_payload)
+            extension_tag.extend(extension_payload)
             command_element.append(extension_tag)
 
         if tr_id is not None:
@@ -102,13 +114,13 @@ class Command(Request):
             Element with the Command specific payload.
         """
 
-    def _get_extension_payload(self) -> Optional[Element]:
+    def _get_extension_payload(self) -> Sequence[Element]:
         """Create extension subelements of the command tag specific to the given Command subclass.
 
         Returns:
-            Element with the Command specific extension payload.
+            Elements with the extension payload.
         """
-        return None
+        return [extension.get_payload() for extension in self.extensions]
 
 
 @dataclass
