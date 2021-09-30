@@ -66,3 +66,40 @@ class CreateDomainResult(Result):
 
     _res_data_path: ClassVar[str] = './domain:creData'
     _res_data_class: ClassVar = Domain
+
+
+@dataclass
+class CreateContactResult(Result):
+    """Represents EPP Result which responds to the create contact command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        msg: Content of the epp/response/result/msg element.
+        res_data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    @dataclass
+    class Contact(ResultData):
+        """Dataclass representing result of contact creation.
+
+        Attributes:
+            id: Content of the epp/response/resData/creData/id element.
+            cr_date: Content of the epp/response/resData/creData/crDate element.
+        """
+
+        id: str
+        cr_date: datetime
+
+        @classmethod
+        def extract(cls, element: Element) -> 'CreateContactResult.Contact':
+            """Extract params for own init from the element."""
+            params = (
+                cls._find_text(element, './contact:id'),
+                parse_datetime(cls._find_text(element, './contact:crDate')),
+            )
+            return cls(*params)
+
+    _res_data_path: ClassVar[str] = './contact:creData'
+    _res_data_class: ClassVar = Contact
