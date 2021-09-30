@@ -45,9 +45,9 @@ class CreateDomainResult(Result):
         """Dataclass representing result of domain creation.
 
         Attributes:
-            name: Content of the epp/response/resData/chkData/cd/name element.
-            available: Avail attribute of the epp/response/resData/chkData/cd/name element.
-            reason: Content of the epp/response/resData/chkData/cd/reason element.
+            name: Content of the epp/response/resData/creData/name element.
+            creation_date: Content of the epp/response/resData/creData/crDate element.
+            expiration_date: Content of the epp/response/resData/creData/exDate element.
         """
 
         name: str
