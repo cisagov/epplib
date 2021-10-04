@@ -17,149 +17,26 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 """Module providing base classes to EPP command responses."""
-import re
+import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from datetime import date, datetime
-from typing import (Any, Callable, ClassVar, Generic, List, Mapping, Optional, Pattern, Sequence, Type, TypeVar, Union,
-                    cast)
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, ClassVar, Dict, Generic, List, Mapping, Optional, Sequence, Type, TypeVar, Union, cast
 
 from dateutil.parser import parse as parse_datetime
 from dateutil.relativedelta import relativedelta
 from lxml.etree import Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE
-from epplib.utils import safe_parse
+from epplib.responses.extensions import EnumInfoExtension, ResponseExtension
+from epplib.utils import ParseXMLMixin, ParsingError, safe_parse
 
-NAMESPACES = {
-    'epp': NAMESPACE.EPP,
-    'contact': NAMESPACE.NIC_CONTACT,
-    'domain': NAMESPACE.NIC_DOMAIN,
-    'keyset': NAMESPACE.NIC_KEYSET,
-    'nsset': NAMESPACE.NIC_NSSET,
-}
-
-GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, relativedelta, str]]
+EXTENSIONS: Dict[QName, Type[ResponseExtension]] = {EnumInfoExtension.tag: EnumInfoExtension}
+LOGGER = logging.getLogger(__name__)
 
 T = TypeVar('T', bound='ResultData')
-U = TypeVar('U')
-N = TypeVar('N')
 
-
-class ParsingError(Exception):
-    """Error to indicate a failure while parsing of the EPP response."""
-
-    def __init__(self, *args, raw_response: Any = None):
-        self.raw_response = raw_response
-        super().__init__(*args)
-
-    def __str__(self):
-        if self.raw_response is None:
-            appendix = ''
-        else:
-            appendix = 'Raw response:\n{!r}'.format(self.raw_response)
-        return super().__str__() + appendix
-
-
-class ParseXMLMixin:
-    """Mixin to simplify XML parsing."""
-
-    duration_regex: ClassVar[Pattern] = re.compile(
-        (
-            r'^(?P<sign>-)?P(?P<years>\d+Y)?(?P<months>\d+M)?(?P<days>\d+D)?'
-            r'(T'
-            r'(?P<hours>\d+H)?(?P<minutes>\d+M)?'
-            r'((?P<seconds>\d+)(?P<microseconds>\.\d+)?S)?'
-            r')?$'
-        ),
-        re.ASCII
-    )
-
-    @staticmethod
-    def _find_all(element: Element, path: str) -> List[Element]:
-        return element.findall(path, namespaces=NAMESPACES)
-
-    @staticmethod
-    def _find_text(element: Element, path: str) -> str:
-        return element.findtext(path, namespaces=NAMESPACES)
-
-    @staticmethod
-    def _find_all_text(element: Element, path: str) -> List[str]:
-        return [(elem.text or '') for elem in element.findall(path, namespaces=NAMESPACES)]
-
-    @staticmethod
-    def _find_attrib(element: Element, path: str, attrib: str) -> Optional[str]:
-        found = element.find(path, namespaces=NAMESPACES)
-        if found is not None:
-            return found.attrib.get(attrib)
-        else:
-            return None
-
-    @staticmethod
-    def _find_child(element: Element, path: str) -> Optional[str]:
-        found_tags = Response._find_children(element, path)
-        if len(found_tags) > 0:
-            return found_tags[0]
-        else:
-            return None
-
-    @staticmethod
-    def _find_children(element: Element, path: str) -> List[str]:
-        nodes = element.findall(path + '/*', namespaces=NAMESPACES)
-        return [QName(item.tag).localname for item in nodes]
-
-    @staticmethod
-    def _optional(function: Callable[[str], U], param: Optional[str]) -> Optional[U]:
-        """Return function(param) if param is not None otherwise return None."""
-        if param is None:
-            return None
-        else:
-            return function(param)
-
-    @staticmethod
-    def _parse_date(value: str) -> date:
-        return parse_datetime(value).date()
-
-    @classmethod
-    def _parse_duration(cls, value: str) -> relativedelta:
-        """Parse duration in the 'PnYnMnDTnHnMnS' form.
-
-        Args:
-            value: String to be parsed.
-
-        Returns:
-            Duration expressed as relativedelta.
-
-        Raises:
-            ValueError: If the value can not be parsed.
-        """
-        value = value.strip()
-        match = cls.duration_regex.fullmatch(value)
-        if match:
-            groups = match.groupdict()
-            sign = -1 if groups.pop('sign') else 1
-
-            seconds = groups.pop('seconds', None)
-            microseconds = groups.pop('microseconds', None)
-
-            params = {k: int(v[:-1]) for k, v in groups.items() if v is not None}
-            params['seconds'] = int(seconds) if seconds is not None else 0
-            params['microseconds'] = int(10**6 * float(microseconds)) if microseconds is not None else 0
-            return sign * relativedelta(**params)  # type: ignore
-        else:
-            raise ValueError('Can not parse string "{}" as duration.'.format(value))
-
-    @staticmethod
-    def _str_to_bool(value: Optional[str]) -> Optional[bool]:
-        """Convert str '0' or '1' to the corresponding bool value."""
-        if value is None:
-            return None
-        elif value == '1':
-            return True
-        elif value == '0':
-            return False
-        else:
-            raise ValueError('Value "{}" is not in the list of known boolean values.'.format(value))
+GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, relativedelta, str]]
 
 
 class Response(ParseXMLMixin, ABC):
@@ -294,10 +171,10 @@ class Greeting(Response):
             'statements': [
                 cls._extract_statement(item) for item in element.findall(
                     './epp:dcp/epp:statement',
-                    namespaces=NAMESPACES
+                    namespaces=cls._NAMESPACES
                 )
             ],
-            'expiry': cls._extract_expiry(element.find('./epp:dcp/epp:expiry', namespaces=NAMESPACES))
+            'expiry': cls._extract_expiry(element.find('./epp:dcp/epp:expiry', namespaces=cls._NAMESPACES))
         }
 
         return data
@@ -374,6 +251,7 @@ class Result(Response, Generic[T]):
         data: Content of the epp/response/result/resData element.
         cl_tr_id: Content of the epp/response/trID/clTRID element.
         sv_tr_id: Content of the epp/response/trID/svTRID element.
+        extensions: Content of the epp/response/extension element.
     """
 
     _payload_tag: ClassVar = QName(NAMESPACE.EPP, 'response')
@@ -385,6 +263,7 @@ class Result(Response, Generic[T]):
     data: Sequence[T]
     cl_tr_id: str
     sv_tr_id: str
+    extensions: Sequence[ResponseExtension] = field(default_factory=list)
 
     @classmethod
     def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'Result':
@@ -403,14 +282,15 @@ class Result(Response, Generic[T]):
         Args:
             element: Child element of the epp element.
         """
-        data = {
+        payload_data = {
             'code': cls._optional(int, cls._find_attrib(element, './epp:result', 'code')),
             'message': cls._find_text(element, './epp:result/epp:msg'),
-            'data': cls._extract_data(element.find('./epp:resData', namespaces=NAMESPACES)),
+            'data': cls._extract_data(cls._find(element, './epp:resData')),
             'cl_tr_id': cls._find_text(element, './epp:trID/epp:clTRID'),
             'sv_tr_id': cls._find_text(element, './epp:trID/epp:svTRID'),
+            'extensions': cls._extract_extensions(cls._find(element, './epp:extension')),
         }
-        return data
+        return payload_data
 
     @classmethod
     def _extract_data(cls, element: Optional[Element]) -> Optional[Sequence[T]]:
@@ -423,7 +303,19 @@ class Result(Response, Generic[T]):
             data = None
         else:
             data = []
-            for item in element.findall(cls._res_data_path, namespaces=NAMESPACES):
+            for item in element.findall(cls._res_data_path, namespaces=cls._NAMESPACES):
                 item_data = cls._res_data_class.extract(item)
                 data.append(item_data)
+        return data
+
+    @classmethod
+    def _extract_extensions(cls, element: Optional[Element]) -> Sequence[ResponseExtension]:
+        data = []
+        if element is not None:
+            for child in element:
+                extension_class = EXTENSIONS.get(child.tag, None)
+                if extension_class is None:
+                    LOGGER.info('Could not find class to extract extension {}.'.format(child.tag))
+                else:
+                    data.append(extension_class.extract(child))
         return data
