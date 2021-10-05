@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import ClassVar, Optional
 
-from isodate import parse_date, parse_datetime
+from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element
 
 from epplib.responses.base import Result, ResultData
@@ -60,7 +60,7 @@ class CreateDomainResult(Result):
             params = (
                 cls._find_text(element, './domain:name'),
                 parse_datetime(cls._find_text(element, './domain:crDate')),
-                cls._optional(parse_date, cls._find_text(element, './domain:exDate')),
+                cls._optional(cls._parse_date, cls._find_text(element, './domain:exDate')),
             )
             return cls(*params)
 
