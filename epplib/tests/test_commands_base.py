@@ -17,13 +17,14 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from unittest import TestCase
 
 from lxml.etree import DocumentInvalid, Element, QName, fromstring
 
 from epplib.commands import Hello, Login, Logout, Request
 from epplib.commands.base import Command
+from epplib.commands.extensions import CommandExtension
 from epplib.constants import NAMESPACE
 from epplib.responses import Response
 from epplib.tests.utils import EM, SCHEMA, XMLTestCase, make_epp_root
@@ -54,13 +55,9 @@ class DummyCommand(Command):
 
 
 @dataclass
-class ExtendedDummyCommand(Command):
-    response_class = DummyResponse
+class DummyCommandExtension(CommandExtension):
 
-    def _get_command_payload(self) -> Element:
-        return Element(QName(DUMMY_NAMESPACE, 'dummy'))
-
-    def _get_extension_payload(self) -> Optional[Element]:
+    def get_payload(self) -> Element:
         return Element(QName(EXTENSION_NAMESPACE, 'dummy_ext'))
 
 
@@ -110,7 +107,9 @@ class TestCommand(XMLTestCase):
         self.assertXMLEqual(root, expected)
 
     def test_command_extension(self):
-        root = fromstring(ExtendedDummyCommand().xml())
+        command = DummyCommand()
+        command.add_extension(DummyCommandExtension())
+        root = fromstring(command.xml())
         expected = make_epp_root(
             EM.command(
                 EM(str(QName(DUMMY_NAMESPACE, 'dummy'))),
@@ -123,14 +122,11 @@ class TestCommand(XMLTestCase):
 
     def test_command_tr_id(self):
         tr_id = 'tr_id_123'
-        root = fromstring(ExtendedDummyCommand().xml(tr_id=tr_id))
+        root = fromstring(DummyCommand().xml(tr_id=tr_id))
 
         expected = make_epp_root(
             EM.command(
                 EM(str(QName(DUMMY_NAMESPACE, 'dummy'))),
-                EM.extension(
-                    EM(str(QName(EXTENSION_NAMESPACE, 'dummy_ext')))
-                ),
                 EM.clTRID(tr_id),
             )
         )

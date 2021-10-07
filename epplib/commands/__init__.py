@@ -18,7 +18,7 @@
 
 """Module providing EPP commands."""
 
-from .base import Hello, Login, Logout, Request
+from .base import Command, Hello, Login, Logout, Request
 from .check import CheckContact, CheckDomain, CheckKeyset, CheckNsset
 from .create import CreateDomain
 
@@ -27,6 +27,7 @@ __all__ = [
     'CheckDomain',
     'CheckKeyset',
     'CheckNsset',
+    'Command',
     'CreateDomain',
     'Hello',
     'Login',
