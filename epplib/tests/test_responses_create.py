@@ -38,7 +38,7 @@ class TestCreateDomainResult(TestCase):
             )
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CreateDomainResult, result).data, expected)
+        self.assertEqual(cast(CreateDomainResult, result).res_data, expected)
 
     def test_parse_minimal(self):
         xml_template = (BASE_DATA_PATH / 'responses/result_create_domain_template.xml').read_bytes()
@@ -52,7 +52,7 @@ class TestCreateDomainResult(TestCase):
             )
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CreateDomainResult, result).data, expected)
+        self.assertEqual(cast(CreateDomainResult, result).res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()

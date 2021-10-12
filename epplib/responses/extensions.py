@@ -81,7 +81,6 @@ class EnumInfoExtension(ParseXMLMixin, ResponseExtension):
         Returns:
             Dataclass representing the extension.
         """
-        # TODO: Assert tag?
         val_ex_date = cls._optional(cls._parse_date, cls._find_text(element, './enumval:valExDate'))
         publish = cls._optional(cls._str_to_bool, cls._find_text(element, './enumval:publish'))
         return cls(val_ex_date=val_ex_date, publish=publish)

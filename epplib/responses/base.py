@@ -248,8 +248,8 @@ class Result(Response, Generic[T]):
 
     Attributes:
         code: Code attribute of the epp/response/result element.
-        message: Content of the epp/response/result/msg element.
-        data: Content of the epp/response/result/resData element.
+        msg: Content of the epp/response/result/msg element.
+        res_data: Content of the epp/response/result/resData element.
         cl_tr_id: Content of the epp/response/trID/clTRID element.
         sv_tr_id: Content of the epp/response/trID/svTRID element.
         extensions: Content of the epp/response/extension element.
@@ -260,8 +260,8 @@ class Result(Response, Generic[T]):
     _res_data_path: ClassVar[Optional[str]] = None
 
     code: int
-    message: str
-    data: Sequence[T]
+    msg: str
+    res_data: Sequence[T]
     cl_tr_id: str
     sv_tr_id: str
     extensions: Sequence[ResponseExtension] = field(default_factory=list)
@@ -285,8 +285,8 @@ class Result(Response, Generic[T]):
         """
         payload_data = {
             'code': cls._optional(int, cls._find_attrib(element, './epp:result', 'code')),
-            'message': cls._find_text(element, './epp:result/epp:msg'),
-            'data': cls._extract_data(cls._find(element, './epp:resData')),
+            'msg': cls._find_text(element, './epp:result/epp:msg'),
+            'res_data': cls._extract_data(cls._find(element, './epp:resData')),
             'cl_tr_id': cls._find_text(element, './epp:trID/epp:clTRID'),
             'sv_tr_id': cls._find_text(element, './epp:trID/epp:svTRID'),
             'extensions': cls._extract_extensions(cls._find(element, './epp:extension')),

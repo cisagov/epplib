@@ -130,7 +130,7 @@ class Login(Command):
     Attributes:
         cl_id: EPP clID
         password: EPP pw
-        new_password: EPP newPW
+        new_pw: EPP newPW
         version: EPP options/version
         lang: EPP options/lang
         obj_uris: EPP/svcs/objURI
@@ -142,7 +142,7 @@ class Login(Command):
     cl_id: str
     password: str
     obj_uris: List[str]
-    new_password: Optional[str] = None
+    new_pw: Optional[str] = None
     version: str = '1.0'
     lang: str = 'en'
     ext_uris: List[str] = field(default_factory=list)
@@ -157,8 +157,8 @@ class Login(Command):
 
         SubElement(root, QName(NAMESPACE.EPP, 'clID')).text = self.cl_id
         SubElement(root, QName(NAMESPACE.EPP, 'pw')).text = self.password
-        if self.new_password is not None:
-            SubElement(root, QName(NAMESPACE.EPP, 'newPW')).text = self.new_password
+        if self.new_pw is not None:
+            SubElement(root, QName(NAMESPACE.EPP, 'newPW')).text = self.new_pw
 
         options = SubElement(root, QName(NAMESPACE.EPP, 'options'))
         SubElement(options, QName(NAMESPACE.EPP, 'version')).text = self.version

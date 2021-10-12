@@ -34,8 +34,8 @@ class CreateDomainResult(Result):
 
     Attributes:
         code: Code attribute of the epp/response/result element.
-        message: Content of the epp/response/result/msg element.
-        data: Content of the epp/response/result/resData element.
+        msg: Content of the epp/response/result/msg element.
+        res_data: Content of the epp/response/result/resData element.
         cl_tr_id: Content of the epp/response/trID/clTRID element.
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
@@ -46,13 +46,13 @@ class CreateDomainResult(Result):
 
         Attributes:
             name: Content of the epp/response/resData/creData/name element.
-            creation_date: Content of the epp/response/resData/creData/crDate element.
-            expiration_date: Content of the epp/response/resData/creData/exDate element.
+            cr_date: Content of the epp/response/resData/creData/crDate element.
+            ex_date: Content of the epp/response/resData/creData/exDate element.
         """
 
         name: str
-        creation_date: datetime
-        expiration_date: Optional[date] = None
+        cr_date: datetime
+        ex_date: Optional[date] = None
 
         @classmethod
         def extract(cls, element: Element) -> 'CreateDomainResult.Domain':
