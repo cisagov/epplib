@@ -20,7 +20,7 @@
 
 import re
 from datetime import date
-from typing import Any, Callable, ClassVar, List, Mapping, Optional, Pattern, TypeVar
+from typing import Callable, ClassVar, List, Mapping, Optional, Pattern, TypeVar
 
 from dateutil.parser import parse as parse_datetime
 from dateutil.relativedelta import relativedelta
@@ -47,21 +47,6 @@ def safe_parse(raw_xml: bytes) -> Element:
         raise ValueError('Doctype is not allowed.')
 
     return parsed
-
-
-class ParsingError(Exception):
-    """Error to indicate a failure while parsing of the EPP response."""
-
-    def __init__(self, *args, raw_response: Any = None):
-        self.raw_response = raw_response
-        super().__init__(*args)
-
-    def __str__(self):
-        if self.raw_response is None:
-            appendix = ''
-        else:
-            appendix = 'Raw response:\n{!r}'.format(self.raw_response)
-        return super().__str__() + appendix
 
 
 class ParseXMLMixin:

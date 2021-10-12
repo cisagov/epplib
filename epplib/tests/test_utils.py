@@ -24,7 +24,7 @@ from dateutil.relativedelta import relativedelta
 from lxml.etree import Element, QName
 
 from epplib.tests.utils import EM
-from epplib.utils import ParseXMLMixin, ParsingError, safe_parse
+from epplib.utils import ParseXMLMixin, safe_parse
 
 
 class TestSafeParse(TestCase):
@@ -41,13 +41,6 @@ class TestSafeParse(TestCase):
                    <simple/>'''
         with self.assertRaisesRegex(ValueError, 'Doctype is not allowed\\.'):
             safe_parse(data)
-
-
-class TestParsingError(TestCase):
-    def test_str(self):
-        self.assertEqual(str(ParsingError()), '')
-        self.assertEqual(str(ParsingError('Gazpacho!')), 'Gazpacho!')
-        self.assertEqual(str(ParsingError(raw_response='Gazpacho!')), "Raw response:\n'Gazpacho!'")
 
 
 class TestParseXMLMixin(TestCase):
