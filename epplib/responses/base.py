@@ -28,8 +28,9 @@ from dateutil.relativedelta import relativedelta
 from lxml.etree import Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE
+from epplib.exceptions import ParsingError
 from epplib.responses.extensions import EnumInfoExtension, ResponseExtension
-from epplib.utils import ParseXMLMixin, ParsingError, safe_parse
+from epplib.utils import ParseXMLMixin, safe_parse
 
 EXTENSIONS: Dict[QName, Type[ResponseExtension]] = {EnumInfoExtension.tag: EnumInfoExtension}
 LOGGER = logging.getLogger(__name__)

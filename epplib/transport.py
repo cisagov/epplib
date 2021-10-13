@@ -23,11 +23,9 @@ from abc import ABC, abstractmethod
 from os import PathLike
 from typing import Optional, Union
 
+from epplib.exceptions import TransportError
+
 PathType = Union[str, PathLike]
-
-
-class TransportError(RuntimeError):
-    """Error to indicate problem while exchanging data with the server."""
 
 
 class Transport(ABC):
