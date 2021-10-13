@@ -154,9 +154,9 @@ class ParseXMLMixin:
         """Convert str '0' or '1' to the corresponding bool value."""
         if value is None:
             return None
-        elif value == '1':
+        elif value.lower() in ('1', 'true'):
             return True
-        elif value == '0':
+        elif value.lower() in ('0', 'false'):
             return False
         else:
             raise ValueError('Value "{}" is not in the list of known boolean values.'.format(value))

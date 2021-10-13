@@ -130,5 +130,7 @@ class TestParseXMLMixin(TestCase):
         self.assertEqual(ParseXMLMixin._str_to_bool(None), None)
         self.assertEqual(ParseXMLMixin._str_to_bool('1'), True)
         self.assertEqual(ParseXMLMixin._str_to_bool('0'), False)
+        self.assertEqual(ParseXMLMixin._str_to_bool('true'), True)
+        self.assertEqual(ParseXMLMixin._str_to_bool('false'), False)
         with self.assertRaisesRegex(ValueError, 'Value "other" is not in the list of known boolean values\\.'):
             ParseXMLMixin._str_to_bool('other')
