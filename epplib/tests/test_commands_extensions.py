@@ -34,15 +34,15 @@ class TestCreateDomainEnumExtension(XMLTestCase):
         'registrant': 'CID-MYOWN',
     }
     extension_params: Dict[str, Any] = {
-        'enumval_val_expiration_date': date(2021, 1, 1),
-        'enumval_publish': True,
+        'val_ex_date': date(2021, 1, 1),
+        'publish': True,
     }
 
     def test_valid(self):
         params = (
             tuple(self.extension_params.keys()),
-            ['enumval_val_expiration_date'],
-            ['enumval_publish'],
+            ['val_ex_date'],
+            ['publish'],
         )
         for subset in params:
             with self.subTest(params=subset):

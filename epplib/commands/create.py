@@ -39,7 +39,7 @@ class CreateDomain(Command):
         nsset: nsset ID
         keyset: keyset ID
         admin: administrator contact ID
-        authInfo: authInfo for domain transfers
+        auth_info: authInfo for domain transfers
     """
 
     response_class = CreateDomainResult
@@ -51,7 +51,7 @@ class CreateDomain(Command):
     nsset: Optional[str] = None
     keyset: Optional[str] = None
     admin: Optional[str] = None
-    authInfo: Optional[str] = None
+    auth_info: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command tag specific for CreateDomain.
@@ -74,7 +74,7 @@ class CreateDomain(Command):
         SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'registrant')).text = self.registrant
         if self.admin is not None:
             SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = self.admin
-        if self.authInfo is not None:
-            SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.authInfo
+        if self.auth_info is not None:
+            SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.auth_info
 
         return create

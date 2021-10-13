@@ -51,11 +51,11 @@ class CheckDomain(Check):
     """EPP Domain Check command.
 
     Attributes:
-        domains: List of domains to check.
+        names: List of domains to check.
     """
 
     response_class = CheckDomainResult
-    domains: List[str]
+    names: List[str]
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command tag specific for CheckDomain.
@@ -63,7 +63,7 @@ class CheckDomain(Check):
         Returns:
             Element with a list of domains to check.
         """
-        return self._get_check_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.domains)
+        return self._get_check_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.names)
 
 
 @dataclass
@@ -71,12 +71,12 @@ class CheckContact(Check):
     """EPP Check contact command.
 
     Attributes:
-        contacts: List of contacts to check.
+        ids: List of contacts to check.
     """
 
     response_class = CheckContactResult
 
-    contacts: List[str]
+    ids: List[str]
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command tag specific for CheckContact.
@@ -84,7 +84,7 @@ class CheckContact(Check):
         Returns:
             Element with a list of contacts to check.
         """
-        return self._get_check_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.contacts)
+        return self._get_check_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.ids)
 
 
 @dataclass
@@ -92,12 +92,12 @@ class CheckNsset(Check):
     """EPP Check nsset command.
 
     Attributes:
-        nssets: List of nssets to check.
+        ids: List of nssets to check.
     """
 
     response_class = CheckNssetResult
 
-    nssets: List[str]
+    ids: List[str]
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command tag specific for CheckNsset.
@@ -105,7 +105,7 @@ class CheckNsset(Check):
         Returns:
             Element with a list of nssets to check.
         """
-        return self._get_check_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.nssets)
+        return self._get_check_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.ids)
 
 
 @dataclass
@@ -113,12 +113,12 @@ class CheckKeyset(Check):
     """EPP Check keyset command.
 
     Attributes:
-        keysets: List of keysets to check.
+        ids: List of keysets to check.
     """
 
     response_class = CheckKeysetResult
 
-    keysets: List[str]
+    ids: List[str]
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command tag specific for CheckKeyset.
@@ -126,4 +126,4 @@ class CheckKeyset(Check):
         Returns:
             Element with a list of keysets to check.
         """
-        return self._get_check_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.keysets)
+        return self._get_check_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.ids)

@@ -201,8 +201,8 @@ class TestResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result.xml').read_bytes()
         result = Result.parse(xml, SCHEMA)
         self.assertEqual(result.code, 1000)
-        self.assertEqual(result.message, 'Command completed successfully')
-        self.assertEqual(result.data, None)
+        self.assertEqual(result.msg, 'Command completed successfully')
+        self.assertEqual(result.res_data, None)
         self.assertEqual(result.cl_tr_id, 'sdmj001#17-03-06at18:48:03')
         self.assertEqual(result.sv_tr_id, 'ReqID-0000126633')
 

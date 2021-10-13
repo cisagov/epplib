@@ -40,7 +40,7 @@ class TestInfoDomainResult(TestCase):
             )
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(InfoDomainResult, result).data, expected)
+        self.assertEqual(cast(InfoDomainResult, result).res_data, expected)
 
     def test_parse_full(self):
         xml = (BASE_DATA_PATH / 'responses/result_info_domain.xml').read_bytes()
@@ -66,7 +66,7 @@ class TestInfoDomainResult(TestCase):
         ]
 
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(InfoDomainResult, result).data, expected)
+        self.assertEqual(cast(InfoDomainResult, result).res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()

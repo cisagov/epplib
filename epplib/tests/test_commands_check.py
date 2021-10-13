@@ -28,7 +28,7 @@ class TestCheckDomain(XMLTestCase):
     domains = ['domain.cz', 'other.com']
 
     def test_valid(self):
-        self.assertRequestValid(CheckDomain, {'domains': self.domains})
+        self.assertRequestValid(CheckDomain, {'names': self.domains})
 
     def test_data(self):
         root = fromstring(CheckDomain(self.domains).xml())
@@ -50,7 +50,7 @@ class TestCheckContact(XMLTestCase):
     contacts = ['CID-MYOWN', 'CID-NONE']
 
     def test_valid(self):
-        self.assertRequestValid(CheckContact, {'contacts': self.contacts})
+        self.assertRequestValid(CheckContact, {'ids': self.contacts})
 
     def test_data(self):
         root = fromstring(CheckContact(self.contacts).xml())
@@ -72,7 +72,7 @@ class TestCheckNsset(XMLTestCase):
     nssets = ['NID-MYNSSET', 'NID-NONE']
 
     def test_valid(self):
-        self.assertRequestValid(CheckNsset, {'nssets': self.nssets})
+        self.assertRequestValid(CheckNsset, {'ids': self.nssets})
 
     def test_data(self):
         root = fromstring(CheckNsset(self.nssets).xml())
@@ -94,7 +94,7 @@ class TestCheckKeyset(XMLTestCase):
     keysets = ['KID-MYKEYSET', 'KID-NONE']
 
     def test_valid(self):
-        self.assertRequestValid(CheckKeyset, {'keysets': self.keysets})
+        self.assertRequestValid(CheckKeyset, {'ids': self.keysets})
 
     def test_data(self):
         root = fromstring(CheckKeyset(self.keysets).xml())

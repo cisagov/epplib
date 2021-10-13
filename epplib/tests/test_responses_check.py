@@ -33,7 +33,7 @@ class TestCheckDomainResult(TestCase):
             CheckDomainResult.Domain('somedomain.cz', False, 'already registered.'),
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckDomainResult, result).data, expected)
+        self.assertEqual(cast(CheckDomainResult, result).res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -51,7 +51,7 @@ class TestCheckContactResult(TestCase):
             CheckContactResult.Contact('CID-NONE', True),
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckContactResult, result).data, expected)
+        self.assertEqual(cast(CheckContactResult, result).res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -69,7 +69,7 @@ class TestResultCheckNsset(TestCase):
             CheckNssetResult.Nsset('NID-NONE', True),
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckNssetResult, result).data, expected)
+        self.assertEqual(cast(CheckNssetResult, result).res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -87,7 +87,7 @@ class TestResultCheckKeyset(TestCase):
             CheckKeysetResult.Keyset('KID-NONE', True),
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckKeysetResult, result).data, expected)
+        self.assertEqual(cast(CheckKeysetResult, result).res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()

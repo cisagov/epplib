@@ -138,7 +138,7 @@ class TestLogin(XMLTestCase):
     params: Dict[str, Any] = {
         'cl_id': 'client id',
         'password': '1234567890',
-        'new_password': 'qwerty',
+        'new_pw': 'qwerty',
         'version': '1.0',
         'lang': 'cs',
         'obj_uris': ['http://www.nic.cz/xml/epp/contact-1.6', 'http://www.nic.cz/xml/epp/nsset-1.2'],
@@ -158,7 +158,7 @@ class TestLogin(XMLTestCase):
                 EM.login(
                     EM.clID(self.params['cl_id']),
                     EM.pw(self.params['password']),
-                    EM.newPW(self.params['new_password']),
+                    EM.newPW(self.params['new_pw']),
                     EM.options(
                         EM.version(self.params['version']),
                         EM.lang(self.params['lang']),

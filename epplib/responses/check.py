@@ -32,8 +32,8 @@ class CheckDomainResult(Result):
 
     Attributes:
         code: Code attribute of the epp/response/result element.
-        message: Content of the epp/response/result/msg element.
-        data: Content of the epp/response/result/resData element.
+        msg: Content of the epp/response/result/msg element.
+        res_data: Content of the epp/response/result/resData element.
         cl_tr_id: Content of the epp/response/trID/clTRID element.
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
@@ -44,12 +44,12 @@ class CheckDomainResult(Result):
 
         Attributes:
             name: Content of the epp/response/resData/chkData/cd/name element.
-            available: Avail attribute of the epp/response/resData/chkData/cd/name element.
+            avail: Avail attribute of the epp/response/resData/chkData/cd/name element.
             reason: Content of the epp/response/resData/chkData/cd/reason element.
         """
 
         name: str
-        available: Optional[bool]
+        avail: Optional[bool]
         reason: Optional[str] = None
 
         @classmethod
@@ -72,8 +72,8 @@ class CheckContactResult(Result):
 
     Attributes:
         code: Code attribute of the epp/response/result element.
-        message: Content of the epp/response/result/msg element.
-        data: Content of the epp/response/result/resData element.
+        msg: Content of the epp/response/result/msg element.
+        res_data: Content of the epp/response/result/resData element.
         cl_tr_id: Content of the epp/response/trID/clTRID element.
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
@@ -84,12 +84,12 @@ class CheckContactResult(Result):
 
         Attributes:
             id: Content of the epp/response/resData/chkData/cd/id element.
-            available: Avail attribute of the epp/response/resData/chkData/cd/id element.
+            avail: Avail attribute of the epp/response/resData/chkData/cd/id element.
             reason: Content of the epp/response/resData/chkData/cd/reason element.
         """
 
         id: str
-        available: Optional[bool]
+        avail: Optional[bool]
         reason: Optional[str] = None
 
         @classmethod
@@ -112,8 +112,8 @@ class CheckNssetResult(Result):
 
     Attributes:
         code: Code attribute of the epp/response/result element.
-        message: Content of the epp/response/result/msg element.
-        data: Content of the epp/response/result/resData element.
+        msg: Content of the epp/response/result/msg element.
+        res_data: Content of the epp/response/result/resData element.
         cl_tr_id: Content of the epp/response/trID/clTRID element.
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
@@ -124,12 +124,12 @@ class CheckNssetResult(Result):
 
         Attributes:
             id: Content of the epp/response/resData/chkData/cd/id element.
-            available: Avail attribute of the epp/response/resData/chkData/cd/id element.
+            avail: Avail attribute of the epp/response/resData/chkData/cd/id element.
             reason: Content of the epp/response/resData/chkData/cd/reason element.
         """
 
         id: str
-        available: Optional[bool]
+        avail: Optional[bool]
         reason: Optional[str] = None
 
         @classmethod
@@ -152,8 +152,8 @@ class CheckKeysetResult(Result):
 
     Attributes:
         code: Code attribute of the epp/response/result element.
-        message: Content of the epp/response/result/msg element.
-        data: Content of the epp/response/result/resData element.
+        msg: Content of the epp/response/result/msg element.
+        res_data: Content of the epp/response/result/resData element.
         cl_tr_id: Content of the epp/response/trID/clTRID element.
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
@@ -164,12 +164,12 @@ class CheckKeysetResult(Result):
 
         Attributes:
             id: Content of the epp/response/resData/chkData/cd/id element.
-            available: Avail attribute of the epp/response/resData/chkData/cd/id element.
+            avail: Avail attribute of the epp/response/resData/chkData/cd/id element.
             reason: Content of the epp/response/resData/chkData/cd/reason element.
         """
 
         id: str
-        available: Optional[bool]
+        avail: Optional[bool]
         reason: Optional[str] = None
 
         @classmethod
