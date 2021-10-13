@@ -24,7 +24,8 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION, Unit
-from epplib.responses import CreateDomainResult
+from epplib.models import Disclose, Ident, PostalInfo
+from epplib.responses import CreateContactResult, CreateDomainResult
 
 
 @dataclass
@@ -76,5 +77,67 @@ class CreateDomain(Command):
             SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = self.admin
         if self.auth_info is not None:
             SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.auth_info
+
+        return create
+
+
+@dataclass
+class CreateContact(Command):
+    """EPP Create Contact command.
+
+    Attributes:
+        id: Content of command/create/create/id tag.
+        postal_info: Content of command/create/create/postalInfo tag.
+        email: Content of command/create/create/email tag.
+        voice: Content of command/create/create/voice tag.
+        fax: Content of command/create/create/fax tag.
+        auth_info: Content of command/create/create/authInfo tag.
+        disclose: Content of command/create/create/disclose tag.
+        vat: Content of command/create/create/vat tag.
+        ident: Content of command/create/create/ident tag.
+        notify_email: Content of command/create/create/notifyEmail tag.
+    """
+
+    response_class = CreateContactResult
+
+    id: str
+    postal_info: PostalInfo
+    email: str
+    voice: Optional[str] = None
+    fax: Optional[str] = None
+    auth_info: Optional[str] = None
+    disclose: Optional[Disclose] = None
+    vat: Optional[str] = None
+    ident: Optional[Ident] = None
+    notify_email: Optional[str] = None
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for CreateContact.
+
+        Returns:
+            Element with a contact to create.
+        """
+        create = Element(QName(NAMESPACE.EPP, 'create'))
+
+        contact_create = SubElement(create, QName(NAMESPACE.NIC_CONTACT, 'create'))
+        contact_create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_CONTACT)
+
+        SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'id')).text = self.id
+        contact_create.append(self.postal_info.get_payload())
+        if self.voice:
+            SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'voice')).text = self.voice
+        if self.fax:
+            SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'fax')).text = self.fax
+        SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'email')).text = self.email
+        if self.auth_info:
+            SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'authInfo')).text = self.auth_info
+        if self.disclose:
+            contact_create.append(self.disclose.get_payload())
+        if self.vat:
+            SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'vat')).text = self.vat
+        if self.ident:
+            contact_create.append(self.ident.get_payload())
+        if self.notify_email:
+            SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'notifyEmail')).text = self.notify_email
 
         return create
