@@ -29,6 +29,7 @@ from lxml.etree import Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE
 from epplib.exceptions import ParsingError
+from epplib.models import Statement
 from epplib.responses.extensions import EnumInfoExtension, ResponseExtension
 from epplib.utils import ParseXMLMixin, safe_parse
 
@@ -37,7 +38,7 @@ LOGGER = logging.getLogger(__name__)
 
 T = TypeVar('T', bound='ResultData')
 
-GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence['Greeting.Statement'], datetime, relativedelta, str]]
+GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence[Statement], datetime, relativedelta, str]]
 
 
 class Response(ParseXMLMixin, ABC):
@@ -114,20 +115,6 @@ class Greeting(Response):
         expiry: Content of the epp/greeting/expiry element.
     """
 
-    @dataclass
-    class Statement:
-        """A dataclass to represent the EPP statement.
-
-        Attributes:
-            purpose: Content of the epp/greeting/statement/purpose element.
-            recipient: Content of the epp/greeting/statement/recipient element.
-            retention: Content of the epp/greeting/statement/retention element.
-        """
-
-        purpose: List[str]
-        recipient: List[str]
-        retention: Optional[str]
-
     _payload_tag: ClassVar = QName(NAMESPACE.EPP, 'greeting')
 
     sv_id: str
@@ -190,7 +177,7 @@ class Greeting(Response):
         Returns:
             Extracted Statement.
         """
-        return cls.Statement(
+        return Statement(
             purpose=cls._find_children(element, './epp:purpose'),
             recipient=cls._find_children(element, './epp:recipient'),
             retention=cls._find_child(element, './epp:retention'),

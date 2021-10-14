@@ -72,8 +72,3 @@ class TestInfoDomainResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
         result = InfoDomainResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
-
-    def test_status(self):
-        self.assertEqual(Status('ok', 'is ok', 'cs'), Status('ok', 'is ok', 'cs'))
-        self.assertEqual(Status('ok', 'is ok'), Status('ok', 'is ok', 'en'))
-        self.assertEqual(Status('ok', 'is ok', None), Status('ok', 'is ok', 'en'))

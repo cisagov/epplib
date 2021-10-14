@@ -25,20 +25,8 @@ from typing import Any, ClassVar, List, Optional, Tuple
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element
 
+from epplib.models import Status
 from epplib.responses.base import Result, ResultData
-
-
-@dataclass
-class Status:
-    """Represents a status of the queried object in the InfoResult."""
-
-    state: str
-    description: str
-    lang: Optional[str] = None
-
-    def __post_init__(self):
-        if self.lang is None:
-            self.lang = 'en'
 
 
 @dataclass
