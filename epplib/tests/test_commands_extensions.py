@@ -17,14 +17,15 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 from datetime import date
-from typing import Any, Dict
+from typing import Any, Dict, Mapping
 
 from lxml.builder import ElementMaker
 from lxml.etree import QName
 
-from epplib.commands import CreateDomain
-from epplib.commands.extensions import CreateDomainEnumExtension
+from epplib.commands import CreateContact, CreateDomain
+from epplib.commands.extensions import CreateContactMailingAddressExtension, CreateDomainEnumExtension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
+from epplib.models import ContactAddr, ExtraAddr, PostalInfo
 from epplib.tests.utils import XMLTestCase, sub_dict
 
 
@@ -59,4 +60,45 @@ class TestCreateDomainEnumExtension(XMLTestCase):
             enumval.publish('true'),
         )
 
+        self.assertXMLEqual(extension.get_payload(), expected)
+
+
+class TestCreateContactMailingAddressExtension(XMLTestCase):
+
+    addr_params: Mapping[str, Any] = {
+        'street': ['Door 42', 'Street 123'],
+        'city': 'City',
+        'pc': '12300',
+        'cc': 'CZ',
+        'sp': 'Province',
+    }
+
+    def test_valid(self):
+        command_params: Dict[str, Any] = {
+            'id': 'CID-MYCONTACT',
+            'postal_info': PostalInfo(
+                'John Doe',
+                ContactAddr(**self.addr_params),
+            ),
+            'email': 'john@doe.cz',
+        }
+        extension = CreateContactMailingAddressExtension(ExtraAddr(**self.addr_params))
+        self.assertRequestValid(CreateContact, command_params, extension)
+
+    def test_data(self):
+        extension = CreateContactMailingAddressExtension(ExtraAddr(**self.addr_params))
+        EM = ElementMaker(namespace=NAMESPACE.NIC_EXTRA_ADDR)
+        expected = EM.create(
+            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_EXTRA_ADDR},
+            EM.mailing(
+                EM.addr(
+                    EM.street(self.addr_params['street'][0]),
+                    EM.street(self.addr_params['street'][1]),
+                    EM.city(self.addr_params['city']),
+                    EM.sp(self.addr_params['sp']),
+                    EM.pc(self.addr_params['pc']),
+                    EM.cc(self.addr_params['cc']),
+                )
+            )
+        )
         self.assertXMLEqual(extension.get_payload(), expected)
