@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd">
+   <response>
+      <result code="1000">
+         <msg>Command completed successfully</msg>
+      </result>
+      <resData>
+         <keyset:creData xmlns:keyset="http://www.nic.cz/xml/epp/keyset-1.3"
+          xsi:schemaLocation="http://www.nic.cz/xml/epp/keyset-1.3 keyset-1.3.2.xsd">
+            <keyset:id>KID-AKEYSET</keyset:id>
+            <keyset:crDate>2017-08-09T15:53:15+02:00</keyset:crDate>
+         </keyset:creData>
+      </resData>
+      <trID>
+         <clTRID>dsce002#17-08-09at16:13:30</clTRID>
+         <svTRID>ReqID-0000141095</svTRID>
+      </trID>
+   </response>
+</epp>
