@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd">
+   <response>
+      <result code="1000">
+         <msg>Command completed successfully</msg>
+      </result>
+      <resData>
+         <nsset:creData xmlns:nsset="http://www.nic.cz/xml/epp/nsset-1.2"
+          xsi:schemaLocation="http://www.nic.cz/xml/epp/nsset-1.2 nsset-1.2.2.xsd">
+            <nsset:id>NID-ANSSET</nsset:id>
+            <nsset:crDate>2017-08-09T15:53:15+02:00</nsset:crDate>
+         </nsset:creData>
+      </resData>
+      <trID>
+         <clTRID>pvlt002#17-08-09at15:52:40</clTRID>
+         <svTRID>ReqID-0000141092</svTRID>
+      </trID>
+   </response>
+</epp>
