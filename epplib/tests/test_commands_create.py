@@ -21,9 +21,9 @@ from typing import Any, Dict
 from lxml.builder import ElementMaker
 from lxml.etree import Element, QName, fromstring
 
-from epplib.commands import CreateContact, CreateDomain
+from epplib.commands import CreateContact, CreateDomain, CreateNsset
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION, Unit
-from epplib.models import ContactAddr, Disclose, DiscloseFields, Ident, IdentType, PostalInfo
+from epplib.models import ContactAddr, Disclose, DiscloseFields, Ident, IdentType, Ns, PostalInfo
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root, sub_dict
 
 
@@ -184,6 +184,62 @@ class TestCreateContact(XMLTestCase):
                         contact.vat(self.params_full['vat']),
                         contact.ident(self.params_full['ident'].value, type=self.params_full['ident'].type.value),
                         contact.notifyEmail(self.params_full['notify_email']),
+                    ),
+                ),
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestCreateNsset(XMLTestCase):
+    params: Dict[str, Any] = {
+        'id': 'NID-ANSSET',
+        'nss': [
+            Ns('ns1.domain.cz'),
+            Ns('ns2.domain.cz', ['217.31.207.130', '217.31.207.131']),
+        ],
+        'tech': ['CID-TECH1', 'CID-TECH2'],
+        'auth_info': 'abc123',
+        'report_level': 1,
+    }
+    required = ['id', 'nss', 'tech']
+
+    def test_valid(self):
+        self.assertRequestValid(CreateNsset, self.params)
+        self.assertRequestValid(CreateNsset, sub_dict(self.params, self.required))
+
+    def test_data_full(self):
+        root = fromstring(CreateNsset(**self.params).xml())
+        nsset = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        expected = make_epp_root(
+            EM.command(
+                EM.create(
+                    nsset.create(
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
+                        nsset.id(self.params['id']),
+                        *[ns.get_payload() for ns in self.params['nss']],
+                        nsset.tech(self.params['tech'][0]),
+                        nsset.tech(self.params['tech'][1]),
+                        nsset.authInfo(self.params['auth_info']),
+                        nsset.reportlevel(str(self.params['report_level'])),
+                    ),
+                ),
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+    def test_data_required(self):
+        root = fromstring(CreateNsset(**sub_dict(self.params, self.required)).xml())
+        nsset = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        expected = make_epp_root(
+            EM.command(
+                EM.create(
+                    nsset.create(
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
+                        nsset.id(self.params['id']),
+                        *[ns.get_payload() for ns in self.params['nss']],
+                        nsset.tech(self.params['tech'][0]),
+                        nsset.tech(self.params['tech'][1]),
                     ),
                 ),
             )

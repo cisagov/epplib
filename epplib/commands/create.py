@@ -18,14 +18,14 @@
 
 """Module providing EPP commands."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Sequence
 
 from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION, Unit
-from epplib.models import Disclose, Ident, PostalInfo
-from epplib.responses import CreateContactResult, CreateDomainResult
+from epplib.models import Disclose, Ident, Ns, PostalInfo
+from epplib.responses import CreateContactResult, CreateDomainResult, CreateNssetResult
 
 
 @dataclass
@@ -140,4 +140,45 @@ class CreateContact(Command):
         if self.notify_email:
             SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'notifyEmail')).text = self.notify_email
 
+        return create
+
+
+@dataclass
+class CreateNsset(Command):
+    """EPP Create Nsset command.
+
+    Attributes:
+        id: Content of command/create/create/id tag.
+        nss: Content of command/create/create/nss tag.
+        tech: Content of command/create/create/tech tag.
+        auth_info: Content of command/create/create/authInfo tag.
+        report_level: Content of command/create/create/reportlevel tag.
+    """
+
+    response_class = CreateNssetResult
+
+    id: str
+    nss: Sequence[Ns]
+    tech: Sequence[str]
+    auth_info: Optional[str] = None
+    report_level: Optional[int] = None
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for CreateContact.
+
+        Returns:
+            Element with a contact to create.
+        """
+        create = Element(QName(NAMESPACE.EPP, 'create'))
+        nsset_create = SubElement(create, QName(NAMESPACE.NIC_NSSET, 'create'))
+        nsset_create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_NSSET)
+        SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'id')).text = self.id
+        for ns in self.nss:
+            nsset_create.append(ns.get_payload())
+        for item in self.tech:
+            SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'tech')).text = item
+        if self.auth_info is not None:
+            SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'authInfo')).text = self.auth_info
+        if self.report_level is not None:
+            SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'reportlevel')).text = str(self.report_level)
         return create

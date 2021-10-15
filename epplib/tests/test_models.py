@@ -19,7 +19,7 @@
 from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
-from epplib.models import ContactAddr, Disclose, DiscloseFields, Ident, IdentType, PostalInfo, Status
+from epplib.models import ContactAddr, Disclose, DiscloseFields, Ident, IdentType, Ns, PostalInfo, Status
 from epplib.tests.utils import XMLTestCase
 
 
@@ -85,6 +85,18 @@ class TestIdent(XMLTestCase):
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
         expected = EM.ident('1234567890', type='passport')
         self.assertXMLEqual(ident.get_payload(), expected)
+
+
+class TestNs(XMLTestCase):
+    def test_get_payload(self):
+        ns = Ns('ns1.domain.cz', ['217.31.207.130', '217.31.207.131'])
+        EM = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        expected = EM.ns(
+            EM.name('ns1.domain.cz'),
+            EM.addr('217.31.207.130'),
+            EM.addr('217.31.207.131'),
+        )
+        self.assertXMLEqual(ns.get_payload(), expected)
 
 
 class TestPostalInfo(XMLTestCase):

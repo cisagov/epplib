@@ -18,7 +18,7 @@
 
 """Module providing base classes to EPP command responses."""
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum, unique
 from typing import ClassVar, List, Optional, Sequence, Set
 
@@ -136,8 +136,8 @@ class Disclose(PayloadModelMixin):
         """
         flag = '1' if self.flag else '0'
         disclose = Element(QName(self.namespace, 'disclose'), flag=flag)
-        for field in sorted(self.fields):
-            SubElement(disclose, QName(self.namespace, field.value))
+        for item in sorted(self.fields):
+            SubElement(disclose, QName(self.namespace, item.value))
         return disclose
 
 
@@ -179,6 +179,30 @@ class Ident(PayloadModelMixin):
         ident = Element(QName(self.namespace, 'ident'), type=self.type)
         ident.text = self.value
         return ident
+
+
+# TODO: This is not a very good name for a class but it corresponds to the EPP tag
+@dataclass
+class Ns(PayloadModelMixin):
+    """Dataclass to represent EPP ns element.
+
+    Attributes:
+        name: Content of the ns/name element.
+        addrs: Content of the ns/addr elements.
+    """
+
+    namespace = NAMESPACE.NIC_NSSET
+
+    name: str
+    addrs: Sequence[str] = field(default_factory=list)
+
+    def get_payload(self) -> Element:
+        """Get Element representing the the model."""
+        ns = Element(QName(self.namespace, 'ns'))
+        SubElement(ns, QName(self.namespace, 'name')).text = self.name
+        for addr in self.addrs:
+            SubElement(ns, QName(self.namespace, 'addr')).text = addr
+        return ns
 
 
 @dataclass
