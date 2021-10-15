@@ -24,8 +24,8 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION, Unit
-from epplib.models import Disclose, Ident, Ns, PostalInfo
-from epplib.responses import CreateContactResult, CreateDomainResult, CreateNssetResult
+from epplib.models import Disclose, Dnskey, Ident, Ns, PostalInfo
+from epplib.responses import CreateContactResult, CreateDomainResult, CreateKeysetResult, CreateNssetResult
 
 
 @dataclass
@@ -181,4 +181,41 @@ class CreateNsset(Command):
             SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'authInfo')).text = self.auth_info
         if self.report_level is not None:
             SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'reportlevel')).text = str(self.report_level)
+        return create
+
+
+@dataclass
+class CreateKeyset(Command):
+    """EPP Create Keyset command.
+
+    Attributes:
+        id: Content of command/create/create/id tag.
+        dnskeys: Content of command/create/create/dnskey tags.
+        tech: Content of command/create/create/tech tag.
+        auth_info: Content of command/create/create/authInfo tag.
+    """
+
+    response_class = CreateKeysetResult
+
+    id: str
+    dnskeys: Sequence[Dnskey]
+    tech: Sequence[str]
+    auth_info: Optional[str] = None
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for CreateContact.
+
+        Returns:
+            Element with a contact to create.
+        """
+        create = Element(QName(NAMESPACE.EPP, 'create'))
+        keyset_create = SubElement(create, QName(NAMESPACE.NIC_KEYSET, 'create'))
+        keyset_create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_KEYSET)
+        SubElement(keyset_create, QName(NAMESPACE.NIC_KEYSET, 'id')).text = self.id
+        for dns_key in self.dnskeys:
+            keyset_create.append(dns_key.get_payload())
+        for item in self.tech:
+            SubElement(keyset_create, QName(NAMESPACE.NIC_KEYSET, 'tech')).text = item
+        if self.auth_info is not None:
+            SubElement(keyset_create, QName(NAMESPACE.NIC_KEYSET, 'authInfo')).text = self.auth_info
         return create

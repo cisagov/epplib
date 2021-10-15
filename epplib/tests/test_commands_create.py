@@ -21,9 +21,9 @@ from typing import Any, Dict
 from lxml.builder import ElementMaker
 from lxml.etree import Element, QName, fromstring
 
-from epplib.commands import CreateContact, CreateDomain, CreateNsset
+from epplib.commands import CreateContact, CreateDomain, CreateKeyset, CreateNsset
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION, Unit
-from epplib.models import ContactAddr, Disclose, DiscloseFields, Ident, IdentType, Ns, PostalInfo
+from epplib.models import ContactAddr, Disclose, DiscloseFields, Dnskey, Ident, IdentType, Ns, PostalInfo
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root, sub_dict
 
 
@@ -240,6 +240,42 @@ class TestCreateNsset(XMLTestCase):
                         *[ns.get_payload() for ns in self.params['nss']],
                         nsset.tech(self.params['tech'][0]),
                         nsset.tech(self.params['tech'][1]),
+                    ),
+                ),
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestCreateKeyset(XMLTestCase):
+    params: Dict[str, Any] = {
+        'id': 'NID-AKEYSET',
+        'dnskeys': [
+            Dnskey(257, 3, 5, 'AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8'),
+            Dnskey(257, 3, 5, 'AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg9'),
+        ],
+        'tech': ['CID-TECH1', 'CID-TECH2'],
+        'auth_info': 'abc123',
+    }
+    required = ['id', 'dnskeys', 'tech']
+
+    def test_valid(self):
+        self.assertRequestValid(CreateKeyset, self.params)
+        self.assertRequestValid(CreateKeyset, sub_dict(self.params, self.required))
+
+    def test_data_full(self):
+        root = fromstring(CreateKeyset(**self.params).xml())
+        keyset = ElementMaker(namespace=NAMESPACE.NIC_KEYSET)
+        expected = make_epp_root(
+            EM.command(
+                EM.create(
+                    keyset.create(
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
+                        keyset.id(self.params['id']),
+                        *[dk.get_payload() for dk in self.params['dnskeys']],
+                        keyset.tech(self.params['tech'][0]),
+                        keyset.tech(self.params['tech'][1]),
+                        keyset.authInfo(self.params['auth_info']),
                     ),
                 ),
             )

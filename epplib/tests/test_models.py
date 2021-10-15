@@ -19,7 +19,7 @@
 from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
-from epplib.models import ContactAddr, Disclose, DiscloseFields, Ident, IdentType, Ns, PostalInfo, Status
+from epplib.models import ContactAddr, Disclose, DiscloseFields, Dnskey, Ident, IdentType, Ns, PostalInfo, Status
 from epplib.tests.utils import XMLTestCase
 
 
@@ -76,6 +76,20 @@ class TestDisclose(XMLTestCase):
                 disclose = Disclose(flag=flag, fields={DiscloseFields.VAT, DiscloseFields.EMAIL})
                 expected = EM.disclose(EM.email, EM.vat, flag=result)
                 self.assertXMLEqual(disclose.get_payload(), expected)
+
+
+class TestDnskey(XMLTestCase):
+
+    def test_to_element(self):
+        dnskey = Dnskey(257, 3, 5, 'AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8')
+        EM = ElementMaker(namespace=NAMESPACE.NIC_KEYSET)
+        expected = EM.dnskey(
+            EM.flags('257'),
+            EM.protocol('3'),
+            EM.alg('5'),
+            EM.pubKey('AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8'),
+        )
+        self.assertXMLEqual(dnskey.get_payload(), expected)
 
 
 class TestIdent(XMLTestCase):
