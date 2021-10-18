@@ -88,3 +88,24 @@ class TransferContact(Transfer):
             Element with a contact to transfer.
         """
         return self._get_transfer_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id)
+
+
+@dataclass
+class TransferKeyset(Transfer):
+    """EPP Keyset Transfer command.
+
+    Attributes:
+        id: Content of command/transfer/transfer/id tag.
+        auth_info: Content of command/transfer/transfer/auth_info tag.
+    """
+
+    id: str
+    auth_info: str
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for TransferKeyset.
+
+        Returns:
+            Element with a keyset to transfer.
+        """
+        return self._get_transfer_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id)
