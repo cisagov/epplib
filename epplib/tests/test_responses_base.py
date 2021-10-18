@@ -28,6 +28,7 @@ from lxml.etree import DocumentInvalid, Element, QName, XMLSchema
 from testfixtures import LogCapture
 
 from epplib.constants import NAMESPACE
+from epplib.models import Statement
 from epplib.responses import Greeting, ParsingError, Response, Result
 from epplib.responses.base import EXTENSIONS
 from epplib.responses.extensions import ResponseExtension
@@ -151,7 +152,7 @@ class TestGreeting(TestCase):
         self.assertEqual(greeting.access, 'none')
         self.assertEqual(greeting.expiry, datetime(2021, 5, 4, 3, 14, 15, tzinfo=timezone(timedelta(hours=2))))
 
-        statement = Greeting.Statement(
+        statement = Statement(
             purpose=['admin', 'prov'],
             recipient=['public'],
             retention='stated',
