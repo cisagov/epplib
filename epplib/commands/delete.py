@@ -101,3 +101,22 @@ class DeleteKeyset(Delete):
             Element with the keyset to delete.
         """
         return self._get_delete_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id)
+
+
+@dataclass
+class DeleteNsset(Delete):
+    """EPP Delete nsset command.
+
+    Attributes:
+        id: Nsset to delete.
+    """
+
+    id: str
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for DeleteNsset.
+
+        Returns:
+            Element with the nsset to delete.
+        """
+        return self._get_delete_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.id)
