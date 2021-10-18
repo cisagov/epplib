@@ -23,6 +23,7 @@ from .check import CheckContact, CheckDomain, CheckKeyset, CheckNsset
 from .create import CreateDomain
 from .delete import DeleteContact, DeleteDomain, DeleteKeyset, DeleteNsset
 from .info import InfoDomain
+from .transfer import TransferDomain
 
 __all__ = [
     'CheckContact',
@@ -40,4 +41,5 @@ __all__ = [
     'Login',
     'Logout',
     'Request',
+    'TransferDomain',
 ]
