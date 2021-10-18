@@ -109,3 +109,24 @@ class TransferKeyset(Transfer):
             Element with a keyset to transfer.
         """
         return self._get_transfer_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id)
+
+
+@dataclass
+class TransferNsset(Transfer):
+    """EPP Nsset Transfer command.
+
+    Attributes:
+        id: Content of command/transfer/transfer/id tag.
+        auth_info: Content of command/transfer/transfer/auth_info tag.
+    """
+
+    id: str
+    auth_info: str
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for TransferNsset.
+
+        Returns:
+            Element with a nsset to transfer.
+        """
+        return self._get_transfer_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.id)
