@@ -19,7 +19,7 @@
 from lxml.builder import ElementMaker
 from lxml.etree import QName, fromstring
 
-from epplib.commands import DeleteDomain
+from epplib.commands import DeleteContact, DeleteDomain
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
@@ -39,6 +39,28 @@ class TestDeleteDomain(XMLTestCase):
                     domain.delete(
                         {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
                         domain.name(self.domain)
+                    )
+                )
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestDeleteContact(XMLTestCase):
+    contact = 'CID-MYOWN'
+
+    def test_valid(self):
+        self.assertRequestValid(DeleteContact, {'id': self.contact})
+
+    def test_data(self):
+        root = fromstring(DeleteContact(self.contact).xml())
+        contact = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        expected = make_epp_root(
+            EM.command(
+                EM.delete(
+                    contact.delete(
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
+                        contact.id(self.contact)
                     )
                 )
             )

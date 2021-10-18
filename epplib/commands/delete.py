@@ -35,7 +35,7 @@ class Delete(Command):
         """Create subelements of the command tag specific for the Delete command.
 
         Returns:
-            Element the item to delete.
+            Element with the item to delete.
         """
         root = Element(QName(NAMESPACE.EPP, 'delete'))
 
@@ -63,3 +63,22 @@ class DeleteDomain(Delete):
             Element with a list of domains to delete.
         """
         return self._get_delete_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.name)
+
+
+@dataclass
+class DeleteContact(Delete):
+    """EPP Delete contact command.
+
+    Attributes:
+        id: Contact to delete.
+    """
+
+    id: str
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for DeleteContact.
+
+        Returns:
+            Element with the contact to delete.
+        """
+        return self._get_delete_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id)
