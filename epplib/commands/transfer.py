@@ -67,3 +67,24 @@ class TransferDomain(Transfer):
             Element with a domain to transfer.
         """
         return self._get_transfer_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.name)
+
+
+@dataclass
+class TransferContact(Transfer):
+    """EPP Contact Transfer command.
+
+    Attributes:
+        id: Content of command/transfer/transfer/id tag.
+        auth_info: Content of command/transfer/transfer/auth_info tag.
+    """
+
+    id: str
+    auth_info: str
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for TransferContact.
+
+        Returns:
+            Element with a contact to transfer.
+        """
+        return self._get_transfer_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id)
