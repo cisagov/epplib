@@ -21,7 +21,7 @@
 from .base import Command, Hello, Login, Logout, Request
 from .check import CheckContact, CheckDomain, CheckKeyset, CheckNsset
 from .create import CreateDomain
-from .delete import DeleteContact, DeleteDomain, DeleteKeyset
+from .delete import DeleteContact, DeleteDomain, DeleteKeyset, DeleteNsset
 from .info import InfoDomain
 
 __all__ = [
@@ -30,10 +30,11 @@ __all__ = [
     'CheckKeyset',
     'CheckNsset',
     'Command',
-    'DeleteContact',
     'CreateDomain',
+    'DeleteContact',
     'DeleteDomain',
     'DeleteKeyset',
+    'DeleteNsset',
     'Hello',
     'InfoDomain',
     'Login',
