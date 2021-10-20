@@ -82,3 +82,22 @@ class DeleteContact(Delete):
             Element with the contact to delete.
         """
         return self._get_delete_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id)
+
+
+@dataclass
+class DeleteKeyset(Delete):
+    """EPP Delete keyset command.
+
+    Attributes:
+        id: Keyset to delete.
+    """
+
+    id: str
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for DeleteKeyset.
+
+        Returns:
+            Element with the keyset to delete.
+        """
+        return self._get_delete_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id)
