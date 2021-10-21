@@ -23,7 +23,7 @@ from lxml.builder import ElementMaker
 from lxml.etree import QName
 
 from epplib.commands import CreateContact, CreateDomain
-from epplib.commands.extensions import CreateContactMailingAddressExtension, CreateDomainEnumExtension
+from epplib.commands.command_extensions import CreateContactMailingAddressExtension, CreateDomainEnumExtension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.models import ContactAddr, ExtraAddr, PostalInfo
 from epplib.tests.utils import XMLTestCase, sub_dict
