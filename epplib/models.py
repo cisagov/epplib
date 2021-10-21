@@ -17,8 +17,200 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 """Module providing base classes to EPP command responses."""
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional
+from enum import Enum, unique
+from typing import ClassVar, List, Optional, Sequence, Set
+
+from lxml.etree import Element, QName, SubElement
+
+from epplib.constants import NAMESPACE
+
+
+@unique
+class DiscloseFields(str, Enum):
+    """Allowed values of subelements of disclose element."""
+
+    VOICE = 'voice'
+    FAX = 'fax'
+    EMAIL = 'email'
+    VAT = 'vat'
+    IDENT = 'ident'
+    NOTIFY_EMAIL = 'notifyEmail'
+
+
+@unique
+class IdentType(str, Enum):
+    """Allowed values of the type attribure of ident."""
+
+    OP = 'op'
+    PASSPORT = 'passport'
+    MPSV = 'mpsv'
+    ICO = 'ico'
+    BIRTHDAY = 'birthday'
+
+
+class PayloadModelMixin(ABC):
+    """Mixin for model which are serializable to XML.
+
+    Attributes:
+        namespace: XML namespace of the model.
+    """
+
+    namespace: ClassVar[str]
+
+    @abstractmethod
+    def get_payload(self) -> Element:
+        """Get Element representing the model."""
+
+
+@dataclass
+class Addr(PayloadModelMixin):
+    """Dataclass to represent EPP addr element.
+
+    Attributes:
+        street: Content of the addr/street element.
+        city: Content of the addr/city element.
+        pc: Content of the addr/pc element.
+        cc: Content of the addr/cc element.
+        sp: Content of the addr/sp element.
+    """
+
+    street: Sequence[str]
+    city: str
+    pc: str
+    cc: str
+    sp: Optional[str] = None
+
+    def get_payload(self) -> Element:
+        """Get Element representing the model.
+
+        Args:
+            namespace: Namespace to prefix the subelement tag names.
+        """
+        addr = Element(QName(self.namespace, 'addr'))
+        for line in self.street:
+            SubElement(addr, QName(self.namespace, 'street')).text = line
+        SubElement(addr, QName(self.namespace, 'city')).text = self.city
+        if self.sp:
+            SubElement(addr, QName(self.namespace, 'sp')).text = self.sp
+        SubElement(addr, QName(self.namespace, 'pc')).text = self.pc
+        SubElement(addr, QName(self.namespace, 'cc')).text = self.cc
+        return addr
+
+
+@dataclass
+class ContactAddr(Addr):
+    """Dataclass to represent EPP contact:addr element.
+
+    Attributes:
+        street: Content of the addr/street element.
+        city: Content of the addr/city element.
+        pc: Content of the addr/pc element.
+        cc: Content of the addr/cc element.
+        sp: Content of the addr/sp element.
+    """
+
+    namespace = NAMESPACE.NIC_CONTACT
+
+
+@dataclass
+class Disclose(PayloadModelMixin):
+    """Dataclass to represent EPP disclose element.
+
+    Attributes:
+        flag: disclose flag attribute.
+        fields: Values to be displayed as subelements of the disclose element.
+    """
+
+    namespace = NAMESPACE.NIC_CONTACT
+
+    flag: bool
+    fields: Set[DiscloseFields]
+
+    def get_payload(self) -> Element:
+        """Get Element representing the model.
+
+        Args:
+            namespace: Namespace to prefix the subelement tag names.
+        """
+        flag = '1' if self.flag else '0'
+        disclose = Element(QName(self.namespace, 'disclose'), flag=flag)
+        for field in sorted(self.fields):
+            SubElement(disclose, QName(self.namespace, field.value))
+        return disclose
+
+
+@dataclass
+class ExtraAddr(Addr):
+    """Dataclass to represent EPP contact:addr element.
+
+    Attributes:
+        street: Content of the addr/street element.
+        city: Content of the addr/city element.
+        pc: Content of the addr/pc element.
+        cc: Content of the addr/cc element.
+        sp: Content of the addr/sp element.
+    """
+
+    namespace = NAMESPACE.NIC_EXTRA_ADDR
+
+
+@dataclass
+class Ident(PayloadModelMixin):
+    """Dataclass to represent EPP ident element.
+
+    Attributes:
+        type: type attribute of the ident tag.
+        value: Content of the ident tag.
+    """
+
+    namespace = NAMESPACE.NIC_CONTACT
+
+    type: IdentType
+    value: str
+
+    def get_payload(self) -> Element:
+        """Get Element representing the model.
+
+        Args:
+            namespace: Namespace to prefix the subelement tag names.
+        """
+        ident = Element(QName(self.namespace, 'ident'), type=self.type)
+        ident.text = self.value
+        return ident
+
+
+@dataclass
+class PostalInfo(PayloadModelMixin):
+    """Dataclass to represent EPP postalInfo element.
+
+    Attributes:
+        name: Content of the postalInfo/name element.
+        addr: Content of the postalInfo/addr element.
+        org: Content of the postalInfo/org element.
+    """
+
+    namespace = NAMESPACE.NIC_CONTACT
+
+    name: str
+    addr: ContactAddr
+    org: Optional[str] = None
+
+    def get_payload(self) -> Element:
+        """Get Element representing the model.
+
+        Args:
+            namespace: Namespace to prefix the subelement tag names.
+        """
+        postal_info = Element(QName(self.namespace, 'postalInfo'))
+        SubElement(postal_info, QName(self.namespace, 'name')).text = self.name
+
+        if self.org:
+            SubElement(postal_info, QName(self.namespace, 'org')).text = self.org
+        postal_info.append(self.addr.get_payload())
+
+        return postal_info
 
 
 @dataclass

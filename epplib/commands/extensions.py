@@ -25,6 +25,7 @@ from typing import Optional
 from lxml.etree import Element, QName, SubElement
 
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
+from epplib.models import ExtraAddr
 
 
 class CommandExtension(ABC):
@@ -56,4 +57,23 @@ class CreateDomainEnumExtension(CommandExtension):
             expiration_date.text = str(self.val_ex_date)
         if self.publish is not None:
             SubElement(create, QName(NAMESPACE.NIC_ENUMVAL, 'publish')).text = str(self.publish).lower()
+        return create
+
+
+@dataclass
+class CreateContactMailingAddressExtension(CommandExtension):
+    """Mailing address extension for Create command command.
+
+    Attributes:
+        addr: Content of extension/create/mailing/addr element
+    """
+
+    addr: ExtraAddr
+
+    def get_payload(self) -> Element:
+        """Create EPP Elements specific to CreateContactMailingAddressExtension."""
+        create = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, 'create'))
+        create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_EXTRA_ADDR)
+        mailing = SubElement(create, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
+        mailing.append(self.addr.get_payload())
         return create

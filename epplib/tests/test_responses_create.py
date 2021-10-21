@@ -20,7 +20,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import cast
 from unittest import TestCase
 
-from epplib.responses import CreateDomainResult
+from epplib.responses import CreateContactResult, CreateDomainResult
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
 
@@ -57,4 +57,24 @@ class TestCreateDomainResult(TestCase):
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
         result = CreateDomainResult.parse(xml, SCHEMA)
+        self.assertEqual(result.code, 2002)
+
+
+class TestCreateContactResult(TestCase):
+
+    def test_parse(self):
+        xml = (BASE_DATA_PATH / 'responses/result_create_contact.xml').read_bytes()
+        result = CreateContactResult.parse(xml, SCHEMA)
+        expected = [
+            CreateContactResult.Contact(
+                'CID-MYCONTACT',
+                datetime(2017, 7, 28, 12, 11, 43, tzinfo=timezone(timedelta(hours=2))),
+            )
+        ]
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(CreateContactResult, result).res_data, expected)
+
+    def test_parse_error(self):
+        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        result = CreateContactResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
