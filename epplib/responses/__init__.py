@@ -23,6 +23,7 @@ from .check import CheckContactResult, CheckDomainResult, CheckKeysetResult, Che
 from .create import CreateContactResult, CreateDomainResult, CreateKeysetResult, CreateNssetResult
 from .credit_info import CreditInfoResult
 from .info import InfoDomainResult
+from .renew import RenewDomainResult
 
 __all__ = [
     'CheckContactResult',
@@ -37,6 +38,7 @@ __all__ = [
     'Greeting',
     'InfoDomainResult',
     'ParsingError',
+    'RenewDomainResult',
     'Response',
     'Result',
     'ResultData',
