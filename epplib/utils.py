@@ -52,7 +52,6 @@ def safe_parse(raw_xml: bytes) -> Element:
 class ParseXMLMixin:
     """Mixin to simplify XML parsing."""
 
-    # TODO: Should FRED be included in the standard namespaces or should it be only in the extension?
     _NAMESPACES: ClassVar[Mapping[str, str]] = {
         'epp': NAMESPACE.EPP,
         'fred': NAMESPACE.FRED,

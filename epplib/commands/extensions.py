@@ -19,10 +19,11 @@
 """Module providing base EPP commands."""
 from abc import abstractmethod
 
-from lxml.etree import Element, QName
+from lxml.etree import Element, QName, SubElement
 
 from epplib.commands import Request
-from epplib.constants import NAMESPACE
+from epplib.constants import NAMESPACE, SCHEMA_LOCATION
+from epplib.responses import CreditInfoResult
 
 
 class Extension(Request):
@@ -35,14 +36,33 @@ class Extension(Request):
             Element with the Extension payload.
         """
         extension_element = Element(QName(NAMESPACE.EPP, 'extension'))
-        extension_element.append(self._get_extension_payload())
+        extension_element.append(self._get_extension_payload(tr_id))
 
         return extension_element
 
     @abstractmethod
-    def _get_extension_payload(self) -> Element:
+    def _get_extension_payload(self, tr_id: str = None) -> Element:
         """Create subelements of the extension tag specific for the given Extension subclass.
 
         Returns:
             Element with the Extension specific payload.
         """
+
+
+class CreditInfoRequest(Extension):
+    """Fred credit info request EPP Extension."""
+
+    response_class = CreditInfoResult
+
+    def _get_extension_payload(self, tr_id: str = None) -> Element:
+        """Create subelements of the extension tag specific for Credit info request.
+
+        Returns:
+            Element with Credit info request payload.
+        """
+        root = Element(QName(NAMESPACE.FRED, 'extcommand'))
+        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.FRED)
+        SubElement(root, QName(NAMESPACE.FRED, 'creditInfo'))
+        SubElement(root, QName(NAMESPACE.FRED, 'clTRID')).text = tr_id
+
+        return root

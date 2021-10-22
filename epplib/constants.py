@@ -21,7 +21,6 @@
 from enum import Enum
 from types import SimpleNamespace
 
-# TODO: Should FRED be included in the standard namespaces or should it be only in the extension?
 NAMESPACE = SimpleNamespace(
     EPP='urn:ietf:params:xml:ns:epp-1.0',
     XSI='http://www.w3.org/2001/XMLSchema-instance',
@@ -35,6 +34,7 @@ NAMESPACE = SimpleNamespace(
 )
 SCHEMA_LOCATION = SimpleNamespace(
     XSI='urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
+    FRED='http://www.nic.cz/xml/epp/fred-1.5 fred-1.5.0.xsd',
     NIC_CONTACT='http://www.nic.cz/xml/epp/contact-1.6 contact-1.6.2.xsd',
     NIC_DOMAIN='http://www.nic.cz/xml/epp/domain-1.4 domain-1.4.2.xsd',
     NIC_ENUMVAL='http://www.nic.cz/xml/epp/enumval-1.2 enumval-1.2.0.xsd',
