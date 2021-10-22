@@ -23,7 +23,7 @@ from typing import ClassVar, List, Optional, Sequence, Type
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
-from epplib.commands.extensions import CommandExtension
+from epplib.commands.command_extensions import CommandExtension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.responses import Greeting, Response, Result
 

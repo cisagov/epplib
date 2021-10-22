@@ -24,7 +24,7 @@ from lxml.etree import DocumentInvalid, Element, QName, fromstring
 
 from epplib.commands import Hello, Login, Logout, Request
 from epplib.commands.base import Command
-from epplib.commands.extensions import CommandExtension
+from epplib.commands.command_extensions import CommandExtension
 from epplib.constants import NAMESPACE
 from epplib.responses import Response
 from epplib.tests.utils import EM, SCHEMA, XMLTestCase, make_epp_root

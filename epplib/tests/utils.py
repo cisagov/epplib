@@ -26,7 +26,7 @@ from lxml.builder import ElementMaker
 from lxml.etree import Element, QName, XMLSchema, tostring
 
 from epplib.commands import Command, Request
-from epplib.commands.extensions import CommandExtension
+from epplib.commands.command_extensions import CommandExtension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.utils import safe_parse
 
