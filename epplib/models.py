@@ -50,6 +50,14 @@ class IdentType(str, Enum):
     BIRTHDAY = 'birthday'
 
 
+@unique
+class Unit(str, Enum):
+    """Unit for registration period."""
+
+    MONTH = 'm'
+    YEAR = 'y'
+
+
 class PayloadModelMixin(ABC):
     """Mixin for model which are serializable to XML.
 
@@ -218,6 +226,29 @@ class Ns(PayloadModelMixin):
         for addr in self.addrs:
             SubElement(ns, QName(self.namespace, 'addr')).text = addr
         return ns
+
+
+@dataclass
+class Period(PayloadModelMixin):
+    """Dataclass to represent EPP period element.
+
+    Attributes:
+        length: Content of the period element.
+        unit: Content of the unit attribute of the period element.
+    """
+
+    namespace = NAMESPACE.NIC_DOMAIN
+
+    length: int
+    unit: Unit
+
+    def get_payload(self) -> Element:
+        """Get Element representing the model."""
+        period = Element(QName(self.namespace, 'period'))
+        period.attrib['unit'] = self.unit.value
+        period.text = str(self.length)
+
+        return period
 
 
 @dataclass

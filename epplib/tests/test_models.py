@@ -19,7 +19,8 @@
 from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
-from epplib.models import ContactAddr, Disclose, DiscloseFields, Dnskey, Ident, IdentType, Ns, PostalInfo, Status
+from epplib.models import (ContactAddr, Disclose, DiscloseFields, Dnskey, Ident, IdentType, Ns, Period, PostalInfo,
+                           Status, Unit)
 from epplib.tests.utils import XMLTestCase
 
 
@@ -111,6 +112,14 @@ class TestNs(XMLTestCase):
             EM.addr('217.31.207.131'),
         )
         self.assertXMLEqual(ns.get_payload(), expected)
+
+
+class TestPeriod(XMLTestCase):
+    def test_get_payload(self):
+        period = Period(3, Unit.MONTH)
+        EM = ElementMaker(namespace=NAMESPACE.NIC_DOMAIN)
+        expected = EM.period('3', unit='m')
+        self.assertXMLEqual(period.get_payload(), expected)
 
 
 class TestPostalInfo(XMLTestCase):
