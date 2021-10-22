@@ -83,11 +83,7 @@ class Addr(PayloadModelMixin):
     sp: Optional[str] = None
 
     def get_payload(self) -> Element:
-        """Get Element representing the model.
-
-        Args:
-            namespace: Namespace to prefix the subelement tag names.
-        """
+        """Get Element representing the model."""
         addr = Element(QName(self.namespace, 'addr'))
         for line in self.street:
             SubElement(addr, QName(self.namespace, 'street')).text = line
@@ -129,11 +125,7 @@ class Disclose(PayloadModelMixin):
     fields: Set[DiscloseFields]
 
     def get_payload(self) -> Element:
-        """Get Element representing the model.
-
-        Args:
-            namespace: Namespace to prefix the subelement tag names.
-        """
+        """Get Element representing the model."""
         flag = '1' if self.flag else '0'
         disclose = Element(QName(self.namespace, 'disclose'), flag=flag)
         for item in sorted(self.fields):
@@ -199,11 +191,7 @@ class Ident(PayloadModelMixin):
     value: str
 
     def get_payload(self) -> Element:
-        """Get Element representing the model.
-
-        Args:
-            namespace: Namespace to prefix the subelement tag names.
-        """
+        """Get Element representing the model."""
         ident = Element(QName(self.namespace, 'ident'), type=self.type)
         ident.text = self.value
         return ident
@@ -249,11 +237,7 @@ class PostalInfo(PayloadModelMixin):
     org: Optional[str] = None
 
     def get_payload(self) -> Element:
-        """Get Element representing the model.
-
-        Args:
-            namespace: Namespace to prefix the subelement tag names.
-        """
+        """Get Element representing the model."""
         postal_info = Element(QName(self.namespace, 'postalInfo'))
         SubElement(postal_info, QName(self.namespace, 'name')).text = self.name
 
