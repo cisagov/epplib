@@ -21,9 +21,11 @@
 from enum import Enum
 from types import SimpleNamespace
 
+# TODO: Should FRED be included in the standard namespaces or should it be only in the extension?
 NAMESPACE = SimpleNamespace(
     EPP='urn:ietf:params:xml:ns:epp-1.0',
     XSI='http://www.w3.org/2001/XMLSchema-instance',
+    FRED='http://www.nic.cz/xml/epp/fred-1.5',
     NIC_CONTACT='http://www.nic.cz/xml/epp/contact-1.6',
     NIC_DOMAIN='http://www.nic.cz/xml/epp/domain-1.4',
     NIC_ENUMVAL='http://www.nic.cz/xml/epp/enumval-1.2',
