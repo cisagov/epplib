@@ -19,7 +19,7 @@
 from difflib import unified_diff
 from itertools import zip_longest
 from pathlib import Path
-from typing import Any, Dict, List, Sequence, Type, TypeVar, cast
+from typing import Any, List, Mapping, Sequence, Type, TypeVar, cast
 from unittest import TestCase
 
 from lxml.builder import ElementMaker
@@ -46,7 +46,7 @@ def make_epp_root(*elements, **kwargs) -> Element:
     return EM.epp(*elements, attrib)
 
 
-def sub_dict(source: Dict[T, U], keys: Sequence[T]) -> Dict[T, U]:
+def sub_dict(source: Mapping[T, U], keys: Sequence[T]) -> Mapping[T, U]:
     """Return a dictionary containing only listed keys."""
     return {k: source[k] for k in keys}
 
@@ -54,7 +54,7 @@ def sub_dict(source: Dict[T, U], keys: Sequence[T]) -> Dict[T, U]:
 class XMLTestCase(TestCase):
     """TestCase with aditional methods for testing xml trees."""
 
-    def assertRequestValid(self, request_class: Type[Request], params: Dict[str, Any],
+    def assertRequestValid(self, request_class: Type[Request], params: Mapping[str, Any],
                            extension: CommandExtension = None):
         """Assert that the generated XML complies with the schema."""
         request = request_class(**params)  # type: ignore
