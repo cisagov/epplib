@@ -20,7 +20,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import cast
 from unittest import TestCase
 
-from epplib.responses import CreateContactResult, CreateDomainResult
+from epplib.responses import CreateContactResult, CreateDomainResult, CreateNssetResult
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
 
@@ -77,4 +77,24 @@ class TestCreateContactResult(TestCase):
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
         result = CreateContactResult.parse(xml, SCHEMA)
+        self.assertEqual(result.code, 2002)
+
+
+class TestCreateNssetResult(TestCase):
+
+    def test_parse(self):
+        xml = (BASE_DATA_PATH / 'responses/result_create_nsset.xml').read_bytes()
+        result = CreateNssetResult.parse(xml, SCHEMA)
+        expected = [
+            CreateNssetResult.Nsset(
+                'NID-ANSSET',
+                datetime(2017, 8, 9, 15, 53, 15, tzinfo=timezone(timedelta(hours=2))),
+            )
+        ]
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(CreateNssetResult, result).res_data, expected)
+
+    def test_parse_error(self):
+        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        result = CreateNssetResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
