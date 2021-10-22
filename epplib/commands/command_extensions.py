@@ -20,7 +20,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date
-from typing import Optional
+from typing import ClassVar, Optional
 
 from lxml.etree import Element, QName, SubElement
 
@@ -37,32 +37,8 @@ class CommandExtension(ABC):
 
 
 @dataclass
-class CreateDomainEnumExtension(CommandExtension):
-    """ENUM extension for Create Domain command.
-
-    Attributes:
-        val_ex_date: Content of extension/create/valExDate element
-        publish: Content of extension/create/publish element
-    """
-
-    val_ex_date: Optional[date] = None
-    publish: Optional[bool] = None
-
-    def get_payload(self) -> Element:
-        """Create EPP Elements specific to CreateDomainEnumExtension."""
-        create = Element(QName(NAMESPACE.NIC_ENUMVAL, 'create'))
-        create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_ENUMVAL)
-        if self.val_ex_date is not None:
-            expiration_date = SubElement(create, QName(NAMESPACE.NIC_ENUMVAL, 'valExDate'))
-            expiration_date.text = str(self.val_ex_date)
-        if self.publish is not None:
-            SubElement(create, QName(NAMESPACE.NIC_ENUMVAL, 'publish')).text = str(self.publish).lower()
-        return create
-
-
-@dataclass
 class CreateContactMailingAddressExtension(CommandExtension):
-    """Mailing address extension for Create command command.
+    """Mailing address extension for Create contact command.
 
     Attributes:
         addr: Content of extension/create/mailing/addr element
@@ -77,3 +53,53 @@ class CreateContactMailingAddressExtension(CommandExtension):
         mailing = SubElement(create, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
         mailing.append(self.addr.get_payload())
         return create
+
+
+@dataclass
+class EnumExtension(CommandExtension):
+    """ENUM extension for Create Domain command.
+
+    Attributes:
+        val_ex_date: Content of extension/create/valExDate element
+        publish: Content of extension/create/publish element
+    """
+
+    tag: ClassVar[str]
+
+    val_ex_date: Optional[date] = None
+    publish: Optional[bool] = None
+
+    def get_payload(self) -> Element:
+        """Create EPP Elements specific to CreateDomainEnumExtension."""
+        create = Element(QName(NAMESPACE.NIC_ENUMVAL, self.tag))
+        create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_ENUMVAL)
+        if self.val_ex_date is not None:
+            expiration_date = SubElement(create, QName(NAMESPACE.NIC_ENUMVAL, 'valExDate'))
+            expiration_date.text = str(self.val_ex_date)
+        if self.publish is not None:
+            SubElement(create, QName(NAMESPACE.NIC_ENUMVAL, 'publish')).text = str(self.publish).lower()
+        return create
+
+
+@dataclass
+class CreateDomainEnumExtension(EnumExtension):
+    """ENUM extension for Create domain command.
+
+    Attributes:
+        val_ex_date: Content of extension/create/valExDate element
+        publish: Content of extension/create/publish element
+    """
+
+    tag = 'create'
+
+
+@dataclass
+class RenewDomainEnumExtension(EnumExtension):
+    """ENUM extension for Renew domain command.
+
+    Attributes:
+        val_ex_date: Content of extension/create/valExDate element
+        publish: Content of extension/create/publish element
+    """
+
+    tag = 'renew'
