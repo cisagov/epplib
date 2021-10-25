@@ -37,6 +37,16 @@ class TestInfoDomainResult(TestCase):
                 statuses=[Status('ok', 'Object is without restrictions', 'en')],
                 cl_id='REG-MYREG',
                 registrant='CID-MYOWN',
+                admins=[],
+                nsset=None,
+                keyset=None,
+                cr_id=None,
+                cr_date=None,
+                up_id=None,
+                up_date=None,
+                ex_date=None,
+                tr_date=None,
+                auth_info=None,
             )
         ]
         self.assertEqual(result.code, 1000)
