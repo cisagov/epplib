@@ -78,7 +78,7 @@ class InfoResult(Result):
         def _get_params(cls, element: Element) -> Mapping[str, Any]:
             params: Mapping[str, Any] = {
                 'roid': cls._find_text(element, f'./{cls._namespace}:roid'),
-                'statuses': cls._parse_statuses(cls._find_all(element, f'./{cls._namespace}:status')),
+                'statuses': [Status.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:status')],
                 'cl_id': cls._find_text(element, f'./{cls._namespace}:clID'),
                 'cr_id': cls._find_text(element, f'./{cls._namespace}:crID'),
                 'cr_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:crDate')),
@@ -88,10 +88,6 @@ class InfoResult(Result):
                 'auth_info': cls._find_text(element, f'./{cls._namespace}:authInfo'),
             }
             return params
-
-        @classmethod
-        def _parse_statuses(cls, elements: List[Element]) -> List[Status]:
-            return [Status(item.get('s'), item.text, item.get('lang')) for item in elements]
 
 
 @dataclass

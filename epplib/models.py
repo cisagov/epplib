@@ -25,6 +25,7 @@ from typing import ClassVar, List, Optional, Sequence, Set
 from lxml.etree import Element, QName, SubElement
 
 from epplib.constants import NAMESPACE
+from epplib.utils import ParseXMLMixin
 
 
 @unique
@@ -56,6 +57,15 @@ class Unit(str, Enum):
 
     MONTH = 'm'
     YEAR = 'y'
+
+
+class ExtractModelMixin(ParseXMLMixin, ABC):
+    """Mixin for model which are deserializable from XML."""
+
+    @classmethod
+    @abstractmethod
+    def extract(cls, element: Element) -> 'ExtractModelMixin':
+        """Extract the model from the element."""
 
 
 class PayloadModelMixin(ABC):
@@ -280,7 +290,7 @@ class PostalInfo(PayloadModelMixin):
 
 
 @dataclass
-class Statement:
+class Statement(ExtractModelMixin):
     """A dataclass to represent the EPP statement.
 
     Attributes:
@@ -293,9 +303,18 @@ class Statement:
     recipient: List[str]
     retention: Optional[str]
 
+    @classmethod
+    def extract(cls, element: Element) -> 'Statement':
+        """Extract the model from the element."""
+        return cls(
+            purpose=cls._find_children(element, './epp:purpose'),
+            recipient=cls._find_children(element, './epp:recipient'),
+            retention=cls._find_child(element, './epp:retention'),
+        )
+
 
 @dataclass
-class Status:
+class Status(ExtractModelMixin):
     """Represents a status of the queried object in the InfoResult."""
 
     state: str
@@ -305,3 +324,8 @@ class Status:
     def __post_init__(self):
         if self.lang is None:
             self.lang = 'en'
+
+    @classmethod
+    def extract(cls, element: Element) -> 'Status':
+        """Extract the model from the element."""
+        return cls(element.get('s'), element.text, element.get('lang'))

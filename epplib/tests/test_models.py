@@ -20,7 +20,7 @@ from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
 from epplib.models import (ContactAddr, Disclose, DiscloseFields, Dnskey, Ident, IdentType, Ns, Period, PostalInfo,
-                           Status, Unit)
+                           Statement, Status, Unit)
 from epplib.tests.utils import XMLTestCase
 
 
@@ -146,9 +146,34 @@ class TestPostalInfo(XMLTestCase):
         self.assertXMLEqual(postal_info.get_payload(), expected)
 
 
+class TestStatement(XMLTestCase):
+
+    def test_extract(self):
+        EM = ElementMaker(namespace=NAMESPACE.EPP)
+        element = EM.statement(
+            EM.purpose(
+                EM.admin(),
+                EM.prov(),
+            ),
+            EM.recipient(
+                EM.public(),
+            ),
+            EM.retention(
+                EM.stated(),
+            ),
+        )
+        expected = Statement(['admin', 'prov'], ['public'], 'stated')
+        self.assertEqual(Statement.extract(element), expected)
+
+
 class TestStatus(XMLTestCase):
 
     def test_post_init(self):
         self.assertEqual(Status('ok', 'is ok', 'cs'), Status('ok', 'is ok', 'cs'))
         self.assertEqual(Status('ok', 'is ok'), Status('ok', 'is ok', 'en'))
         self.assertEqual(Status('ok', 'is ok', None), Status('ok', 'is ok', 'en'))
+
+    def test_extract(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        self.assertEqual(Status.extract(EM.status('It is ok.', s='ok', lang='cz')), Status('ok', 'It is ok.', 'cz'))
+        self.assertEqual(Status.extract(EM.status('It is ok.', s='ok')), Status('ok', 'It is ok.', 'en'))
