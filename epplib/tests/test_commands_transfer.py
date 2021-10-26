@@ -19,7 +19,7 @@
 from lxml.builder import ElementMaker
 from lxml.etree import QName, fromstring
 
-from epplib.commands import TransferContact, TransferDomain, TransferKeyset
+from epplib.commands import TransferContact, TransferDomain, TransferKeyset, TransferNsset
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
@@ -88,6 +88,30 @@ class TestTransferKeyset(XMLTestCase):
                         {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
                         keyset.id(self.params['id']),
                         keyset.authInfo(self.params['auth_info']),
+                    ),
+                    op='request',
+                )
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestTransferNsset(XMLTestCase):
+    params = {'id': 'NID-TRNSSET', 'auth_info': 'trpwd'}
+
+    def test_valid(self):
+        self.assertRequestValid(TransferNsset, self.params)
+
+    def test_data(self):
+        root = fromstring(TransferNsset(**self.params).xml())
+        nsset = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        expected = make_epp_root(
+            EM.command(
+                EM.transfer(
+                    nsset.transfer(
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
+                        nsset.id(self.params['id']),
+                        nsset.authInfo(self.params['auth_info']),
                     ),
                     op='request',
                 )
