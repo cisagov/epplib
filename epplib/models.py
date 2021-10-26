@@ -181,7 +181,6 @@ class Ident(PayloadModelMixin):
         return ident
 
 
-# TODO: This is not a very good name for a class but it corresponds to the EPP tag
 @dataclass
 class Ns(PayloadModelMixin):
     """Dataclass to represent EPP ns element.
