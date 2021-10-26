@@ -23,7 +23,7 @@ from lxml.etree import Element, QName, fromstring
 
 from epplib.commands import CreateContact, CreateDomain, CreateKeyset, CreateNsset
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import ContactAddr, Disclose, DiscloseFields, Dnskey, Ident, IdentType, Ns, Period, PostalInfo, Unit
+from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, Period, PostalInfo, Unit
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root, sub_dict
 
 
@@ -113,7 +113,7 @@ class TestCreateContact(XMLTestCase):
         'fax': '+420.222123457',
         'email': 'john@doe.cz',
         'auth_info': 'trnpwd',
-        'disclose': Disclose(True, set([DiscloseFields.VAT, DiscloseFields.EMAIL])),
+        'disclose': Disclose(True, set([DiscloseField.VAT, DiscloseField.EMAIL])),
         'vat': '1312112029',
         'ident': Ident(IdentType.OP, '12345'),
         'notify_email': 'notify-john@doe.cz',

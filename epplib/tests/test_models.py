@@ -19,7 +19,7 @@
 from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
-from epplib.models import (ContactAddr, Disclose, DiscloseFields, Dnskey, Ident, IdentType, Ns, Period, PostalInfo,
+from epplib.models import (ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, Period, PostalInfo,
                            Statement, Status, Unit)
 from epplib.tests.utils import XMLTestCase
 
@@ -63,6 +63,46 @@ class TestAddr(XMLTestCase):
         )
         self.assertXMLEqual(addr.get_payload(), expected)
 
+    def test_extract_full(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        addr = EM.addr(
+            EM.street('Street 1'),
+            EM.street('Street 2'),
+            EM.city('City'),
+            EM.pc('12345'),
+            EM.cc('cz'),
+            EM.sp('Province'),
+        )
+        expected = ContactAddr(
+            street=['Street 1', 'Street 2'],
+            city='City',
+            pc='12345',
+            cc='cz',
+            sp='Province',
+        )
+        self.assertEqual(ContactAddr.extract(addr), expected)
+
+    def test_extract_minimal(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        addr = EM.addr()
+        expected = ContactAddr(
+            street=[],
+            city=None,
+            pc=None,
+            cc=None,
+            sp=None,
+        )
+        self.assertEqual(ContactAddr.extract(addr), expected)
+
+    def test_extract(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        disclose = EM.disclose(
+            EM.addr(),
+            flag='1'
+        )
+        expected = Disclose(True, {DiscloseField.ADDR})
+        self.assertEqual(Disclose.extract(disclose), expected)
+
 
 class TestDisclose(XMLTestCase):
 
@@ -74,7 +114,7 @@ class TestDisclose(XMLTestCase):
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
         for flag, result in data:
             with self.subTest(flag=flag):
-                disclose = Disclose(flag=flag, fields={DiscloseFields.VAT, DiscloseFields.EMAIL})
+                disclose = Disclose(flag=flag, fields={DiscloseField.VAT, DiscloseField.EMAIL})
                 expected = EM.disclose(EM.email, EM.vat, flag=result)
                 self.assertXMLEqual(disclose.get_payload(), expected)
 
@@ -100,6 +140,12 @@ class TestIdent(XMLTestCase):
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
         expected = EM.ident('1234567890', type='passport')
         self.assertXMLEqual(ident.get_payload(), expected)
+
+    def test_extract(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        ident = EM.ident('12345', type='passport')
+        expected = Ident(IdentType.PASSPORT, '12345')
+        self.assertEqual(Ident.extract(ident), expected)
 
 
 class TestNs(XMLTestCase):
@@ -144,6 +190,23 @@ class TestPostalInfo(XMLTestCase):
             self.addr.get_payload(),
         )
         self.assertXMLEqual(postal_info.get_payload(), expected)
+
+    def test_extract_full(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        addr = ContactAddr(['Street 1'], 'City', '12345', 'CZ')
+        element = EM.postalInfo(
+            EM.name('John'),
+            EM.org('Company Inc.'),
+            addr.get_payload(),
+        )
+        expected = PostalInfo(name='John', addr=addr, org='Company Inc.')
+        self.assertEqual(PostalInfo.extract(element), expected)
+
+    def test_extract_minimal(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        element = EM.postalInfo()
+        expected = PostalInfo(None, None, None)
+        self.assertEqual(PostalInfo.extract(element), expected)
 
 
 class TestStatement(XMLTestCase):

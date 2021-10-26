@@ -25,7 +25,7 @@ from typing import Any, ClassVar, List, Mapping, Optional
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element
 
-from epplib.models import Status
+from epplib.models import Disclose, Ident, PostalInfo, Status
 from epplib.responses.base import Result, ResultData
 
 
@@ -145,3 +145,69 @@ class InfoDomainResult(InfoResult):
 
     _res_data_path: ClassVar[str] = './domain:infData'
     _res_data_class: ClassVar = Domain
+
+
+@dataclass
+class InfoContactResult(InfoResult):
+    """Represents EPP Result which responds to the Info contact command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        message: Content of the epp/response/result/msg element.
+        data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    @dataclass
+    class Contact(InfoResult.Item):
+        """Dataclass representing contact info in the info contact result.
+
+        Attributes:
+            cl_id: Content of the epp/response/resData/infData/clID element.
+            cr_id: Content of the epp/response/resData/infData/crID element.
+            cr_date: Content of the epp/response/resData/infData/crDate element.
+            up_id: Content of the epp/response/resData/infData/upID element.
+            up_date: Content of the epp/response/resData/infData/upDate element.
+            tr_date: Content of the epp/response/resData/infData/trDate element.
+            auth_info: Content of the epp/response/resData/infData/authInfo element.
+            id: Content of the epp/response/resData/infData/id element.
+            postal_info: Content of the epp/response/resData/infData/postalInfo element.
+            voice: Content of the epp/response/resData/infData/voice element.
+            fax: Content of the epp/response/resData/infData/fax element.
+            email: Content of the epp/response/resData/infData/email element.
+            disclose: Content of the epp/response/resData/infData/disclose element.
+            vat: Content of the epp/response/resData/infData/vat element.
+            ident: Content of the epp/response/resData/infData/ident element.
+            notify_email: Content of the epp/response/resData/infData/notifyEmail element.
+        """
+
+        _namespace = 'contact'
+
+        id: str
+        postal_info: PostalInfo
+        voice: Optional[str]
+        fax: Optional[str]
+        email: Optional[str]
+        disclose: Optional[Disclose]
+        vat: Optional[str]
+        ident: Optional[Ident]
+        notify_email: Optional[str]
+
+        @classmethod
+        def _get_params(cls, element: Element) -> Mapping[str, Any]:
+            params: Mapping[str, Any] = {
+                'id': cls._find_text(element, f'./{cls._namespace}:id'),
+                'postal_info': PostalInfo.extract(cls._find(element, f'./{cls._namespace}:postalInfo')),
+                'voice': cls._find_text(element, f'./{cls._namespace}:voice'),
+                'fax': cls._find_text(element, f'./{cls._namespace}:fax'),
+                'email': cls._find_text(element, f'./{cls._namespace}:email'),
+                'disclose': cls._optional(Disclose.extract, cls._find(element, f'./{cls._namespace}:disclose')),
+                'vat': cls._find_text(element, f'./{cls._namespace}:vat'),
+                'ident': cls._optional(Ident.extract, cls._find(element, f'./{cls._namespace}:ident')),
+                'notify_email': cls._find_text(element, f'./{cls._namespace}:notifyEmail'),
+            }
+            return {**super()._get_params(element), **params}
+
+    _res_data_path: ClassVar[str] = './contact:infData'
+    _res_data_class: ClassVar = Contact
