@@ -157,6 +157,34 @@ class ExtraAddr(Addr):
 
 
 @dataclass
+class Dnskey(PayloadModelMixin):
+    """Dataclass to represent EPP dnskey element.
+
+    Attributes:
+        flags: Content of the flags element.
+        protocol: Content of the protocol element.
+        alg: Content of the alg element.
+        pubKey: Content of the pubKey element.
+    """
+
+    namespace = NAMESPACE.NIC_KEYSET
+
+    flags: int
+    protocol: int
+    alg: int
+    pub_key: str
+
+    def get_payload(self) -> Element:
+        """Get Element representing the the model."""
+        dnskey = Element(QName(self.namespace, 'dnskey'))
+        SubElement(dnskey, QName(self.namespace, 'flags')).text = str(self.flags)
+        SubElement(dnskey, QName(self.namespace, 'protocol')).text = str(self.protocol)
+        SubElement(dnskey, QName(self.namespace, 'alg')).text = str(self.alg)
+        SubElement(dnskey, QName(self.namespace, 'pubKey')).text = self.pub_key
+        return dnskey
+
+
+@dataclass
 class Ident(PayloadModelMixin):
     """Dataclass to represent EPP ident element.
 

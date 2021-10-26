@@ -162,3 +162,31 @@ class CreateNssetResult(CreateNonDomainResult):
     _namespace_prefix: ClassVar[Optional[str]] = 'nsset'
     _res_data_path: ClassVar[str] = './{}:creData'.format(_namespace_prefix)
     _res_data_class: ClassVar = Nsset
+
+
+@dataclass
+class CreateKeysetResult(CreateNonDomainResult):
+    """Represents EPP Result which responds to the create keyset command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        msg: Content of the epp/response/result/msg element.
+        res_data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    @dataclass
+    class Keyset(CreateNonDomainResult.NonDomain):
+        """Dataclass representing result of keyset creation.
+
+        Attributes:
+            id: Content of the epp/response/resData/creData/id element.
+            cr_date: Content of the epp/response/resData/creData/crDate element.
+        """
+
+        _namespace_prefix: ClassVar[Optional[str]] = 'keyset'
+
+    _namespace_prefix: ClassVar[Optional[str]] = 'keyset'
+    _res_data_path: ClassVar[str] = './{}:creData'.format(_namespace_prefix)
+    _res_data_class: ClassVar = Keyset

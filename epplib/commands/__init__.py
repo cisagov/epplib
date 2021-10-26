@@ -20,7 +20,7 @@
 
 from .base import Command, Hello, Login, Logout, Request
 from .check import CheckContact, CheckDomain, CheckKeyset, CheckNsset
-from .create import CreateContact, CreateDomain, CreateNsset
+from .create import CreateContact, CreateDomain, CreateKeyset, CreateNsset
 from .delete import DeleteContact, DeleteDomain, DeleteKeyset, DeleteNsset
 from .info import InfoDomain
 from .transfer import TransferContact, TransferDomain, TransferKeyset
@@ -33,6 +33,7 @@ __all__ = [
     'Command',
     'CreateContact',
     'CreateDomain',
+    'CreateKeyset',
     'CreateNsset',
     'DeleteContact',
     'DeleteDomain',

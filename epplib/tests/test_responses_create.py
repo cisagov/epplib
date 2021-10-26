@@ -20,7 +20,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import cast
 from unittest import TestCase
 
-from epplib.responses import CreateContactResult, CreateDomainResult, CreateNssetResult
+from epplib.responses import CreateContactResult, CreateDomainResult, CreateKeysetResult, CreateNssetResult
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
 
@@ -97,4 +97,24 @@ class TestCreateNssetResult(TestCase):
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
         result = CreateNssetResult.parse(xml, SCHEMA)
+        self.assertEqual(result.code, 2002)
+
+
+class TestCreateKeysetResult(TestCase):
+
+    def test_parse(self):
+        xml = (BASE_DATA_PATH / 'responses/result_create_keyset.xml').read_bytes()
+        result = CreateKeysetResult.parse(xml, SCHEMA)
+        expected = [
+            CreateKeysetResult.Keyset(
+                'KID-AKEYSET',
+                datetime(2017, 8, 9, 15, 53, 15, tzinfo=timezone(timedelta(hours=2))),
+            )
+        ]
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(CreateKeysetResult, result).res_data, expected)
+
+    def test_parse_error(self):
+        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        result = CreateKeysetResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
