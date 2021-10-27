@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd">
+   <response>
+   <result code="1000">
+      <msg>Command completed successfully</msg>
+   </result>
+   <resData>
+      <fred:resCreditInfo xmlns:fred="http://www.nic.cz/xml/epp/fred-1.5"
+       xsi:schemaLocation="http://www.nic.cz/xml/epp/fred-1.5 fred-1.5.0.xsd">
+         <fred:zoneCredit>
+            <fred:zone>0.2.4.e164.arpa</fred:zone>
+            <fred:credit>66112.00</fred:credit>
+         </fred:zoneCredit>
+         <fred:zoneCredit>
+            <fred:zone>cz</fred:zone>
+            <fred:credit>82640.00</fred:credit>
+         </fred:zoneCredit>
+      </fred:resCreditInfo>
+   </resData>
+   <trID>
+      <clTRID>hlxk002#17-05-18at16:55:06</clTRID>
+      <svTRID>ReqID-0000133058</svTRID>
+   </trID>
+   </response>
+</epp>

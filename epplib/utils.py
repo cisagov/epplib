@@ -54,6 +54,7 @@ class ParseXMLMixin:
 
     _NAMESPACES: ClassVar[Mapping[str, str]] = {
         'epp': NAMESPACE.EPP,
+        'fred': NAMESPACE.FRED,
         'contact': NAMESPACE.NIC_CONTACT,
         'domain': NAMESPACE.NIC_DOMAIN,
         'keyset': NAMESPACE.NIC_KEYSET,
