@@ -22,8 +22,9 @@ from typing import Any, Dict, Mapping
 from lxml.builder import ElementMaker
 from lxml.etree import QName
 
-from epplib.commands import CreateContact, CreateDomain
-from epplib.commands.command_extensions import CreateContactMailingAddressExtension, CreateDomainEnumExtension
+from epplib.commands import CreateContact, CreateDomain, RenewDomain
+from epplib.commands.command_extensions import (CreateContactMailingAddressExtension, CreateDomainEnumExtension,
+                                                RenewDomainEnumExtension)
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.models import ContactAddr, ExtraAddr, PostalInfo
 from epplib.tests.utils import XMLTestCase, sub_dict
@@ -101,4 +102,38 @@ class TestCreateContactMailingAddressExtension(XMLTestCase):
                 )
             )
         )
+        self.assertXMLEqual(extension.get_payload(), expected)
+
+
+class TestRenewDomainEnumExtension(XMLTestCase):
+    command_params: Dict[str, Any] = {
+        'name': 'mydomain.cz',
+        'cur_exp_date': date(2018, 7, 11),
+    }
+    extension_params: Dict[str, Any] = {
+        'val_ex_date': date(2021, 1, 1),
+        'publish': True,
+    }
+
+    def test_valid(self):
+        params = (
+            tuple(self.extension_params.keys()),
+            ['val_ex_date'],
+            ['publish'],
+        )
+        for subset in params:
+            with self.subTest(params=subset):
+                extension = RenewDomainEnumExtension(**sub_dict(self.extension_params, subset))
+                self.assertRequestValid(RenewDomain, self.command_params, extension=extension)
+
+    def test_data(self):
+        extension = RenewDomainEnumExtension(**self.extension_params)
+
+        enumval = ElementMaker(namespace=NAMESPACE.NIC_ENUMVAL)
+        expected = enumval.renew(
+            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_ENUMVAL},
+            enumval.valExDate('2021-01-01'),
+            enumval.publish('true'),
+        )
+
         self.assertXMLEqual(extension.get_payload(), expected)

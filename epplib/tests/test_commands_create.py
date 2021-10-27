@@ -22,16 +22,15 @@ from lxml.builder import ElementMaker
 from lxml.etree import Element, QName, fromstring
 
 from epplib.commands import CreateContact, CreateDomain, CreateKeyset, CreateNsset
-from epplib.constants import NAMESPACE, SCHEMA_LOCATION, Unit
-from epplib.models import ContactAddr, Disclose, DiscloseFields, Dnskey, Ident, IdentType, Ns, PostalInfo
+from epplib.constants import NAMESPACE, SCHEMA_LOCATION
+from epplib.models import ContactAddr, Disclose, DiscloseFields, Dnskey, Ident, IdentType, Ns, Period, PostalInfo, Unit
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root, sub_dict
 
 
 class TestCreateDomain(XMLTestCase):
     params: Dict[str, Any] = {
         'name': 'thisdomain.cz',
-        'period': 2,
-        'unit': Unit.MONTH,
+        'period': Period(2, Unit.MONTH),
         'nsset': 'NID-MYNSSET',
         'keyset': 'KID-MYKEYSET',
         'registrant': 'CID-MYOWN',
@@ -53,7 +52,7 @@ class TestCreateDomain(XMLTestCase):
                     domain.create(
                         {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
                         domain.name(self.params['name']),
-                        domain.period(str(self.params['period']), unit=self.params['unit'].value),
+                        domain.period(str(self.params['period'].length), unit=self.params['period'].unit.value),
                         domain.nsset(self.params['nsset']),
                         domain.keyset(self.params['keyset']),
                         domain.registrant(self.params['registrant']),

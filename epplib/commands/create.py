@@ -23,8 +23,8 @@ from typing import Optional, Sequence
 from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
-from epplib.constants import NAMESPACE, SCHEMA_LOCATION, Unit
-from epplib.models import Disclose, Dnskey, Ident, Ns, PostalInfo
+from epplib.constants import NAMESPACE, SCHEMA_LOCATION
+from epplib.models import Disclose, Dnskey, Ident, Ns, Period, PostalInfo, Unit
 from epplib.responses import CreateContactResult, CreateDomainResult, CreateKeysetResult, CreateNssetResult
 
 
@@ -36,7 +36,6 @@ class CreateDomain(Command):
         name: Domain name to register
         registrant: Registrant ID
         period: Period of the registration validity
-        unit: Unit of period - one of 'y', 'm' for years, months respectively
         nsset: nsset ID
         keyset: keyset ID
         admin: administrator contact ID
@@ -47,7 +46,7 @@ class CreateDomain(Command):
 
     name: str
     registrant: str
-    period: Optional[int] = None
+    period: Optional[Period] = None
     unit: Unit = Unit.YEAR
     nsset: Optional[str] = None
     keyset: Optional[str] = None
@@ -67,7 +66,7 @@ class CreateDomain(Command):
 
         SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'name')).text = self.name
         if self.period is not None:
-            SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'period'), unit=self.unit).text = str(self.period)
+            domain_create.append(self.period.get_payload())
         if self.nsset is not None:
             SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'nsset')).text = self.nsset
         if self.keyset is not None:
