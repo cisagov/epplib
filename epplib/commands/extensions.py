@@ -18,12 +18,13 @@
 
 """Module providing base EPP commands."""
 from abc import abstractmethod
+from dataclasses import dataclass
 
 from lxml.etree import Element, QName, SubElement
 
 from epplib.commands import Request
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.responses import CreditInfoResult
+from epplib.responses import CreditInfoResult, Result
 
 
 class Extension(Request):
@@ -63,6 +64,30 @@ class CreditInfoRequest(Extension):
         root = Element(QName(NAMESPACE.FRED, 'extcommand'))
         root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.FRED)
         SubElement(root, QName(NAMESPACE.FRED, 'creditInfo'))
+        SubElement(root, QName(NAMESPACE.FRED, 'clTRID')).text = tr_id
+
+        return root
+
+
+@dataclass
+class SendAuthInfoDomain(Extension):
+    """Fred send auth info for domain EPP Extension."""
+
+    response_class = Result
+    name: str
+
+    def _get_extension_payload(self, tr_id: str = None) -> Element:
+        """Create subelements of the extension tag specific for send auth info.
+
+        Returns:
+            Element with send auth info request payload.
+        """
+        root = Element(QName(NAMESPACE.FRED, 'extcommand'))
+        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.FRED)
+        fred_auth_info = SubElement(root, QName(NAMESPACE.FRED, 'sendAuthInfo'))
+        domain_auth_info = SubElement(fred_auth_info, QName(NAMESPACE.NIC_DOMAIN, 'sendAuthInfo'))
+        domain_auth_info.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_DOMAIN)
+        SubElement(domain_auth_info, QName(NAMESPACE.NIC_DOMAIN, 'name')).text = self.name
         SubElement(root, QName(NAMESPACE.FRED, 'clTRID')).text = tr_id
 
         return root
