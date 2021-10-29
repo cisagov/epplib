@@ -26,8 +26,31 @@ from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.responses import InfoDomainResult
 
 
+class Info(Command):
+    """Base class for EPP Info commands.
+
+    Attributes:
+        name: Domain name to query
+    """
+
+    def _get_info_payload(self, namespace: str, schema_location: str, tag: str, item: str) -> Element:
+        """Create subelements specific for info command.
+
+        Returns:
+            Element with a domain to create.
+        """
+        info = Element(QName(NAMESPACE.EPP, 'info'))
+
+        domain_info = SubElement(info, QName(namespace, 'info'))
+        domain_info.set(QName(NAMESPACE.XSI, 'schemaLocation'), schema_location)
+
+        SubElement(domain_info, QName(namespace, tag)).text = item
+
+        return info
+
+
 @dataclass
-class InfoDomain(Command):
+class InfoDomain(Info):
     """EPP Info Domain command.
 
     Attributes:
@@ -35,7 +58,6 @@ class InfoDomain(Command):
     """
 
     response_class = InfoDomainResult
-
     name: str
 
     def _get_command_payload(self) -> Element:
@@ -44,11 +66,4 @@ class InfoDomain(Command):
         Returns:
             Element with a domain to create.
         """
-        info = Element(QName(NAMESPACE.EPP, 'info'))
-
-        domain_info = SubElement(info, QName(NAMESPACE.NIC_DOMAIN, 'info'))
-        domain_info.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_DOMAIN)
-
-        SubElement(domain_info, QName(NAMESPACE.NIC_DOMAIN, 'name')).text = self.name
-
-        return info
+        return self._get_info_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.name)
