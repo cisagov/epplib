@@ -19,7 +19,7 @@
 from lxml.builder import ElementMaker
 from lxml.etree import QName, fromstring
 
-from epplib.commands.list import (ListContacts, ListDomains, ListDomainsByContact, ListDomainsByKeyset,
+from epplib.commands.list import (GetResults, ListContacts, ListDomains, ListDomainsByContact, ListDomainsByKeyset,
                                   ListDomainsByNsset, ListKeysets, ListKeysetsByContact, ListNssets,
                                   ListNssetsByContact, ListNssetsByNs)
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
@@ -93,3 +93,24 @@ class TestListBy(XMLTestCase):
                     )
                 )
                 self.assertXMLEqual(root, expected)
+
+
+class TestGetResults(XMLTestCase):
+
+    def test_valid(self):
+        self.assertRequestValid(GetResults, {})
+
+    def test_data(self):
+        tr_id = 'abc123'
+        root = fromstring(GetResults().xml(tr_id))
+        fred = ElementMaker(namespace=NAMESPACE.FRED)
+        expected = make_epp_root(
+            EM.extension(
+                fred.extcommand(
+                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    fred.getResults(),
+                    fred.clTRID(tr_id),
+                )
+            )
+        )
+        self.assertXMLEqual(root, expected)
