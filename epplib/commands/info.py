@@ -23,7 +23,7 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.responses import InfoDomainResult
+from epplib.responses import InfoContactResult, InfoDomainResult
 
 
 class Info(Command):
@@ -67,3 +67,23 @@ class InfoDomain(Info):
             Element with a domain to create.
         """
         return self._get_info_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.name)
+
+
+@dataclass
+class InfoContact(Info):
+    """EPP Info Contact command.
+
+    Attributes:
+        id: Contact id to query
+    """
+
+    response_class = InfoContactResult
+    id: str
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for CreateContact.
+
+        Returns:
+            Element with a contact to create.
+        """
+        return self._get_info_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id)
