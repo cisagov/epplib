@@ -198,6 +198,11 @@ class ExtraAddr(Addr):
     }
     namespace = NAMESPACE.NIC_EXTRA_ADDR
 
+    @classmethod
+    def extract(cls, element: Element) -> 'ExtraAddr':
+        """Extract the model from the element."""
+        return cast('ExtraAddr', super().extract(element))
+
 
 @dataclass
 class Dnskey(PayloadModelMixin):
