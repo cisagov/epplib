@@ -22,7 +22,8 @@ from typing import Any, Dict, Mapping
 from lxml.builder import ElementMaker
 from lxml.etree import Element, QName, fromstring
 
-from epplib.commands import CreditInfoRequest, SendAuthInfoDomain, SendAuthInfoKeyset, SendAuthInfoNsset, TestNsset
+from epplib.commands import (CreditInfoRequest, SendAuthInfoContact, SendAuthInfoDomain, SendAuthInfoKeyset,
+                             SendAuthInfoNsset, TestNsset)
 from epplib.commands.extensions import Extension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.responses import Response
@@ -85,6 +86,34 @@ class TestCreditInfo(XMLTestCase):
                     {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
                     fred.creditInfo(),
                     fred.clTRID(tr_id)
+                ),
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestSendAuthInfoContact(XMLTestCase):
+
+    contact = 'CID-MYCONTACT'
+
+    def test_valid(self):
+        self.assertRequestValid(SendAuthInfoContact, {'id': self.contact})
+
+    def test_data(self):
+        root = fromstring(SendAuthInfoContact(id=self.contact).xml(tr_id))
+        fred = ElementMaker(namespace=NAMESPACE.FRED)
+        contact = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        expected = make_epp_root(
+            EM.extension(
+                fred.extcommand(
+                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    fred.sendAuthInfo(
+                        contact.sendAuthInfo(
+                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
+                            contact.id(self.contact),
+                        ),
+                    ),
+                    fred.clTRID(tr_id),
                 ),
             )
         )
