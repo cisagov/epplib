@@ -22,7 +22,7 @@ from typing import Any, Dict, Mapping
 from lxml.builder import ElementMaker
 from lxml.etree import Element, QName, fromstring
 
-from epplib.commands import CreditInfoRequest, SendAuthInfoDomain, SendAuthInfoKeyset, TestNsset
+from epplib.commands import CreditInfoRequest, SendAuthInfoDomain, SendAuthInfoKeyset, SendAuthInfoNsset, TestNsset
 from epplib.commands.extensions import Extension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.responses import Response
@@ -138,6 +138,34 @@ class TestSendAuthInfoKeyset(XMLTestCase):
                         keyset.sendAuthInfo(
                             {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
                             keyset.id(self.keyset),
+                        ),
+                    ),
+                    fred.clTRID(tr_id),
+                ),
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestSendAuthInfoNsset(XMLTestCase):
+
+    nsset = 'NID-MYNSSET'
+
+    def test_valid(self):
+        self.assertRequestValid(SendAuthInfoNsset, {'id': self.nsset})
+
+    def test_data(self):
+        root = fromstring(SendAuthInfoNsset(id=self.nsset).xml(tr_id))
+        fred = ElementMaker(namespace=NAMESPACE.FRED)
+        nsset = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        expected = make_epp_root(
+            EM.extension(
+                fred.extcommand(
+                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    fred.sendAuthInfo(
+                        nsset.sendAuthInfo(
+                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
+                            nsset.id(self.nsset),
                         ),
                     ),
                     fred.clTRID(tr_id),
