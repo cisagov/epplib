@@ -50,7 +50,23 @@ class Extension(Request):
         """
 
 
-class CreditInfoRequest(Extension):
+class FredExtCommand(Extension):
+    """Base class for Fred ext commands."""
+
+    def _get_extension_payload(self, tr_id: str = None) -> Element:
+        """Create subelements of the extension tag specific for Fred ext command.
+
+        Returns:
+            Element with the Fred ext command payload.
+        """
+        root = Element(QName(NAMESPACE.FRED, 'extcommand'))
+        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.FRED)
+        SubElement(root, QName(NAMESPACE.FRED, 'clTRID')).text = tr_id
+
+        return root
+
+
+class CreditInfoRequest(FredExtCommand):
     """Fred credit info request EPP Extension."""
 
     response_class = CreditInfoResult
@@ -61,10 +77,8 @@ class CreditInfoRequest(Extension):
         Returns:
             Element with Credit info request payload.
         """
-        root = Element(QName(NAMESPACE.FRED, 'extcommand'))
-        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.FRED)
-        SubElement(root, QName(NAMESPACE.FRED, 'creditInfo'))
-        SubElement(root, QName(NAMESPACE.FRED, 'clTRID')).text = tr_id
+        root = super()._get_extension_payload(tr_id)
+        root.insert(0, Element(QName(NAMESPACE.FRED, 'creditInfo')))
 
         return root
 
