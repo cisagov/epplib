@@ -18,7 +18,8 @@
 
 """Module providing base EPP commands."""
 from abc import abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional, Sequence
 
 from lxml.etree import Element, QName, SubElement
 
@@ -103,5 +104,36 @@ class SendAuthInfoDomain(Extension):
         domain_auth_info.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_DOMAIN)
         SubElement(domain_auth_info, QName(NAMESPACE.NIC_DOMAIN, 'name')).text = self.name
         SubElement(root, QName(NAMESPACE.FRED, 'clTRID')).text = tr_id
+
+        return root
+
+
+@dataclass
+class TestNsset(FredExtCommand):
+    """Test Nsset EPP Extension command."""
+
+    response_class = Result
+
+    id: str
+    level: Optional[int] = None
+    names: Sequence[str] = field(default_factory=list)
+
+    def _get_extension_payload(self, tr_id: str = None) -> Element:
+        """Create subelements of the extension tag specific for test nsset.
+
+        Returns:
+            Element with test nsset request payload.
+        """
+        root = super()._get_extension_payload(tr_id)
+        fred_test = Element(QName(NAMESPACE.FRED, 'test'))
+        root.insert(0, fred_test)
+
+        nsset_test = SubElement(fred_test, QName(NAMESPACE.NIC_NSSET, 'test'))
+        nsset_test.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_NSSET)
+        SubElement(nsset_test, QName(NAMESPACE.NIC_NSSET, 'id')).text = self.id
+        if self.level is not None:
+            SubElement(nsset_test, QName(NAMESPACE.NIC_NSSET, 'level')).text = str(self.level)
+        for item in self.names:
+            SubElement(nsset_test, QName(NAMESPACE.NIC_NSSET, 'name')).text = item
 
         return root
