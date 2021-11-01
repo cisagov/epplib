@@ -17,16 +17,16 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Mapping
 
 from lxml.builder import ElementMaker
 from lxml.etree import Element, QName, fromstring
 
-from epplib.commands import CreditInfoRequest, SendAuthInfoDomain
+from epplib.commands import CreditInfoRequest, SendAuthInfoDomain, TestNsset
 from epplib.commands.extensions import Extension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.responses import Response
-from epplib.tests.utils import EM, XMLTestCase, make_epp_root
+from epplib.tests.utils import EM, XMLTestCase, make_epp_root, sub_dict
 
 EXTENSION_NAMESPACE = 'extension:name:space'
 tr_id = 'abc123'
@@ -115,5 +115,62 @@ class TestSendAuthInfoDomain(XMLTestCase):
                     fred.clTRID(tr_id),
                 ),
             )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestTestNsset(XMLTestCase):
+
+    params: Mapping[str, Any] = {
+        'id': 'NID-MYNSSET',
+        'level': 5,
+        'names': ['mydomain.cz', 'somedomain.cz']
+    }
+    required = ['id']
+
+    def test_valid(self):
+        self.assertRequestValid(TestNsset, self.params)
+        self.assertRequestValid(TestNsset, sub_dict(self.params, self.required))
+
+    def test_data_minimal(self):
+        root = fromstring(TestNsset(**sub_dict(self.params, self.required)).xml(tr_id))
+        fred = ElementMaker(namespace=NAMESPACE.FRED)
+        nsset = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        expected = make_epp_root(
+            EM.extension(
+                fred.extcommand(
+                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    fred.test(
+                        nsset.test(
+                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
+                            nsset.id(self.params['id']),
+                        ),
+                    ),
+                    fred.clTRID(tr_id),
+                ),
+            ),
+        )
+        self.assertXMLEqual(root, expected)
+
+    def test_data_full(self):
+        root = fromstring(TestNsset(**self.params).xml(tr_id))
+        fred = ElementMaker(namespace=NAMESPACE.FRED)
+        nsset = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        expected = make_epp_root(
+            EM.extension(
+                fred.extcommand(
+                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    fred.test(
+                        nsset.test(
+                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
+                            nsset.id(self.params['id']),
+                            nsset.level(str(self.params['level'])),
+                            nsset.name(self.params['names'][0]),
+                            nsset.name(self.params['names'][1]),
+                        ),
+                    ),
+                    fred.clTRID(tr_id),
+                ),
+            ),
         )
         self.assertXMLEqual(root, expected)
