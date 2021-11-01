@@ -22,12 +22,14 @@ from typing import Any, Dict
 from lxml.builder import ElementMaker
 from lxml.etree import Element, QName, fromstring
 
-from epplib.commands.extensions import CreditInfoRequest, Extension
+from epplib.commands import CreditInfoRequest, SendAuthInfoDomain
+from epplib.commands.extensions import Extension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.responses import Response
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
 EXTENSION_NAMESPACE = 'extension:name:space'
+tr_id = 'abc123'
 
 
 class DummyResponse(Response):
@@ -75,7 +77,6 @@ class TestCreditInfo(XMLTestCase):
         self.assertRequestValid(CreditInfoRequest, {})
 
     def test_data(self):
-        tr_id = 'abc123'
         root = fromstring(CreditInfoRequest().xml(tr_id))
         fred = ElementMaker(namespace=NAMESPACE.FRED)
         expected = make_epp_root(
@@ -84,6 +85,34 @@ class TestCreditInfo(XMLTestCase):
                     {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
                     fred.creditInfo(),
                     fred.clTRID(tr_id)
+                ),
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestSendAuthInfoDomain(XMLTestCase):
+
+    domain = 'mydomain.cz'
+
+    def test_valid(self):
+        self.assertRequestValid(SendAuthInfoDomain, {'name': self.domain})
+
+    def test_data(self):
+        root = fromstring(SendAuthInfoDomain(name=self.domain).xml(tr_id))
+        fred = ElementMaker(namespace=NAMESPACE.FRED)
+        domain = ElementMaker(namespace=NAMESPACE.NIC_DOMAIN)
+        expected = make_epp_root(
+            EM.extension(
+                fred.extcommand(
+                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    fred.sendAuthInfo(
+                        domain.sendAuthInfo(
+                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
+                            domain.name(self.domain),
+                        ),
+                    ),
+                    fred.clTRID(tr_id),
                 ),
             )
         )
