@@ -19,7 +19,7 @@
 from lxml.builder import ElementMaker
 from lxml.etree import QName, fromstring
 
-from epplib.commands import InfoContact, InfoDomain
+from epplib.commands import InfoContact, InfoDomain, InfoKeyset
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
@@ -61,6 +61,28 @@ class TestInfoContact(XMLTestCase):
                     contact.info(
                         {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
                         contact.id(self.params['id']),
+                    )
+                )
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestInfoKeyset(XMLTestCase):
+    params = {'id': 'KID-MYKEYSET'}
+
+    def test_valid(self):
+        self.assertRequestValid(InfoKeyset, self.params)
+
+    def test_data(self):
+        root = fromstring(InfoKeyset(**self.params).xml())
+        keyset = ElementMaker(namespace=NAMESPACE.NIC_KEYSET)
+        expected = make_epp_root(
+            EM.command(
+                EM.info(
+                    keyset.info(
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
+                        keyset.id(self.params['id']),
                     )
                 )
             )
