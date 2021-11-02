@@ -20,7 +20,8 @@ from datetime import date, datetime, timedelta, timezone
 from typing import cast
 from unittest import TestCase
 
-from epplib.responses import InfoDomainResult
+from epplib.models import ContactAddr, Disclose, DiscloseField, Ident, IdentType, PostalInfo
+from epplib.responses import InfoContactResult, InfoDomainResult
 from epplib.responses.info import Status
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
@@ -37,6 +38,16 @@ class TestInfoDomainResult(TestCase):
                 statuses=[Status('ok', 'Object is without restrictions', 'en')],
                 cl_id='REG-MYREG',
                 registrant='CID-MYOWN',
+                admins=[],
+                nsset=None,
+                keyset=None,
+                cr_id=None,
+                cr_date=None,
+                up_id=None,
+                up_date=None,
+                ex_date=None,
+                tr_date=None,
+                auth_info=None,
             )
         ]
         self.assertEqual(result.code, 1000)
@@ -71,4 +82,70 @@ class TestInfoDomainResult(TestCase):
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
         result = InfoDomainResult.parse(xml, SCHEMA)
+        self.assertEqual(result.code, 2002)
+
+
+class TestInfoContactResult(TestCase):
+
+    def test_parse_full(self):
+        xml = (BASE_DATA_PATH / 'responses/result_info_contact.xml').read_bytes()
+        result = InfoContactResult.parse(xml, SCHEMA)
+        expected = [
+            InfoContactResult.Contact(
+                roid='C0009746170-CZ',
+                statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
+                cl_id='REG-CLID',
+                cr_id='REG-CRID',
+                cr_date=datetime(2017, 5, 4, 11, 30, 25, tzinfo=timezone(timedelta(hours=2))),
+                up_id='REG-UPID',
+                up_date=datetime(2017, 5, 5, 11, 30, 25, tzinfo=timezone(timedelta(hours=2))),
+                tr_date=datetime(2017, 5, 6, 11, 30, 25, tzinfo=timezone(timedelta(hours=2))),
+                auth_info='PfLyxPC4',
+                id='CID-MYCONTACT',
+                postal_info=PostalInfo('Name Surname', ContactAddr(['Street'], 'City', '12345', 'CZ')),
+                voice='+420.12345',
+                fax='+420.23456',
+                email='email@example.com',
+                disclose=Disclose(True, {DiscloseField.ADDR}),
+                vat='34567',
+                ident=Ident(IdentType.PASSPORT, '45678'),
+                notify_email='notify@example.com',
+            )
+        ]
+
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(InfoContactResult, result).res_data, expected)
+
+    def test_parse_minimal(self):
+        xml = (BASE_DATA_PATH / 'responses/result_info_contact_minimal.xml').read_bytes()
+        result = InfoContactResult.parse(xml, SCHEMA)
+        expected = [
+            InfoContactResult.Contact(
+                roid='C0009746170-CZ',
+                statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
+                cl_id='REG-CLID',
+                cr_id='REG-CRID',
+                cr_date=datetime(2017, 5, 4, 11, 30, 25, tzinfo=timezone(timedelta(hours=2))),
+                up_id=None,
+                up_date=None,
+                tr_date=None,
+                auth_info=None,
+                id='CID-MYCONTACT',
+                postal_info=PostalInfo(None, None),
+                voice=None,
+                fax=None,
+                email=None,
+                disclose=None,
+                vat=None,
+                ident=None,
+                notify_email=None,
+            )
+        ]
+
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(InfoContactResult, result).res_data, expected)
+
+    def test_parse_error(self):
+        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        result = InfoContactResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)

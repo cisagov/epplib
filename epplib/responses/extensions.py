@@ -26,6 +26,7 @@ from typing import ClassVar, Mapping, Optional
 from lxml.etree import Element, QName
 
 from epplib.constants import NAMESPACE
+from epplib.models import ExtraAddr
 from epplib.utils import ParseXMLMixin
 
 
@@ -84,3 +85,34 @@ class EnumInfoExtension(ParseXMLMixin, ResponseExtension):
         val_ex_date = cls._optional(cls._parse_date, cls._find_text(element, './enumval:valExDate'))
         publish = cls._optional(cls._str_to_bool, cls._find_text(element, './enumval:publish'))
         return cls(val_ex_date=val_ex_date, publish=publish)
+
+
+@dataclass
+class MailingAddressExtension(ParseXMLMixin, ResponseExtension):
+    """Dataclass to represent CZ.NIC ENUM extension.
+
+    Attributes:
+        addr: Content of the epp/response/extension/infData/mailing/addr element.
+    """
+
+    _NAMESPACES: ClassVar[Mapping[str, str]] = {
+        **ParseXMLMixin._NAMESPACES,
+        'extra-addr': NAMESPACE.NIC_EXTRA_ADDR,
+    }
+
+    tag = QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing')
+
+    addr: ExtraAddr
+
+    @classmethod
+    def extract(cls, element: Element) -> 'MailingAddressExtension':
+        """Extract the extension content from the element.
+
+        Args:
+            element: XML element containg the extension data.
+
+        Returns:
+            Dataclass representing the extension.
+        """
+        addr = ExtraAddr.extract(cls._find(element, 'extra-addr:addr'))
+        return cls(addr=addr)

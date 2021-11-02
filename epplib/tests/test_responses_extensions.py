@@ -22,7 +22,8 @@ from unittest import TestCase
 from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
-from epplib.responses.extensions import EnumInfoExtension
+from epplib.models import ExtraAddr
+from epplib.responses.extensions import EnumInfoExtension, MailingAddressExtension
 
 
 class TestEnumInfoExtension(TestCase):
@@ -40,4 +41,16 @@ class TestEnumInfoExtension(TestCase):
         )
         result = EnumInfoExtension.extract(element)
         expected = EnumInfoExtension(date(2018, 1, 2), False)
+        self.assertEqual(result, expected)
+
+
+class TestMailingAddressExtension(TestCase):
+
+    EM = ElementMaker(namespace=NAMESPACE.NIC_EXTRA_ADDR)
+
+    def test_extract(self):
+        addr = ExtraAddr(street=['Dlouha 24'], city='Lysa nad Labem', pc='28922', cc='CZ')
+        element = self.EM.infData(addr.get_payload())
+        result = MailingAddressExtension.extract(element)
+        expected = MailingAddressExtension(addr=addr)
         self.assertEqual(result, expected)

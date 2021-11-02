@@ -20,17 +20,19 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, unique
-from typing import ClassVar, List, Optional, Sequence, Set
+from typing import ClassVar, List, Mapping, Optional, Sequence, Set, cast
 
 from lxml.etree import Element, QName, SubElement
 
 from epplib.constants import NAMESPACE
+from epplib.utils import ParseXMLMixin
 
 
 @unique
-class DiscloseFields(str, Enum):
+class DiscloseField(str, Enum):
     """Allowed values of subelements of disclose element."""
 
+    ADDR = 'addr'
     VOICE = 'voice'
     FAX = 'fax'
     EMAIL = 'email'
@@ -58,6 +60,15 @@ class Unit(str, Enum):
     YEAR = 'y'
 
 
+class ExtractModelMixin(ParseXMLMixin, ABC):
+    """Mixin for model which are deserializable from XML."""
+
+    @classmethod
+    @abstractmethod
+    def extract(cls, element: Element) -> 'ExtractModelMixin':
+        """Extract the model from the element."""
+
+
 class PayloadModelMixin(ABC):
     """Mixin for model which are serializable to XML.
 
@@ -73,7 +84,7 @@ class PayloadModelMixin(ABC):
 
 
 @dataclass
-class Addr(PayloadModelMixin):
+class Addr(PayloadModelMixin, ExtractModelMixin):
     """Dataclass to represent EPP addr element.
 
     Attributes:
@@ -84,10 +95,12 @@ class Addr(PayloadModelMixin):
         sp: Content of the addr/sp element.
     """
 
+    _alias: ClassVar[str]
+
     street: Sequence[str]
-    city: str
-    pc: str
-    cc: str
+    city: Optional[str]
+    pc: Optional[str]
+    cc: Optional[str]
     sp: Optional[str] = None
 
     def get_payload(self) -> Element:
@@ -102,6 +115,17 @@ class Addr(PayloadModelMixin):
         SubElement(addr, QName(self.namespace, 'cc')).text = self.cc
         return addr
 
+    @classmethod
+    def extract(cls, element: Element) -> 'Addr':
+        """Extract the model from the element."""
+        return cls(
+            street=cls._find_all_text(element, f'./{cls._alias}:street'),
+            city=cls._find_text(element, f'./{cls._alias}:city'),
+            pc=cls._find_text(element, f'./{cls._alias}:pc'),
+            cc=cls._find_text(element, f'./{cls._alias}:cc'),
+            sp=cls._find_text(element, f'./{cls._alias}:sp'),
+        )
+
 
 @dataclass
 class ContactAddr(Addr):
@@ -115,11 +139,17 @@ class ContactAddr(Addr):
         sp: Content of the addr/sp element.
     """
 
+    _alias = 'contact'
     namespace = NAMESPACE.NIC_CONTACT
+
+    @classmethod
+    def extract(cls, element: Element) -> 'ContactAddr':
+        """Extract the model from the element."""
+        return cast('ContactAddr', super().extract(element))
 
 
 @dataclass
-class Disclose(PayloadModelMixin):
+class Disclose(PayloadModelMixin, ExtractModelMixin):
     """Dataclass to represent EPP disclose element.
 
     Attributes:
@@ -129,8 +159,8 @@ class Disclose(PayloadModelMixin):
 
     namespace = NAMESPACE.NIC_CONTACT
 
-    flag: bool
-    fields: Set[DiscloseFields]
+    flag: Optional[bool]
+    fields: Set[DiscloseField]
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
@@ -139,6 +169,14 @@ class Disclose(PayloadModelMixin):
         for item in sorted(self.fields):
             SubElement(disclose, QName(self.namespace, item.value))
         return disclose
+
+    @classmethod
+    def extract(cls, element: Element) -> 'Disclose':
+        """Extract the model from the element."""
+        return cls(
+            flag=cls._str_to_bool(cls._find_attrib(element, '.', 'flag')),
+            fields=set(DiscloseField(item) for item in cls._find_children(element, './')),
+        )
 
 
 @dataclass
@@ -153,7 +191,17 @@ class ExtraAddr(Addr):
         sp: Content of the addr/sp element.
     """
 
+    _alias = 'extra-addr'
+    _NAMESPACES: ClassVar[Mapping[str, str]] = {
+        **ParseXMLMixin._NAMESPACES,
+        _alias: NAMESPACE.NIC_EXTRA_ADDR,
+    }
     namespace = NAMESPACE.NIC_EXTRA_ADDR
+
+    @classmethod
+    def extract(cls, element: Element) -> 'ExtraAddr':
+        """Extract the model from the element."""
+        return cast('ExtraAddr', super().extract(element))
 
 
 @dataclass
@@ -185,7 +233,7 @@ class Dnskey(PayloadModelMixin):
 
 
 @dataclass
-class Ident(PayloadModelMixin):
+class Ident(PayloadModelMixin, ExtractModelMixin):
     """Dataclass to represent EPP ident element.
 
     Attributes:
@@ -203,6 +251,13 @@ class Ident(PayloadModelMixin):
         ident = Element(QName(self.namespace, 'ident'), type=self.type)
         ident.text = self.value
         return ident
+
+    @classmethod
+    def extract(cls, element: Element) -> 'Ident':
+        """Extract the model from the element."""
+        type = IdentType(cls._find_attrib(element, '.', 'type'))
+        value = cls._find_text(element, '.')
+        return cls(type=type, value=value)
 
 
 @dataclass
@@ -252,7 +307,7 @@ class Period(PayloadModelMixin):
 
 
 @dataclass
-class PostalInfo(PayloadModelMixin):
+class PostalInfo(PayloadModelMixin, ExtractModelMixin):
     """Dataclass to represent EPP postalInfo element.
 
     Attributes:
@@ -263,8 +318,8 @@ class PostalInfo(PayloadModelMixin):
 
     namespace = NAMESPACE.NIC_CONTACT
 
-    name: str
-    addr: ContactAddr
+    name: Optional[str]
+    addr: Optional[ContactAddr]
     org: Optional[str] = None
 
     def get_payload(self) -> Element:
@@ -274,13 +329,22 @@ class PostalInfo(PayloadModelMixin):
 
         if self.org:
             SubElement(postal_info, QName(self.namespace, 'org')).text = self.org
-        postal_info.append(self.addr.get_payload())
+        if self.addr:  # pragma: no branch
+            postal_info.append(self.addr.get_payload())
 
         return postal_info
 
+    @classmethod
+    def extract(cls, element: Element) -> 'PostalInfo':
+        """Extract the model from the element."""
+        name = cls._find_text(element, './contact:name')
+        org = cls._find_text(element, './contact:org')
+        addr = cls._optional(ContactAddr.extract, cls._find(element, './contact:addr'))
+        return cls(name=name, addr=addr, org=org)
+
 
 @dataclass
-class Statement:
+class Statement(ExtractModelMixin):
     """A dataclass to represent the EPP statement.
 
     Attributes:
@@ -293,9 +357,18 @@ class Statement:
     recipient: List[str]
     retention: Optional[str]
 
+    @classmethod
+    def extract(cls, element: Element) -> 'Statement':
+        """Extract the model from the element."""
+        return cls(
+            purpose=cls._find_children(element, './epp:purpose'),
+            recipient=cls._find_children(element, './epp:recipient'),
+            retention=cls._find_child(element, './epp:retention'),
+        )
+
 
 @dataclass
-class Status:
+class Status(ExtractModelMixin):
     """Represents a status of the queried object in the InfoResult."""
 
     state: str
@@ -305,3 +378,8 @@ class Status:
     def __post_init__(self):
         if self.lang is None:
             self.lang = 'en'
+
+    @classmethod
+    def extract(cls, element: Element) -> 'Status':
+        """Extract the model from the element."""
+        return cls(element.get('s'), element.text, element.get('lang'))

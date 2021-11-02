@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd">
+<response>
+   <result code="1000">
+      <msg>Command completed successfully</msg>
+   </result>
+   <resData>
+   <contact:infData xmlns:contact="http://www.nic.cz/xml/epp/contact-1.6"
+    xsi:schemaLocation="http://www.nic.cz/xml/epp/contact-1.6 contact-1.6.2.xsd">
+      <contact:id>CID-MYCONTACT</contact:id>
+      <contact:roid>C0009746170-CZ</contact:roid>
+      <contact:status s="linked">Has relation to other records in the registry</contact:status>
+      <contact:postalInfo/>
+      <contact:clID>REG-CLID</contact:clID>
+      <contact:crID>REG-CRID</contact:crID>
+      <contact:crDate>2017-05-04T11:30:25+02:00</contact:crDate>
+   </contact:infData>
+   </resData>
+   <trID>
+      <clTRID>zmge004#17-05-04at12:20:55</clTRID>
+      <svTRID>ReqID-0000132810</svTRID>
+   </trID>
+</response>
+</epp>

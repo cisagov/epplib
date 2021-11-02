@@ -156,32 +156,11 @@ class Greeting(Response):
 
             'access': cls._find_child(element, './epp:dcp/epp:access'),
 
-            'statements': [
-                cls._extract_statement(item) for item in element.findall(
-                    './epp:dcp/epp:statement',
-                    namespaces=cls._NAMESPACES
-                )
-            ],
+            'statements': [Statement.extract(item) for item in cls._find_all(element, './epp:dcp/epp:statement')],
             'expiry': cls._extract_expiry(element.find('./epp:dcp/epp:expiry', namespaces=cls._NAMESPACES))
         }
 
         return data
-
-    @classmethod
-    def _extract_statement(cls, element: Element) -> Statement:
-        """Extract the statement part of Greeting.
-
-        Args:
-            element: Statement element of Greeting.
-
-        Returns:
-            Extracted Statement.
-        """
-        return Statement(
-            purpose=cls._find_children(element, './epp:purpose'),
-            recipient=cls._find_children(element, './epp:recipient'),
-            retention=cls._find_child(element, './epp:retention'),
-        )
 
     @classmethod
     def _extract_expiry(cls, element: Element) -> Union[None, datetime, relativedelta]:
