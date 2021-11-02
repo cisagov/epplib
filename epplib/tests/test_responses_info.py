@@ -20,8 +20,8 @@ from datetime import date, datetime, timedelta, timezone
 from typing import cast
 from unittest import TestCase
 
-from epplib.models import ContactAddr, Disclose, DiscloseField, Ident, IdentType, PostalInfo
-from epplib.responses import InfoContactResult, InfoDomainResult
+from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, PostalInfo
+from epplib.responses import InfoContactResult, InfoDomainResult, InfoKeysetResult
 from epplib.responses.info import Status
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
@@ -148,4 +148,61 @@ class TestInfoContactResult(TestCase):
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
         result = InfoContactResult.parse(xml, SCHEMA)
+        self.assertEqual(result.code, 2002)
+
+
+class TestInfoKeysetResult(TestCase):
+
+    def test_parse_full(self):
+        xml = (BASE_DATA_PATH / 'responses/result_info_keyset.xml').read_bytes()
+        result = InfoKeysetResult.parse(xml, SCHEMA)
+        expected = [
+            InfoKeysetResult.Keyset(
+                roid='K0009907596-CZ',
+                statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
+                cl_id='REG-MYREG',
+                cr_id=None,
+                cr_date=None,
+                up_id=None,
+                up_date=None,
+                tr_date=None,
+                auth_info=None,
+                id='KID-MYKEYSET',
+                dnskeys=[
+                    Dnskey(flags=257, protocol=3, alg=5, pub_key='aXN4Y2lpd2ZicWtkZHF4dnJyaHVtc3BreXN6ZGZy'),
+                    Dnskey(flags=257, protocol=3, alg=5, pub_key='eGVmbmZrY3lvcXFwamJ6aGt2YXhteXdkc2tjeXBp'),
+                ],
+                techs=['CID-TECH2', 'CID-TECH3'],
+            )
+        ]
+
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(InfoKeysetResult, result).res_data, expected)
+
+    def test_parse_minimal(self):
+        xml = (BASE_DATA_PATH / 'responses/result_info_keyset_minimal.xml').read_bytes()
+        result = InfoKeysetResult.parse(xml, SCHEMA)
+        expected = [
+            InfoKeysetResult.Keyset(
+                roid='K0009907596-CZ',
+                statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
+                cl_id='REG-MYREG',
+                cr_id=None,
+                cr_date=None,
+                up_id=None,
+                up_date=None,
+                tr_date=None,
+                auth_info=None,
+                id='KID-MYKEYSET',
+                dnskeys=[],
+                techs=['CID-TECH2'],
+            )
+        ]
+
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(InfoKeysetResult, result).res_data, expected)
+
+    def test_parse_error(self):
+        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        result = InfoKeysetResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
