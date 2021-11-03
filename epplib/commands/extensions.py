@@ -84,14 +84,12 @@ class CreditInfoRequest(FredExtCommand):
         return root
 
 
-@dataclass
-class SendAuthInfoDomain(Extension):
-    """Fred send auth info for domain EPP Extension."""
+class SendAuthInfo(Extension):
+    """Base class for Fred send auth info EPP Extension."""
 
     response_class = Result
-    name: str
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_auth_info_payload(self, namespace: str, location: str, tag: str, item: str, tr_id: str = None) -> Element:
         """Create subelements of the extension tag specific for send auth info.
 
         Returns:
@@ -100,9 +98,9 @@ class SendAuthInfoDomain(Extension):
         root = Element(QName(NAMESPACE.FRED, 'extcommand'))
         root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.FRED)
         fred_auth_info = SubElement(root, QName(NAMESPACE.FRED, 'sendAuthInfo'))
-        domain_auth_info = SubElement(fred_auth_info, QName(NAMESPACE.NIC_DOMAIN, 'sendAuthInfo'))
-        domain_auth_info.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_DOMAIN)
-        SubElement(domain_auth_info, QName(NAMESPACE.NIC_DOMAIN, 'name')).text = self.name
+        domain_auth_info = SubElement(fred_auth_info, QName(namespace, 'sendAuthInfo'))
+        domain_auth_info.set(QName(NAMESPACE.XSI, 'schemaLocation'), location)
+        SubElement(domain_auth_info, QName(namespace, tag)).text = item
         SubElement(root, QName(NAMESPACE.FRED, 'clTRID')).text = tr_id
 
         return root
@@ -137,3 +135,19 @@ class TestNsset(FredExtCommand):
             SubElement(nsset_test, QName(NAMESPACE.NIC_NSSET, 'name')).text = item
 
         return root
+
+
+@dataclass
+class SendAuthInfoDomain(SendAuthInfo):
+    """Fred send auth info for domain EPP Extension."""
+
+    response_class = Result
+    name: str
+
+    def _get_extension_payload(self, tr_id: str = None) -> Element:
+        """Create subelements of the extension tag specific for send auth info.
+
+        Returns:
+            Element with send auth info request payload.
+        """
+        return self._get_auth_info_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.name, tr_id)
