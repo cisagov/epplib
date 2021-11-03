@@ -23,7 +23,7 @@ from .check import CheckContactResult, CheckDomainResult, CheckKeysetResult, Che
 from .create import CreateContactResult, CreateDomainResult, CreateKeysetResult, CreateNssetResult
 from .credit_info import CreditInfoResult
 from .info import InfoContactResult, InfoDomainResult, InfoKeysetResult
-from .list import ListResult
+from .list import GetResultsResult, ListResult
 from .renew import RenewDomainResult
 
 __all__ = [
@@ -36,6 +36,7 @@ __all__ = [
     'CreateKeysetResult',
     'CreateNssetResult',
     'CreditInfoResult',
+    'GetResultsResult',
     'Greeting',
     'InfoContactResult',
     'InfoDomainResult',

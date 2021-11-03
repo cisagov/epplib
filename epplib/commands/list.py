@@ -25,7 +25,7 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.extensions import FredExtCommand
 from epplib.constants import NAMESPACE
-from epplib.responses import ListResult
+from epplib.responses import GetResultsResult, ListResult
 
 
 class List(FredExtCommand):
@@ -178,3 +178,20 @@ class ListNssetsByNs(ListBy):
     def _get_item_id(self):
         """Get id or name of the item."""
         return self.name
+
+
+class GetResults(FredExtCommand):
+    """Get results command."""
+
+    response_class = GetResultsResult
+
+    def _get_extension_payload(self, tr_id: str = None) -> Element:
+        """Create subelements of the extension tag specific for Get results command.
+
+        Returns:
+            Element with get results payload.
+        """
+        root = super()._get_extension_payload(tr_id)
+        root.insert(0, Element(QName(NAMESPACE.FRED, 'getResults')))
+
+        return root

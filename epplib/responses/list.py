@@ -56,3 +56,28 @@ class ListResult(Result):
 
     _res_data_path: ClassVar[str] = './fred:infoResponse'
     _res_data_class: ClassVar = InfoResponse
+
+
+@dataclass
+class GetResultsResult(Result):
+    """Represents EPP Result which responds to the get results command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        msg: Content of the epp/response/result/msg element.
+        res_data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    class Item(ResultData, str):
+        """Class representing the list command result."""
+
+        @classmethod
+        def extract(cls, element: Element) -> 'GetResultsResult.Item':
+            """Extract params for own init from the element."""
+            value = cls._find_text(element, '.')
+            return cls(value)
+
+    _res_data_path: ClassVar[str] = './fred:resultsList/fred:item'
+    _res_data_class: ClassVar = Item
