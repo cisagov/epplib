@@ -205,7 +205,7 @@ class ExtraAddr(Addr):
 
 
 @dataclass
-class Dnskey(PayloadModelMixin):
+class Dnskey(PayloadModelMixin, ExtractModelMixin):
     """Dataclass to represent EPP dnskey element.
 
     Attributes:
@@ -230,6 +230,16 @@ class Dnskey(PayloadModelMixin):
         SubElement(dnskey, QName(self.namespace, 'alg')).text = str(self.alg)
         SubElement(dnskey, QName(self.namespace, 'pubKey')).text = self.pub_key
         return dnskey
+
+    @classmethod
+    def extract(cls, element: Element) -> 'Dnskey':
+        """Extract the model from the element."""
+        flags = int(cls._find_text(element, './keyset:flags'))
+        protocol = int(cls._find_text(element, './keyset:protocol'))
+        alg = int(cls._find_text(element, './keyset:alg'))
+        pub_key = cls._find_text(element, './keyset:pubKey')
+
+        return cls(flags=flags, protocol=protocol, alg=alg, pub_key=pub_key)
 
 
 @dataclass

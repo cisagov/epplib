@@ -23,7 +23,7 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.responses import InfoContactResult, InfoDomainResult
+from epplib.responses import InfoContactResult, InfoDomainResult, InfoKeysetResult
 
 
 class Info(Command):
@@ -37,7 +37,7 @@ class Info(Command):
         """Create subelements specific for info command.
 
         Returns:
-            Element with a domain to create.
+            Element with an item to query.
         """
         info = Element(QName(NAMESPACE.EPP, 'info'))
 
@@ -61,10 +61,10 @@ class InfoDomain(Info):
     name: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CreateDomain.
+        """Create subelements of the command tag specific for InfoDomain.
 
         Returns:
-            Element with a domain to create.
+            Element with a domain to query.
         """
         return self._get_info_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.name)
 
@@ -81,9 +81,29 @@ class InfoContact(Info):
     id: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CreateContact.
+        """Create subelements of the command tag specific for InfoContact.
 
         Returns:
-            Element with a contact to create.
+            Element with a contact to query.
         """
         return self._get_info_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id)
+
+
+@dataclass
+class InfoKeyset(Info):
+    """EPP Info Keyset command.
+
+    Attributes:
+        id: Keyset id to query
+    """
+
+    response_class = InfoKeysetResult
+    id: str
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for InfoKeyset.
+
+        Returns:
+            Element with a keyset to query.
+        """
+        return self._get_info_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id)

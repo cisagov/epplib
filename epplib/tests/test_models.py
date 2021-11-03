@@ -121,7 +121,7 @@ class TestDisclose(XMLTestCase):
 
 class TestDnskey(XMLTestCase):
 
-    def test_to_element(self):
+    def test_get_payload(self):
         dnskey = Dnskey(257, 3, 5, 'AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8')
         EM = ElementMaker(namespace=NAMESPACE.NIC_KEYSET)
         expected = EM.dnskey(
@@ -131,6 +131,17 @@ class TestDnskey(XMLTestCase):
             EM.pubKey('AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8'),
         )
         self.assertXMLEqual(dnskey.get_payload(), expected)
+
+    def test_extract(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_KEYSET)
+        dnskey = EM.dnskey(
+            EM.flags('257'),
+            EM.protocol('3'),
+            EM.alg('5'),
+            EM.pubKey('aXN4Y2lpd2ZicWtkZHF4dnJyaHVtc3BreXN6ZGZy'),
+        )
+        expected = Dnskey(flags=257, protocol=3, alg=5, pub_key='aXN4Y2lpd2ZicWtkZHF4dnJyaHVtc3BreXN6ZGZy')
+        self.assertEqual(Dnskey.extract(dnskey), expected)
 
 
 class TestIdent(XMLTestCase):

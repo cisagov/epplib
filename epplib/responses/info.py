@@ -20,12 +20,12 @@
 
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import Any, ClassVar, List, Mapping, Optional
+from typing import Any, ClassVar, List, Mapping, Optional, Sequence
 
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element
 
-from epplib.models import Disclose, Ident, PostalInfo, Status
+from epplib.models import Disclose, Dnskey, Ident, PostalInfo, Status
 from epplib.responses.base import Result, ResultData
 
 
@@ -211,3 +211,51 @@ class InfoContactResult(InfoResult):
 
     _res_data_path: ClassVar[str] = './contact:infData'
     _res_data_class: ClassVar = Contact
+
+
+@dataclass
+class InfoKeysetResult(InfoResult):
+    """Represents EPP Result which responds to the Info keyset command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        message: Content of the epp/response/result/msg element.
+        data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    @dataclass
+    class Keyset(InfoResult.Item):
+        """Dataclass representing keyset info in the info keyset result.
+
+        Attributes:
+            cl_id: Content of the epp/response/resData/infData/clID element.
+            cr_id: Content of the epp/response/resData/infData/crID element.
+            cr_date: Content of the epp/response/resData/infData/crDate element.
+            up_id: Content of the epp/response/resData/infData/upID element.
+            up_date: Content of the epp/response/resData/infData/upDate element.
+            tr_date: Content of the epp/response/resData/infData/trDate element.
+            auth_info: Content of the epp/response/resData/infData/authInfo element.
+            id: Content of the epp/response/resData/infData/id element.
+            dnskeys: Content of the epp/response/resData/infData/dnskey elements.
+            techs: Content of the epp/response/resData/infData/tech elements.
+        """
+
+        _namespace = 'keyset'
+
+        id: str
+        dnskeys: Sequence[Dnskey]
+        techs: Sequence[str]
+
+        @classmethod
+        def _get_params(cls, element: Element) -> Mapping[str, Any]:
+            params: Mapping[str, Any] = {
+                'id': cls._find_text(element, f'./{cls._namespace}:id'),
+                'dnskeys': [Dnskey.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:dnskey')],
+                'techs': cls._find_all_text(element, f'./{cls._namespace}:tech'),
+            }
+            return {**super()._get_params(element), **params}
+
+    _res_data_path: ClassVar[str] = './keyset:infData'
+    _res_data_class: ClassVar = Keyset
