@@ -19,7 +19,7 @@
 """Module providing classes for EPP poll messages."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import ClassVar, Mapping, Type
 
@@ -93,7 +93,54 @@ class RequestUsage(ParseXMLMixin, PollMessage):
         )
 
 
+@dataclass
+class DomainExpiration(ParseXMLMixin, PollMessage):
+    """Domain expiration poll message."""
+
+    name: str
+    ex_date: date
+
+    @classmethod
+    def extract(cls, element: Element) -> 'DomainExpiration':
+        """Extract the Message from the element."""
+        name = cls._find_text(element, './domain:name')
+        ex_date = cls._parse_date(cls._find_text(element, './domain:exDate'))
+        return cls(name=name, ex_date=ex_date)
+
+
+@dataclass
+class ImpendingExpData(DomainExpiration):
+    """Impending Exp Data poll message."""
+
+    tag = 'impendingExpData'
+
+
+@dataclass
+class ExpData(DomainExpiration):
+    """Exp Data poll message."""
+
+    tag = 'expData'
+
+
+@dataclass
+class DnsOutageData(DomainExpiration):
+    """Dns Outage Data poll message."""
+
+    tag = 'dnsOutageData'
+
+
+@dataclass
+class DelData(DomainExpiration):
+    """Del Data poll message."""
+
+    tag = 'delData'
+
+
 POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     LowCredit.tag: LowCredit,
     RequestUsage.tag: RequestUsage,
+    ImpendingExpData.tag: ImpendingExpData,
+    ExpData.tag: ExpData,
+    DnsOutageData.tag: DnsOutageData,
+    DelData.tag: DelData,
 }

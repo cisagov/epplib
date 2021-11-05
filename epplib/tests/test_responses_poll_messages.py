@@ -16,14 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from unittest import TestCase
 
 from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
-from epplib.responses.poll_messages import LowCredit, RequestUsage
+from epplib.responses.poll_messages import DelData, DnsOutageData, ExpData, ImpendingExpData, LowCredit, RequestUsage
 
 
 class TestPollMessages(TestCase):
@@ -65,3 +65,22 @@ class TestPollMessages(TestCase):
             price=Decimal(1),
         )
         self.assertEqual(result, expected)
+
+    def test_domain_expiration(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_DOMAIN)
+        classes = (
+            (ImpendingExpData, 'impendingExpData'),
+            (ExpData, 'expData'),
+            (DnsOutageData, 'dnsOutageData'),
+            (DelData, 'delData'),
+        )
+        for cls, tag in classes:
+            with self.subTest(tag=tag):
+                data = EM(
+                    tag,
+                    EM.name('somedomain.cz'),
+                    EM.exDate('2017-08-26'),
+                )
+                result = cls.extract(data)
+                expected = cls(name='somedomain.cz', ex_date=date(2017, 8, 26))
+                self.assertEqual(result, expected)
