@@ -18,11 +18,14 @@
 
 """Module providing classes for EPP poll messages."""
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from decimal import Decimal
 from typing import ClassVar, Mapping, Type
 
 from lxml.etree import Element, QName
 
-POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {}
+from epplib.constants import NAMESPACE
+from epplib.utils import ParseXMLMixin
 
 
 class PollMessage(ABC):
@@ -34,3 +37,31 @@ class PollMessage(ABC):
     @abstractmethod
     def extract(cls, element: Element) -> 'PollMessage':
         """Extract the Message from the element."""
+
+
+@dataclass
+class LowCredit(ParseXMLMixin, PollMessage):
+    """Low credit poll message."""
+
+    tag = QName(NAMESPACE.FRED, 'lowCreditData')
+
+    zone: str
+    limit_zone: str
+    limit: Decimal
+    credit_zone: str
+    credit: Decimal
+
+    @classmethod
+    def extract(cls, element: Element) -> 'LowCredit':
+        """Extract the Message from the element."""
+        zone = cls._find_text(element, './fred:zone')
+        credit_zone = cls._find_text(element, './fred:credit/fred:zone')
+        credit = Decimal(cls._find_text(element, './fred:credit/fred:credit'))
+        limit_zone = cls._find_text(element, './fred:limit/fred:zone')
+        limit = Decimal(cls._find_text(element, './fred:limit/fred:credit'))
+        return cls(zone=zone, credit_zone=credit_zone, credit=credit, limit_zone=limit_zone, limit=limit)
+
+
+POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
+    LowCredit.tag: LowCredit,
+}
