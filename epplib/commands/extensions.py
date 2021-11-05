@@ -151,3 +151,19 @@ class SendAuthInfoDomain(SendAuthInfo):
             Element with send auth info request payload.
         """
         return self._get_auth_info_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.name, tr_id)
+
+
+@dataclass
+class SendAuthInfoKeyset(SendAuthInfo):
+    """Fred send auth info for keyset EPP Extension."""
+
+    response_class = Result
+    id: str
+
+    def _get_extension_payload(self, tr_id: str = None) -> Element:
+        """Create subelements of the extension tag specific for send auth info.
+
+        Returns:
+            Element with send auth info request payload.
+        """
+        return self._get_auth_info_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id, tr_id)
