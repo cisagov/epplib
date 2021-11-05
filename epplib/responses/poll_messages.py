@@ -19,9 +19,11 @@
 """Module providing classes for EPP poll messages."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from datetime import datetime
 from decimal import Decimal
 from typing import ClassVar, Mapping, Type
 
+from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element, QName
 
 from epplib.constants import NAMESPACE
@@ -62,6 +64,36 @@ class LowCredit(ParseXMLMixin, PollMessage):
         return cls(zone=zone, credit_zone=credit_zone, credit=credit, limit_zone=limit_zone, limit=limit)
 
 
+@dataclass
+class RequestUsage(ParseXMLMixin, PollMessage):
+    """Request usage poll message."""
+
+    tag = QName(NAMESPACE.FRED, 'requestFeeInfoData')
+
+    period_from: datetime
+    period_to: datetime
+    total_free_count: int
+    used_count: int
+    price: Decimal
+
+    @classmethod
+    def extract(cls, element: Element) -> 'RequestUsage':
+        """Extract the Message from the element."""
+        period_from = parse_datetime(cls._find_text(element, './fred:periodFrom'))
+        period_to = parse_datetime(cls._find_text(element, './fred:periodTo'))
+        total_free_count = int(cls._find_text(element, './fred:totalFreeCount'))
+        used_count = int(cls._find_text(element, './fred:usedCount'))
+        price = Decimal(cls._find_text(element, './fred:price'))
+        return cls(
+            period_from=period_from,
+            period_to=period_to,
+            total_free_count=total_free_count,
+            used_count=used_count,
+            price=price,
+        )
+
+
 POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     LowCredit.tag: LowCredit,
+    RequestUsage.tag: RequestUsage,
 }
