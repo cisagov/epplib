@@ -23,7 +23,8 @@ from unittest import TestCase
 from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
-from epplib.responses.poll_messages import DelData, DnsOutageData, ExpData, ImpendingExpData, LowCredit, RequestUsage
+from epplib.responses.poll_messages import (DelData, DnsOutageData, ExpData, ImpendingExpData, ImpendingValExpData,
+                                            LowCredit, RequestUsage, ValExpData)
 
 
 class TestPollMessages(TestCase):
@@ -83,4 +84,21 @@ class TestPollMessages(TestCase):
                 )
                 result = cls.extract(data)
                 expected = cls(name='somedomain.cz', ex_date=date(2017, 8, 26))
+                self.assertEqual(result, expected)
+
+    def test_validation_expiration(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_ENUMVAL)
+        classes = (
+            (ImpendingValExpData, 'impendingValExpData'),
+            (ValExpData, 'valExpData'),
+        )
+        for cls, tag in classes:
+            with self.subTest(tag=tag):
+                data = EM(
+                    tag,
+                    EM.name('somedomain.cz'),
+                    EM.valExDate('2017-08-26'),
+                )
+                result = cls.extract(data)
+                expected = cls(name='somedomain.cz', val_ex_date=date(2017, 8, 26))
                 self.assertEqual(result, expected)

@@ -136,6 +136,40 @@ class DelData(DomainExpiration):
     tag = 'delData'
 
 
+@dataclass
+class DomainValidation(ParseXMLMixin, PollMessage):
+    """Domain validation poll message."""
+
+    _NAMESPACES = {
+        **ParseXMLMixin._NAMESPACES,
+        'enumval': NAMESPACE.NIC_ENUMVAL,
+    }
+
+    name: str
+    val_ex_date: date
+
+    @classmethod
+    def extract(cls, element: Element) -> 'DomainValidation':
+        """Extract the Message from the element."""
+        name = cls._find_text(element, './enumval:name')
+        val_ex_date = cls._parse_date(cls._find_text(element, './enumval:valExDate'))
+        return cls(name=name, val_ex_date=val_ex_date)
+
+
+@dataclass
+class ImpendingValExpData(DomainValidation):
+    """Impending Val Exp Data poll message."""
+
+    tag = QName(NAMESPACE.NIC_ENUMVAL, 'impendingValExpData')
+
+
+@dataclass
+class ValExpData(DomainValidation):
+    """Val Exp Data poll message."""
+
+    tag = QName(NAMESPACE.NIC_ENUMVAL, 'valExpData')
+
+
 POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     LowCredit.tag: LowCredit,
     RequestUsage.tag: RequestUsage,
@@ -143,4 +177,6 @@ POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     ExpData.tag: ExpData,
     DnsOutageData.tag: DnsOutageData,
     DelData.tag: DelData,
+    ImpendingValExpData.tag: ImpendingValExpData,
+    ValExpData.tag: ValExpData,
 }
