@@ -21,12 +21,13 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, ClassVar, Mapping, Type, cast
+from typing import Any, ClassVar, Mapping, Sequence, Type, cast
 
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element, QName
 
 from epplib.constants import NAMESPACE
+from epplib.models import TestResult
 from epplib.utils import ParseXMLMixin
 
 
@@ -341,6 +342,25 @@ class DomainDeletion(ParseXMLMixin, PollMessage):
         return cls(name=name, ex_date=ex_date)
 
 
+@dataclass
+class TechnicalCheckResult(ParseXMLMixin, PollMessage):
+    """Technical check result poll message."""
+
+    tag = QName(NAMESPACE.NIC_NSSET, 'testData')
+
+    id: str
+    names: Sequence[str]
+    results: Sequence[TestResult]
+
+    @classmethod
+    def extract(cls, element: Element) -> 'TechnicalCheckResult':
+        """Extract the Message from the element."""
+        id = cls._find_text(element, './nsset:id')
+        names = cls._find_all_text(element, './nsset:name')
+        results = [TestResult.extract(item) for item in cls._find_all(element, './nsset:result')]
+        return cls(id=id, names=names, results=results)
+
+
 POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     LowCredit.tag: LowCredit,
     RequestUsage.tag: RequestUsage,
@@ -358,4 +378,5 @@ POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     IdleKeysetDeletion.tag: IdleKeysetDeletion,
     IdleNssetDeletion.tag: IdleNssetDeletion,
     DomainDeletion.tag: DomainDeletion,
+    TechnicalCheckResult.tag: TechnicalCheckResult,
 }

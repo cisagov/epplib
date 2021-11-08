@@ -23,10 +23,11 @@ from unittest import TestCase
 from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
+from epplib.models import TestResult
 from epplib.responses.poll_messages import (ContactTransfer, DelData, DnsOutageData, DomainDeletion, DomainTransfer,
                                             ExpData, IdleContactDeletion, IdleKeysetDeletion, IdleNssetDeletion,
                                             ImpendingExpData, ImpendingValExpData, KeysetTransfer, LowCredit,
-                                            NssetTransfer, RequestUsage, ValExpData)
+                                            NssetTransfer, RequestUsage, TechnicalCheckResult, ValExpData)
 
 
 class TestPollMessages(TestCase):
@@ -158,4 +159,29 @@ class TestPollMessages(TestCase):
         )
         result = DomainDeletion.extract(data)
         expected = DomainDeletion(name='example.cz', ex_date=date(2019, 7, 30))
+        self.assertEqual(result, expected)
+
+    def test_technical_check_result(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        data = EM.testData(
+            EM.id('NID-MYNSSET'),
+            EM.name('example.cz'),
+            EM.result(
+                EM.testname('glue_ok'),
+                EM.status('true'),
+            ),
+            EM.result(
+                EM.testname('existence'),
+                EM.status('false'),
+            )
+        )
+        result = TechnicalCheckResult.extract(data)
+        expected = TechnicalCheckResult(
+            id='NID-MYNSSET',
+            names=['example.cz'],
+            results=[
+                TestResult('glue_ok', True, None),
+                TestResult('existence', False, None),
+            ]
+        )
         self.assertEqual(result, expected)
