@@ -324,6 +324,23 @@ class IdleNssetDeletion(IdleObjectDeletion):
         return cast('IdleNssetDeletion', super().extract(element))
 
 
+@dataclass
+class DomainDeletion(ParseXMLMixin, PollMessage):
+    """Domain deletion poll message."""
+
+    tag = QName(NAMESPACE.NIC_DOMAIN, 'delData')
+
+    name: str
+    ex_date: date
+
+    @classmethod
+    def extract(cls, element: Element) -> 'DomainDeletion':
+        """Extract the Message from the element."""
+        name = cls._find_text(element, './domain:name')
+        ex_date = cls._parse_date(cls._find_text(element, 'domain:exDate'))
+        return cls(name=name, ex_date=ex_date)
+
+
 POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     LowCredit.tag: LowCredit,
     RequestUsage.tag: RequestUsage,
@@ -340,4 +357,5 @@ POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     IdleContactDeletion.tag: IdleContactDeletion,
     IdleKeysetDeletion.tag: IdleKeysetDeletion,
     IdleNssetDeletion.tag: IdleNssetDeletion,
+    DomainDeletion.tag: DomainDeletion,
 }

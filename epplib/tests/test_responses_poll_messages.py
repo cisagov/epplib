@@ -23,8 +23,8 @@ from unittest import TestCase
 from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
-from epplib.responses.poll_messages import (ContactTransfer, DelData, DnsOutageData, DomainTransfer, ExpData,
-                                            IdleContactDeletion, IdleKeysetDeletion, IdleNssetDeletion,
+from epplib.responses.poll_messages import (ContactTransfer, DelData, DnsOutageData, DomainDeletion, DomainTransfer,
+                                            ExpData, IdleContactDeletion, IdleKeysetDeletion, IdleNssetDeletion,
                                             ImpendingExpData, ImpendingValExpData, KeysetTransfer, LowCredit,
                                             NssetTransfer, RequestUsage, ValExpData)
 
@@ -149,3 +149,13 @@ class TestPollMessages(TestCase):
                 result = cls.extract(data)
                 expected = cls(id='SOME-ID')
                 self.assertEqual(result, expected)
+
+    def test_domain_deletion(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_DOMAIN)
+        data = EM.delData(
+            EM.name('example.cz'),
+            EM.exDate('2019-07-30'),
+        )
+        result = DomainDeletion.extract(data)
+        expected = DomainDeletion(name='example.cz', ex_date=date(2019, 7, 30))
+        self.assertEqual(result, expected)
