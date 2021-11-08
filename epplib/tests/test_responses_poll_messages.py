@@ -24,6 +24,7 @@ from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
 from epplib.responses.poll_messages import (ContactTransfer, DelData, DnsOutageData, DomainTransfer, ExpData,
+                                            IdleContactDeletion, IdleKeysetDeletion, IdleNssetDeletion,
                                             ImpendingExpData, ImpendingValExpData, KeysetTransfer, LowCredit,
                                             NssetTransfer, RequestUsage, ValExpData)
 
@@ -131,4 +132,20 @@ class TestPollMessages(TestCase):
                 )
                 result = cls.extract(data)
                 expected = cls(id='SOME-ID', tr_date=date(2017, 7, 25), cl_id='REG-FRED_A')
+                self.assertEqual(result, expected)
+
+    def test_idle_object_deletion(self):
+        classes = (
+            (IdleContactDeletion, NAMESPACE.NIC_CONTACT),
+            (IdleKeysetDeletion, NAMESPACE.NIC_KEYSET),
+            (IdleNssetDeletion, NAMESPACE.NIC_NSSET),
+        )
+        for cls, namespace in classes:
+            with self.subTest(cls=cls):
+                EM = ElementMaker(namespace=namespace)
+                data = EM.idleDelData(
+                    EM.id('SOME-ID'),
+                )
+                result = cls.extract(data)
+                expected = cls(id='SOME-ID')
                 self.assertEqual(result, expected)

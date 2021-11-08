@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, ClassVar, Mapping, Type
+from typing import Any, ClassVar, Mapping, Type, cast
 
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element, QName
@@ -271,6 +271,59 @@ class NssetTransfer(ObjectTransfer):
         return cls(**data)
 
 
+@dataclass
+class IdleObjectDeletion(ParseXMLMixin, PollMessage):
+    """Idle object deletion poll message."""
+
+    _prefix: ClassVar[str]
+
+    id: str
+
+    @classmethod
+    def extract(cls, element: Element) -> 'IdleObjectDeletion':
+        """Extract the Message from the element."""
+        return cls(id=cls._find_text(element, f'./{cls._prefix}:id'))
+
+
+@dataclass
+class IdleContactDeletion(IdleObjectDeletion):
+    """Idle contact deletion poll message."""
+
+    _prefix = 'contact'
+    tag = QName(NAMESPACE.NIC_CONTACT, 'idleDelData')
+
+    @classmethod
+    def extract(cls, element: Element) -> 'IdleContactDeletion':
+        """Extract the Message from the element."""
+        return cast('IdleContactDeletion', super().extract(element))
+
+
+@dataclass
+class IdleKeysetDeletion(IdleObjectDeletion):
+    """Idle keyset deletion poll message."""
+
+    _prefix = 'keyset'
+    tag = QName(NAMESPACE.NIC_KEYSET, 'idleDelData')
+
+    @classmethod
+    def extract(cls, element: Element) -> 'IdleKeysetDeletion':
+        """Extract the Message from the element."""
+        return cast('IdleKeysetDeletion', super().extract(element))
+
+
+@dataclass
+class IdleNssetDeletion(IdleObjectDeletion):
+    """Idle nsset deletion poll message."""
+
+    _prefix = 'nsset'
+    tag = QName(NAMESPACE.NIC_NSSET, 'idleDelData')
+
+    @classmethod
+    def extract(cls, element: Element) -> 'IdleNssetDeletion':
+        """Extract the Message from the element."""
+        return cast('IdleNssetDeletion', super().extract(element))
+
+
 POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     LowCredit.tag: LowCredit,
     RequestUsage.tag: RequestUsage,
@@ -284,4 +337,7 @@ POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     ContactTransfer.tag: ContactTransfer,
     KeysetTransfer.tag: KeysetTransfer,
     NssetTransfer.tag: NssetTransfer,
+    IdleContactDeletion.tag: IdleContactDeletion,
+    IdleKeysetDeletion.tag: IdleKeysetDeletion,
+    IdleNssetDeletion.tag: IdleNssetDeletion,
 }
