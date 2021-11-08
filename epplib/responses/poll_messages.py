@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
-from typing import ClassVar, Mapping, Type
+from typing import Any, ClassVar, Mapping, Type
 
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element, QName
@@ -170,6 +170,107 @@ class ValExpData(DomainValidation):
     tag = QName(NAMESPACE.NIC_ENUMVAL, 'valExpData')
 
 
+class ObjectTransfer(ParseXMLMixin, PollMessage):
+    """Object transfer poll message."""
+
+    _prefix: ClassVar[str]
+
+    tr_date: date
+    cl_id: str
+
+    @classmethod
+    def _extract(cls, element: Element) -> Mapping[str, Any]:
+        """Extract the Message from the element."""
+        return {
+            'tr_date': cls._parse_date(cls._find_text(element, f'./{cls._prefix}:trDate')),
+            'cl_id': cls._find_text(element, f'./{cls._prefix}:clID'),
+        }
+
+
+@dataclass
+class DomainTransfer(ObjectTransfer):
+    """Domain transfer poll message."""
+
+    _prefix = 'domain'
+    tag = QName(NAMESPACE.NIC_DOMAIN, 'trnData')
+    name: str
+    tr_date: date
+    cl_id: str
+
+    @classmethod
+    def extract(cls, element: Element) -> 'DomainTransfer':
+        """Extract the Message from the element."""
+        data = cls._extract(element)
+        data = {
+            **data,
+            'name': cls._find_text(element, f'./{cls._prefix}:name'),
+        }
+        return cls(**data)
+
+
+@dataclass
+class ContactTransfer(ObjectTransfer):
+    """Contact transfer poll message."""
+
+    _prefix = 'contact'
+    tag = QName(NAMESPACE.NIC_CONTACT, 'trnData')
+    id: str
+    tr_date: date
+    cl_id: str
+
+    @classmethod
+    def extract(cls, element: Element) -> 'ContactTransfer':
+        """Extract the Message from the element."""
+        data = cls._extract(element)
+        data = {
+            **data,
+            'id': cls._find_text(element, f'./{cls._prefix}:id'),
+        }
+        return cls(**data)
+
+
+@dataclass
+class KeysetTransfer(ObjectTransfer):
+    """Keyset transfer poll message."""
+
+    _prefix = 'keyset'
+    tag = QName(NAMESPACE.NIC_KEYSET, 'trnData')
+    id: str
+    tr_date: date
+    cl_id: str
+
+    @classmethod
+    def extract(cls, element: Element) -> 'KeysetTransfer':
+        """Extract the Message from the element."""
+        data = cls._extract(element)
+        data = {
+            **data,
+            'id': cls._find_text(element, f'./{cls._prefix}:id'),
+        }
+        return cls(**data)
+
+
+@dataclass
+class NssetTransfer(ObjectTransfer):
+    """Nsset transfer poll message."""
+
+    _prefix = 'nsset'
+    tag = QName(NAMESPACE.NIC_NSSET, 'trnData')
+    id: str
+    tr_date: date
+    cl_id: str
+
+    @classmethod
+    def extract(cls, element: Element) -> 'NssetTransfer':
+        """Extract the Message from the element."""
+        data = cls._extract(element)
+        data = {
+            **data,
+            'id': cls._find_text(element, f'./{cls._prefix}:id'),
+        }
+        return cls(**data)
+
+
 POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     LowCredit.tag: LowCredit,
     RequestUsage.tag: RequestUsage,
@@ -179,4 +280,8 @@ POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     DelData.tag: DelData,
     ImpendingValExpData.tag: ImpendingValExpData,
     ValExpData.tag: ValExpData,
+    DomainTransfer.tag: DomainTransfer,
+    ContactTransfer.tag: ContactTransfer,
+    KeysetTransfer.tag: KeysetTransfer,
+    NssetTransfer.tag: NssetTransfer,
 }

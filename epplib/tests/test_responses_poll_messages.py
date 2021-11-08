@@ -23,8 +23,9 @@ from unittest import TestCase
 from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
-from epplib.responses.poll_messages import (DelData, DnsOutageData, ExpData, ImpendingExpData, ImpendingValExpData,
-                                            LowCredit, RequestUsage, ValExpData)
+from epplib.responses.poll_messages import (ContactTransfer, DelData, DnsOutageData, DomainTransfer, ExpData,
+                                            ImpendingExpData, ImpendingValExpData, KeysetTransfer, LowCredit,
+                                            NssetTransfer, RequestUsage, ValExpData)
 
 
 class TestPollMessages(TestCase):
@@ -101,4 +102,33 @@ class TestPollMessages(TestCase):
                 )
                 result = cls.extract(data)
                 expected = cls(name='somedomain.cz', val_ex_date=date(2017, 8, 26))
+                self.assertEqual(result, expected)
+
+    def test_domain_transfer(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_DOMAIN)
+        data = EM.trnData(
+            EM.name('trdomain.cz'),
+            EM.trDate('2017-07-25'),
+            EM.clID('REG-FRED_A'),
+        )
+        result = DomainTransfer.extract(data)
+        expected = DomainTransfer(name='trdomain.cz', tr_date=date(2017, 7, 25), cl_id='REG-FRED_A')
+        self.assertEqual(result, expected)
+
+    def test_object_transfer(self):
+        classes = (
+            (ContactTransfer, NAMESPACE.NIC_CONTACT),
+            (KeysetTransfer, NAMESPACE.NIC_KEYSET),
+            (NssetTransfer, NAMESPACE.NIC_NSSET),
+        )
+        for cls, namespace in classes:
+            with self.subTest(cls=cls):
+                EM = ElementMaker(namespace=namespace)
+                data = EM.trnData(
+                    EM.id('SOME-ID'),
+                    EM.trDate('2017-07-25'),
+                    EM.clID('REG-FRED_A'),
+                )
+                result = cls.extract(data)
+                expected = cls(id='SOME-ID', tr_date=date(2017, 7, 25), cl_id='REG-FRED_A')
                 self.assertEqual(result, expected)
