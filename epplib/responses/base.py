@@ -31,6 +31,7 @@ from epplib.constants import NAMESPACE
 from epplib.exceptions import ParsingError
 from epplib.models import Statement
 from epplib.responses.extensions import EnumInfoExtension, ResponseExtension
+from epplib.responses.poll_messages import POLL_MESSAGE_TYPES, PollMessage
 from epplib.utils import ParseXMLMixin, safe_parse
 
 EXTENSIONS: Dict[QName, Type[ResponseExtension]] = {EnumInfoExtension.tag: EnumInfoExtension}
@@ -209,6 +210,45 @@ class ResultData(ParseXMLMixin, ABC):
 
 
 @dataclass
+class MsgQ(ParseXMLMixin):
+    """Dataclass to represent EPP msgQ element.
+
+    Attributes:
+        count: Content of the count attribute of epp/response/msgQ tag.
+        id: Content of the id attribute of epp/response/msgQ tag.
+        q_date: Content of the epp/response/msgQ/qDate tag.
+        msg: Content of the epp/response/msgQ/msg tag.
+    """
+
+    count: Optional[int]
+    id: Optional[str]
+    q_date: Optional[datetime]
+    msg: Optional[PollMessage]
+
+    @classmethod
+    def extract(cls, element: Element) -> 'MsgQ':
+        """Extract MsgQ from the element."""
+        count = cls._optional(int, cls._find_attrib(element, '.', 'count'))
+        id = cls._find_attrib(element, '.', 'id')
+        q_date = cls._optional(parse_datetime, cls._find_text(element, './epp:qDate'))
+        msg = cls._extract_message(cls._find(element, './epp:msg'))
+        return cls(count=count, id=id, q_date=q_date, msg=msg)
+
+    @classmethod
+    def _extract_message(cls, element: Optional[Element]) -> Optional[PollMessage]:
+        if (element is None) or len(element) < 1:
+            return None
+        else:
+            message_element = element[0]
+            message_class = POLL_MESSAGE_TYPES.get(message_element.tag, None)
+            if message_class is None:
+                LOGGER.info('Could not find class to extract poll message {}.'.format(message_element.tag))
+                return None
+            else:
+                return message_class.extract(message_element)
+
+
+@dataclass
 class Result(Response, Generic[T]):
     """EPP Result representation.
 
@@ -219,6 +259,7 @@ class Result(Response, Generic[T]):
         cl_tr_id: Content of the epp/response/trID/clTRID element.
         sv_tr_id: Content of the epp/response/trID/svTRID element.
         extensions: Content of the epp/response/extension element.
+        msg_q: Content of the epp/response/msgQ element.
     """
 
     _payload_tag: ClassVar = QName(NAMESPACE.EPP, 'response')
@@ -231,6 +272,7 @@ class Result(Response, Generic[T]):
     cl_tr_id: str
     sv_tr_id: str
     extensions: Sequence[ResponseExtension] = field(default_factory=list)
+    msg_q: Optional[MsgQ] = None
 
     @classmethod
     def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'Result':
@@ -256,6 +298,7 @@ class Result(Response, Generic[T]):
             'cl_tr_id': cls._find_text(element, './epp:trID/epp:clTRID'),
             'sv_tr_id': cls._find_text(element, './epp:trID/epp:svTRID'),
             'extensions': cls._extract_extensions(cls._find(element, './epp:extension')),
+            'msg_q': cls._extract_message(cls._find(element, './epp:msgQ')),
         }
         return payload_data
 
@@ -286,3 +329,10 @@ class Result(Response, Generic[T]):
                 else:
                     data.append(extension_class.extract(child))
         return data
+
+    @classmethod
+    def _extract_message(cls, element: Optional[Element]) -> Optional[MsgQ]:
+        if element is None:
+            return None
+        else:
+            return MsgQ.extract(element)

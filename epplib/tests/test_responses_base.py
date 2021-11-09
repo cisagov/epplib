@@ -30,7 +30,7 @@ from testfixtures import LogCapture
 from epplib.constants import NAMESPACE
 from epplib.models import Statement
 from epplib.responses import Greeting, ParsingError, Response, Result
-from epplib.responses.base import EXTENSIONS
+from epplib.responses.base import EXTENSIONS, POLL_MESSAGE_TYPES, MsgQ, PollMessage
 from epplib.responses.extensions import ResponseExtension
 from epplib.tests.utils import BASE_DATA_PATH, EM, SCHEMA
 
@@ -70,6 +70,17 @@ class OtherExtension(ResponseExtension):
     @classmethod
     def extract(cls, element: Element) -> 'OtherExtension':
         return cls(int(element.attrib['value']))
+
+
+@dataclass
+class DummyMessage(PollMessage):
+
+    tag = QName(NAMESPACE.EPP, 'dummyMessage')
+    value: str
+
+    @classmethod
+    def extract(cls, element: Element) -> 'DummyMessage':
+        return cls(element.text.strip())
 
 
 class TestResponse(TestCase):
@@ -250,3 +261,96 @@ class TestResultExtensions(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_dummy_extension.xml').read_bytes()
         result = Result.parse(xml)
         self.assertEqual(result.extensions, [DummyExtension('Gazpacho!')])
+
+
+@patch.dict(POLL_MESSAGE_TYPES, {DummyMessage.tag: DummyMessage})
+class TestMsgQ(TestCase):
+
+    def test_extract_minimal(self):
+        msg_q = EM.msgQ(
+            count='7',
+            id='19596173',
+        )
+        result = MsgQ.extract(msg_q)
+        expected = MsgQ(
+            count=7,
+            id='19596173',
+            q_date=None,
+            msg=None,
+        )
+        self.assertEqual(result, expected)
+
+    def test_extract_empty_msg(self):
+        msg_q = EM.msgQ(
+            EM.msg(),
+            count='7',
+            id='19596173',
+        )
+        result = MsgQ.extract(msg_q)
+        expected = MsgQ(
+            count=7,
+            id='19596173',
+            q_date=None,
+            msg=None,
+        )
+        self.assertEqual(result, expected)
+
+    def test_extract_date(self):
+        msg_q = EM.msgQ(
+            EM.qDate('2017-07-15T01:18:13+02:00'),
+            count='7',
+            id='19596173',
+        )
+        result = MsgQ.extract(msg_q)
+        expected = MsgQ(
+            count=7,
+            id='19596173',
+            q_date=datetime(2017, 7, 15, 1, 18, 13, tzinfo=timezone(timedelta(hours=2))),
+            msg=None,
+        )
+        self.assertEqual(result, expected)
+
+    def test_extract_unknown(self):
+        msg_q = EM.msgQ(
+            EM.qDate('2017-07-15T01:18:13+02:00'),
+            EM.msg(
+                EM.unknown()
+            ),
+            count='7',
+            id='19596173',
+        )
+        with LogCapture('epplib.responses.base', propagate=False) as log_handler:
+            result = MsgQ.extract(msg_q)
+
+        self.assertIsNone(result.msg)
+
+        message = 'Could not find class to extract poll message {urn:ietf:params:xml:ns:epp-1.0}unknown.'
+        log_handler.check(('epplib.responses.base', 'INFO', message))
+
+    def test_extract_dummy_msg(self):
+        msg_q = EM.msgQ(
+            EM.msg(
+                EM.dummyMessage('content'),
+            ),
+            count='7',
+            id='19596173',
+        )
+        result = MsgQ.extract(msg_q)
+        expected = MsgQ(
+            count=7,
+            id='19596173',
+            q_date=None,
+            msg=DummyMessage('content'),
+        )
+        self.assertEqual(result, expected)
+
+    def test_parse(self):
+        xml = (BASE_DATA_PATH / 'responses/result_dummy_poll_message.xml').read_bytes()
+        result = Result.parse(xml)
+        expected = MsgQ(
+            count=7,
+            id='19596173',
+            q_date=datetime(2017, 7, 15, 1, 18, 13, tzinfo=timezone(timedelta(hours=2))),
+            msg=DummyMessage('content')
+        )
+        self.assertEqual(result.msg_q, expected)

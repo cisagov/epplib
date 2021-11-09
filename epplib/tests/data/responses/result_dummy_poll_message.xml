@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd">
+   <response>
+      <result code="1301">
+         <msg>Command completed successfully; ack to dequeue</msg>
+      </result>
+      <msgQ count="7" id="19596173">
+         <qDate>2017-07-15T01:18:13+02:00</qDate>
+         <msg>
+            <dummyMessage>
+               content
+            </dummyMessage>
+         </msg>
+      </msgQ>
+      <trID>
+         <clTRID>cmmp002#17-07-21at11:19:09</clTRID>
+         <svTRID>ReqID-0000140400</svTRID>
+      </trID>
+   </response>
+</epp>
