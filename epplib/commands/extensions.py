@@ -138,6 +138,22 @@ class TestNsset(FredExtCommand):
 
 
 @dataclass
+class SendAuthInfoContact(SendAuthInfo):
+    """Fred send auth info for contact EPP Extension."""
+
+    response_class = Result
+    id: str
+
+    def _get_extension_payload(self, tr_id: str = None) -> Element:
+        """Create subelements of the extension tag specific for send auth info.
+
+        Returns:
+            Element with send auth info request payload.
+        """
+        return self._get_auth_info_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id, tr_id)
+
+
+@dataclass
 class SendAuthInfoDomain(SendAuthInfo):
     """Fred send auth info for domain EPP Extension."""
 
