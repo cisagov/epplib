@@ -84,7 +84,7 @@ class CreditInfoRequest(FredExtCommand):
         return root
 
 
-class SendAuthInfo(Extension):
+class SendAuthInfo(FredExtCommand):
     """Base class for Fred send auth info EPP Extension."""
 
     response_class = Result
@@ -95,15 +95,11 @@ class SendAuthInfo(Extension):
         Returns:
             Element with send auth info request payload.
         """
-        root = Element(QName(NAMESPACE.FRED, 'extcommand'))
-        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.FRED)
-        fred_auth_info = SubElement(root, QName(NAMESPACE.FRED, 'sendAuthInfo'))
+        fred_auth_info = Element(QName(NAMESPACE.FRED, 'sendAuthInfo'))
         domain_auth_info = SubElement(fred_auth_info, QName(namespace, 'sendAuthInfo'))
         domain_auth_info.set(QName(NAMESPACE.XSI, 'schemaLocation'), location)
         SubElement(domain_auth_info, QName(namespace, tag)).text = item
-        SubElement(root, QName(NAMESPACE.FRED, 'clTRID')).text = tr_id
-
-        return root
+        return fred_auth_info
 
 
 @dataclass
@@ -150,7 +146,16 @@ class SendAuthInfoContact(SendAuthInfo):
         Returns:
             Element with send auth info request payload.
         """
-        return self._get_auth_info_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id, tr_id)
+        root = super()._get_extension_payload(tr_id)
+        auth_info = self._get_auth_info_payload(
+            NAMESPACE.NIC_CONTACT,
+            SCHEMA_LOCATION.NIC_CONTACT,
+            'id',
+            self.id,
+            tr_id
+        )
+        root.insert(0, auth_info)
+        return root
 
 
 @dataclass
@@ -166,7 +171,16 @@ class SendAuthInfoDomain(SendAuthInfo):
         Returns:
             Element with send auth info request payload.
         """
-        return self._get_auth_info_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.name, tr_id)
+        root = super()._get_extension_payload(tr_id)
+        auth_info = self._get_auth_info_payload(
+            NAMESPACE.NIC_DOMAIN,
+            SCHEMA_LOCATION.NIC_DOMAIN,
+            'name',
+            self.name,
+            tr_id
+        )
+        root.insert(0, auth_info)
+        return root
 
 
 @dataclass
@@ -182,7 +196,16 @@ class SendAuthInfoKeyset(SendAuthInfo):
         Returns:
             Element with send auth info request payload.
         """
-        return self._get_auth_info_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id, tr_id)
+        root = super()._get_extension_payload(tr_id)
+        auth_info = self._get_auth_info_payload(
+            NAMESPACE.NIC_KEYSET,
+            SCHEMA_LOCATION.NIC_KEYSET,
+            'id',
+            self.id,
+            tr_id
+        )
+        root.insert(0, auth_info)
+        return root
 
 
 @dataclass
@@ -198,4 +221,13 @@ class SendAuthInfoNsset(SendAuthInfo):
         Returns:
             Element with send auth info request payload.
         """
-        return self._get_auth_info_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.id, tr_id)
+        root = super()._get_extension_payload(tr_id)
+        auth_info = self._get_auth_info_payload(
+            NAMESPACE.NIC_NSSET,
+            SCHEMA_LOCATION.NIC_NSSET,
+            'id',
+            self.id,
+            tr_id
+        )
+        root.insert(0, auth_info)
+        return root
