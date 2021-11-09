@@ -23,7 +23,7 @@ from .check import CheckContact, CheckDomain, CheckKeyset, CheckNsset
 from .create import CreateContact, CreateDomain, CreateKeyset, CreateNsset
 from .delete import DeleteContact, DeleteDomain, DeleteKeyset, DeleteNsset
 from .extensions import CreditInfoRequest, SendAuthInfoDomain, SendAuthInfoKeyset, SendAuthInfoNsset, TestNsset
-from .info import InfoContact, InfoDomain, InfoKeyset
+from .info import InfoContact, InfoDomain, InfoKeyset, InfoNsset
 from .renew import RenewDomain
 from .transfer import TransferContact, TransferDomain, TransferKeyset, TransferNsset
 
@@ -46,6 +46,7 @@ __all__ = [
     'InfoContact',
     'InfoDomain',
     'InfoKeyset',
+    'InfoNsset',
     'Login',
     'Logout',
     'RenewDomain',

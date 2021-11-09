@@ -23,7 +23,7 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.responses import InfoContactResult, InfoDomainResult, InfoKeysetResult
+from epplib.responses import InfoContactResult, InfoDomainResult, InfoKeysetResult, InfoNssetResult
 
 
 class Info(Command):
@@ -107,3 +107,23 @@ class InfoKeyset(Info):
             Element with a keyset to query.
         """
         return self._get_info_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id)
+
+
+@dataclass
+class InfoNsset(Info):
+    """EPP Info Nsset command.
+
+    Attributes:
+        id: Nsset id to query
+    """
+
+    response_class = InfoNssetResult
+    id: str
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for InfoNsset.
+
+        Returns:
+            Element with a nsset to query.
+        """
+        return self._get_info_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.id)
