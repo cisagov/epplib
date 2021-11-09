@@ -20,7 +20,7 @@ from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
 from epplib.models import (ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, Period, PostalInfo,
-                           Statement, Status, Unit)
+                           Statement, Status, TestResult, Unit)
 from epplib.tests.utils import XMLTestCase
 
 
@@ -251,3 +251,25 @@ class TestStatus(XMLTestCase):
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
         self.assertEqual(Status.extract(EM.status('It is ok.', s='ok', lang='cz')), Status('ok', 'It is ok.', 'cz'))
         self.assertEqual(Status.extract(EM.status('It is ok.', s='ok')), Status('ok', 'It is ok.', 'en'))
+
+
+class TestTestResult(XMLTestCase):
+
+    def test_extract_full(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        element = EM.result(
+            EM.testname('glue_ok'),
+            EM.status('true'),
+            EM.note('This is a note.'),
+        )
+        expected = TestResult(testname='glue_ok', status=True, note='This is a note.')
+        self.assertEqual(TestResult.extract(element), expected)
+
+    def test_extract_minimal(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        element = EM.result(
+            EM.testname('glue_ok'),
+            EM.status('false'),
+        )
+        expected = TestResult(testname='glue_ok', status=False, note=None)
+        self.assertEqual(TestResult.extract(element), expected)

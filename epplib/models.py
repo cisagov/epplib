@@ -393,3 +393,20 @@ class Status(ExtractModelMixin):
     def extract(cls, element: Element) -> 'Status':
         """Extract the model from the element."""
         return cls(element.get('s'), element.text, element.get('lang'))
+
+
+@dataclass
+class TestResult(ExtractModelMixin):
+    """Represent result element in Technical check result poll message."""
+
+    testname: str
+    status: Optional[bool]
+    note: Optional[str]
+
+    @classmethod
+    def extract(cls, element: Element) -> 'TestResult':
+        """Extract the model from the element."""
+        testname = cls._find_text(element, './nsset:testname')
+        status = cls._str_to_bool(cls._find_text(element, './nsset:status'))
+        note = cls._find_text(element, './nsset:note')
+        return cls(testname=testname, status=status, note=note)
