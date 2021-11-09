@@ -271,7 +271,7 @@ class Ident(PayloadModelMixin, ExtractModelMixin):
 
 
 @dataclass
-class Ns(PayloadModelMixin):
+class Ns(PayloadModelMixin, ExtractModelMixin):
     """Dataclass to represent EPP ns element.
 
     Attributes:
@@ -291,6 +291,13 @@ class Ns(PayloadModelMixin):
         for addr in self.addrs:
             SubElement(ns, QName(self.namespace, 'addr')).text = addr
         return ns
+
+    @classmethod
+    def extract(cls, element: Element) -> 'Ns':
+        """Extract the model from the element."""
+        name = cls._find_text(element, './nsset:name')
+        addrs = cls._find_all_text(element, './nsset:addr')
+        return cls(name=name, addrs=addrs)
 
 
 @dataclass
