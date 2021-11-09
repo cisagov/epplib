@@ -20,8 +20,8 @@ from datetime import date, datetime, timedelta, timezone
 from typing import cast
 from unittest import TestCase
 
-from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, PostalInfo
-from epplib.responses import InfoContactResult, InfoDomainResult, InfoKeysetResult
+from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, PostalInfo
+from epplib.responses import InfoContactResult, InfoDomainResult, InfoKeysetResult, InfoNssetResult
 from epplib.responses.info import Status
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
@@ -205,4 +205,63 @@ class TestInfoKeysetResult(TestCase):
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
         result = InfoKeysetResult.parse(xml, SCHEMA)
+        self.assertEqual(result.code, 2002)
+
+
+class TestInfoNssetResult(TestCase):
+
+    def test_parse_full(self):
+        xml = (BASE_DATA_PATH / 'responses/result_info_nsset.xml').read_bytes()
+        result = InfoNssetResult.parse(xml, SCHEMA)
+        expected = [
+            InfoNssetResult.Nsset(
+                roid='N0009907595-CZ',
+                statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
+                cl_id='REG-MYREG',
+                cr_id='REG-MYREG',
+                cr_date=datetime(2017, 7, 11, 13, 28, 42, tzinfo=timezone(timedelta(hours=2))),
+                up_id='REG-MYREG',
+                up_date=datetime(2017, 7, 27, 16, 54, 53, tzinfo=timezone(timedelta(hours=2))),
+                tr_date=None,
+                auth_info=None,
+                id='NID-MYNSSET',
+                nss=[
+                    Ns('ns1.mydomain.cz', ['111.222.111.222']),
+                    Ns('ns.otherdomain.cz', []),
+                ],
+                techs=['CID-TECH2', 'CID-TECH3'],
+                report_level=4,
+            )
+        ]
+
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(InfoNssetResult, result).res_data, expected)
+
+    def test_parse_full_minimal(self):
+        xml = (BASE_DATA_PATH / 'responses/result_info_nsset_minimal.xml').read_bytes()
+        result = InfoNssetResult.parse(xml, SCHEMA)
+        expected = [
+            InfoNssetResult.Nsset(
+                roid='N0009907595-CZ',
+                statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
+                cl_id='REG-MYREG',
+                cr_id=None,
+                cr_date=None,
+                up_id=None,
+                up_date=None,
+                tr_date=None,
+                auth_info=None,
+                id='NID-MYNSSET',
+                nss=[],
+                techs=['CID-TECH2'],
+                report_level=4,
+            )
+        ]
+
+        self.assertEqual(result.code, 1000)
+        self.assertEqual(cast(InfoNssetResult, result).res_data, expected)
+
+    def test_parse_error(self):
+        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        result = InfoNssetResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
