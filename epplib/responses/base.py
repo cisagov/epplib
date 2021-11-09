@@ -30,11 +30,14 @@ from lxml.etree import Element, QName, XMLSchema
 from epplib.constants import NAMESPACE
 from epplib.exceptions import ParsingError
 from epplib.models import Statement
-from epplib.responses.extensions import EnumInfoExtension, ResponseExtension
+from epplib.responses.extensions import EnumInfoExtension, MailingAddressExtension, ResponseExtension
 from epplib.responses.poll_messages import POLL_MESSAGE_TYPES, PollMessage
 from epplib.utils import ParseXMLMixin, safe_parse
 
-EXTENSIONS: Dict[QName, Type[ResponseExtension]] = {EnumInfoExtension.tag: EnumInfoExtension}
+EXTENSIONS: Dict[QName, Type[ResponseExtension]] = {
+    EnumInfoExtension.tag: EnumInfoExtension,
+    MailingAddressExtension.tag: MailingAddressExtension,
+}
 LOGGER = logging.getLogger(__name__)
 
 T = TypeVar('T', bound='ResultData')
