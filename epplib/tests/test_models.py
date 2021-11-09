@@ -170,6 +170,16 @@ class TestNs(XMLTestCase):
         )
         self.assertXMLEqual(ns.get_payload(), expected)
 
+    def test_extract(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        ns = EM.ns(
+            EM.name('mydomain.cz'),
+            EM.addr('111.222.111.222'),
+            EM.addr('111.222.111.333'),
+        )
+        expected = Ns(name='mydomain.cz', addrs=['111.222.111.222', '111.222.111.333'])
+        self.assertEqual(Ns.extract(ns), expected)
+
 
 class TestPeriod(XMLTestCase):
     def test_get_payload(self):

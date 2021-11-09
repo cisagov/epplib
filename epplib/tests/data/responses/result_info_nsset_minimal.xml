@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd">
+<response>
+   <result code="1000">
+      <msg>Command completed successfully</msg>
+   </result>
+   <resData>
+      <nsset:infData xmlns:nsset="http://www.nic.cz/xml/epp/nsset-1.2"
+       xsi:schemaLocation="http://www.nic.cz/xml/epp/nsset-1.2 nsset-1.2.2.xsd">
+         <nsset:id>NID-MYNSSET</nsset:id>
+         <nsset:roid>N0009907595-CZ</nsset:roid>
+         <nsset:status s="linked">Has relation to other records in the registry</nsset:status>
+         <nsset:clID>REG-MYREG</nsset:clID>
+         <nsset:tech>CID-TECH2</nsset:tech>
+         <nsset:reportlevel>4</nsset:reportlevel>
+      </nsset:infData>
+   </resData>
+   <trID>
+      <clTRID>kttq005#17-07-31at12:21:02</clTRID>
+      <svTRID>ReqID-0000140998</svTRID>
+   </trID>
+</response>
+</epp>

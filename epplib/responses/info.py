@@ -25,7 +25,7 @@ from typing import Any, ClassVar, List, Mapping, Optional, Sequence
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element
 
-from epplib.models import Disclose, Dnskey, Ident, PostalInfo, Status
+from epplib.models import Disclose, Dnskey, Ident, Ns, PostalInfo, Status
 from epplib.responses.base import Result, ResultData
 
 
@@ -259,3 +259,54 @@ class InfoKeysetResult(InfoResult):
 
     _res_data_path: ClassVar[str] = './keyset:infData'
     _res_data_class: ClassVar = Keyset
+
+
+@dataclass
+class InfoNssetResult(InfoResult):
+    """Represents EPP Result which responds to the Info nsset command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        message: Content of the epp/response/result/msg element.
+        data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    @dataclass
+    class Nsset(InfoResult.Item):
+        """Dataclass representing nsset info in the info nsset result.
+
+        Attributes:
+            cl_id: Content of the epp/response/resData/infData/clID element.
+            cr_id: Content of the epp/response/resData/infData/crID element.
+            cr_date: Content of the epp/response/resData/infData/crDate element.
+            up_id: Content of the epp/response/resData/infData/upID element.
+            up_date: Content of the epp/response/resData/infData/upDate element.
+            tr_date: Content of the epp/response/resData/infData/trDate element.
+            auth_info: Content of the epp/response/resData/infData/authInfo element.
+            id: Content of the epp/response/resData/infData/id element.
+            nss: Content of the epp/response/resData/infData/ns elements.
+            techs: Content of the epp/response/resData/infData/tech elements.
+            report_level: Content of the epp/response/resData/infData/reportlevel elements.
+        """
+
+        _namespace = 'nsset'
+
+        id: str
+        nss: Sequence[Ns]
+        techs: Sequence[str]
+        report_level: int
+
+        @classmethod
+        def _get_params(cls, element: Element) -> Mapping[str, Any]:
+            params: Mapping[str, Any] = {
+                'id': cls._find_text(element, f'./{cls._namespace}:id'),
+                'nss': [Ns.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:ns')],
+                'techs': cls._find_all_text(element, f'./{cls._namespace}:tech'),
+                'report_level': int(cls._find_text(element, f'./{cls._namespace}:reportlevel')),
+            }
+            return {**super()._get_params(element), **params}
+
+    _res_data_path: ClassVar[str] = './nsset:infData'
+    _res_data_class: ClassVar = Nsset
