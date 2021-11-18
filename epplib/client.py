@@ -97,6 +97,6 @@ class Client:
         return response_parsed
 
     def _genereate_tr_id(self) -> str:
-        random = ''.join(choices(ascii_lowercase + digits, k=6))
+        random = ''.join(choices(ascii_lowercase + digits, k=6))  # nosec - Not a security feature.
         timestamp = datetime.now().isoformat()
         return '{}#{}'.format(random, timestamp)
