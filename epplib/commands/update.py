@@ -24,6 +24,7 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
+from epplib.models import Disclose, Ident, PostalInfo
 from epplib.responses import Result
 
 
@@ -86,3 +87,82 @@ class UpdateDomain(Command):
                 SubElement(chg, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.auth_info
 
         return update
+
+
+@dataclass
+class UpdateContact(Command):
+    """EPP update contact command.
+
+    Attributes:
+        id: Content of epp/command/update/update/id tag.
+        postal_info: Content of epp/command/update/update/chg/postalInfo tag.
+        voice: Content of epp/command/update/update/chg/voice tag.
+        fax: Content of epp/command/update/update/chg/fax tag.
+        email: Content of epp/command/update/update/chg/email tag.
+        auth_info: Content of epp/command/update/update/chg/authInfo tag.
+        disclose: Content of epp/command/update/update/chg/disclose tag.
+        vat: Content of epp/command/update/update/chg/vat tag.
+        ident: Content of epp/command/update/update/chg/ident tag.
+        notify_email: Content of epp/command/update/update/chg/notifyEmail tag.
+    """
+
+    response_class = Result
+
+    id: str
+    postal_info: Optional[PostalInfo] = None
+    voice: Optional[str] = None
+    fax: Optional[str] = None
+    email: Optional[str] = None
+    auth_info: Optional[str] = None
+    disclose: Optional[Disclose] = None
+    vat: Optional[str] = None
+    ident: Optional[Ident] = None
+    notify_email: Optional[str] = None
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for UpdateContact.
+
+        Returns:
+            Element with a contact to update.
+        """
+        update = Element(QName(NAMESPACE.EPP, 'update'))
+
+        contact_update = SubElement(update, QName(NAMESPACE.NIC_CONTACT, 'update'))
+        contact_update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_CONTACT)
+
+        SubElement(contact_update, QName(NAMESPACE.NIC_CONTACT, 'id')).text = self.id
+
+        change = self._get_change()
+        if len(change):
+            contact_update.append(change)
+
+        return update
+
+    def _get_change(self) -> Element:
+        """Create chg element and its subelements.
+
+        Returns:
+            Element with the chg element.
+        """
+        change = Element(QName(NAMESPACE.NIC_CONTACT, 'chg'))
+
+        if self.postal_info is not None:
+            change.append(self.postal_info.get_payload())
+        if self.voice is not None:
+            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'voice')).text = self.voice
+        if self.fax is not None:
+            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'fax')).text = self.fax
+        if self.email is not None:
+            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'email')).text = self.email
+        if self.auth_info is not None:
+            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'authInfo')).text = self.auth_info
+        if self.disclose is not None:
+            change.append(self.disclose.get_payload())
+        if self.vat is not None:
+            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'vat')).text = self.vat
+        if self.ident is not None:
+            change.append(self.ident.get_payload())
+        if self.notify_email is not None:
+            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'notifyEmail')).text = self.notify_email
+
+        return change
