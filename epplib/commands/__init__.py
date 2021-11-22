@@ -27,6 +27,7 @@ from .extensions import (CreditInfoRequest, SendAuthInfoContact, SendAuthInfoDom
 from .info import InfoContact, InfoDomain, InfoKeyset, InfoNsset
 from .renew import RenewDomain
 from .transfer import TransferContact, TransferDomain, TransferKeyset, TransferNsset
+from .update import UpdateDomain
 
 __all__ = [
     'CheckContact',
@@ -61,4 +62,5 @@ __all__ = [
     'TransferDomain',
     'TransferKeyset',
     'TransferNsset',
+    'UpdateDomain',
 ]
