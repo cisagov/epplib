@@ -24,7 +24,7 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import Disclose, Dnskey, Ident, PostalInfo
+from epplib.models import Disclose, Dnskey, Ident, Ns, PostalInfo
 from epplib.responses import Result
 
 
@@ -220,5 +220,68 @@ class UpdateKeyset(Command):
         if self.auth_info is not None:
             chg = SubElement(keyset_update, QName(NAMESPACE.NIC_KEYSET, 'chg'))
             SubElement(chg, QName(NAMESPACE.NIC_KEYSET, 'authInfo')).text = self.auth_info
+
+        return update
+
+
+@dataclass
+class UpdateNsset(Command):
+    """EPP update nsset command.
+
+    Attributes:
+        id: Content of epp/command/update/update/id element.
+        add: Content of epp/command/update/update/add element.
+        rem: Content of epp/command/update/update/rem element.
+        auth_info: Content of epp/command/update/update/chg/authInfo element.
+        reportlevel: Content of epp/command/update/update/chg/reportlevel element.
+    """
+
+    response_class = Result
+
+    id: str
+    add: Sequence[Union[Ns, str]] = field(default_factory=list)
+    rem: Sequence[Union[Ns, str]] = field(default_factory=list)
+    auth_info: Optional[str] = None
+    reportlevel: Optional[int] = None
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for UpdateNsset.
+
+        Returns:
+            Element with a nsset to update.
+        """
+        update = Element(QName(NAMESPACE.EPP, 'update'))
+
+        nsset_update = SubElement(update, QName(NAMESPACE.NIC_NSSET, 'update'))
+        nsset_update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_NSSET)
+
+        SubElement(nsset_update, QName(NAMESPACE.NIC_NSSET, 'id')).text = self.id
+
+        add = Element(QName(NAMESPACE.NIC_NSSET, 'add'))
+        for item in self.add:
+            if isinstance(item, Ns):
+                add.append(item.get_payload())
+            else:
+                SubElement(add, QName(NAMESPACE.NIC_NSSET, 'tech')).text = item
+        if len(add):
+            nsset_update.append(add)
+
+        rem = Element(QName(NAMESPACE.NIC_NSSET, 'rem'))
+        for item in self.rem:
+            if isinstance(item, Ns):
+                SubElement(rem, QName(NAMESPACE.NIC_NSSET, 'name')).text = item.name
+            else:
+                SubElement(rem, QName(NAMESPACE.NIC_NSSET, 'tech')).text = item
+        if len(rem):
+            nsset_update.append(rem)
+
+        chg = Element(QName(NAMESPACE.NIC_NSSET, 'chg'))
+        if self.auth_info is not None:
+            SubElement(chg, QName(NAMESPACE.NIC_NSSET, 'authInfo')).text = self.auth_info
+        if self.reportlevel is not None:
+            SubElement(chg, QName(NAMESPACE.NIC_NSSET, 'reportlevel')).text = str(self.reportlevel)
+
+        if len(chg):
+            nsset_update.append(chg)
 
         return update
