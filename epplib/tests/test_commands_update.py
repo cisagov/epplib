@@ -21,9 +21,9 @@ from typing import Any, Dict
 from lxml.builder import ElementMaker
 from lxml.etree import QName, fromstring
 
-from epplib.commands import UpdateContact, UpdateDomain
+from epplib.commands import UpdateContact, UpdateDomain, UpdateKeyset
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import ContactAddr, Disclose, DiscloseField, Ident, IdentType, PostalInfo
+from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, PostalInfo
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root, sub_dict
 
 
@@ -184,3 +184,64 @@ class TestUpdateContact(XMLTestCase):
                     )
                 )
                 self.assertXMLEqual(root, expected)
+
+
+class TestUpdateKeyset(XMLTestCase):
+    params: Dict[str, Any] = {
+        'id': 'CID-MYCONTA',
+        'add': [
+            Dnskey(257, 3, 5, 'eGVmbmZrY3lvcXFwamJ6aGt2YXhteXdkc2tjeXBp'),
+            'CID-TECH1',
+        ],
+        'rem': [
+            Dnskey(257, 3, 5, 'aXN4Y2lpd2ZicWtkZHF4dnJyaHVtc3BreXN6ZGZy'),
+            'CID-TECH2',
+        ],
+        'auth_info': 'trnpwd',
+    }
+    required = ['id']
+
+    def test_valid(self):
+        self.assertRequestValid(UpdateKeyset, self.params)
+        self.assertRequestValid(UpdateKeyset, sub_dict(self.params, self.required))
+
+    def test_data_full(self):
+        root = fromstring(UpdateKeyset(**self.params).xml())
+        keyset = ElementMaker(namespace=NAMESPACE.NIC_KEYSET)
+        expected = make_epp_root(
+            EM.command(
+                EM.update(
+                    keyset.update(
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
+                        keyset.id(self.params['id']),
+                        keyset.add(
+                            self.params['add'][0].get_payload(),
+                            keyset.tech(self.params['add'][1]),
+                        ),
+                        keyset.rem(
+                            self.params['rem'][0].get_payload(),
+                            keyset.tech(self.params['rem'][1]),
+                        ),
+                        keyset.chg(
+                            keyset.authInfo(self.params['auth_info']),
+                        ),
+                    ),
+                ),
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+    def test_data_required(self):
+        root = fromstring(UpdateKeyset(**sub_dict(self.params, self.required)).xml())
+        keyset = ElementMaker(namespace=NAMESPACE.NIC_KEYSET)
+        expected = make_epp_root(
+            EM.command(
+                EM.update(
+                    keyset.update(
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
+                        keyset.id(self.params['id']),
+                    ),
+                ),
+            )
+        )
+        self.assertXMLEqual(root, expected)
