@@ -23,7 +23,8 @@ from typing import ClassVar
 
 from lxml.etree import Element
 
-from epplib.responses.base import Result, ResultData
+from epplib.models import ExtractModelMixin
+from epplib.responses.base import Result
 
 
 @dataclass
@@ -39,7 +40,7 @@ class ListResult(Result):
     """
 
     @dataclass
-    class InfoResponse(ResultData):
+    class InfoResponse(ExtractModelMixin):
         """Dataclass representing the list command result.
 
         Attributes:
@@ -70,7 +71,7 @@ class GetResultsResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    class Item(ResultData, str):
+    class Item(ExtractModelMixin, str):
         """Class representing the list command result."""
 
         @classmethod

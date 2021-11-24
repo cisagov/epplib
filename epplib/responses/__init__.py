@@ -18,7 +18,7 @@
 
 """Module providing means to process responses to EPP commands."""
 
-from .base import Greeting, ParsingError, Response, Result, ResultData
+from .base import Greeting, ParsingError, Response, Result
 from .check import CheckContactResult, CheckDomainResult, CheckKeysetResult, CheckNssetResult
 from .create import CreateContactResult, CreateDomainResult, CreateKeysetResult, CreateNssetResult
 from .credit_info import CreditInfoResult
@@ -47,5 +47,4 @@ __all__ = [
     'RenewDomainResult',
     'Response',
     'Result',
-    'ResultData',
 ]

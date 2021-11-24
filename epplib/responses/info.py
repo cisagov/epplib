@@ -25,8 +25,8 @@ from typing import Any, ClassVar, List, Mapping, Optional, Sequence
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element
 
-from epplib.models import Disclose, Dnskey, Ident, Ns, PostalInfo, Status
-from epplib.responses.base import Result, ResultData
+from epplib.models import Disclose, Dnskey, ExtractModelMixin, Ident, Ns, PostalInfo, Status
+from epplib.responses.base import Result
 
 
 @dataclass
@@ -42,7 +42,7 @@ class InfoResult(Result):
     """
 
     @dataclass
-    class Item(ResultData):
+    class Item(ExtractModelMixin):
         """Dataclass representing queried item info in the info result.
 
         Attributes:
