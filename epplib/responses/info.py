@@ -30,68 +30,218 @@ from epplib.responses.base import Result
 
 
 @dataclass
-class InfoResult(Result):
-    """Represents EPP Result which responds to the Info command.
+class InfoResultData(ExtractModelMixin):
+    """Dataclass representing queried item info in the info result.
 
     Attributes:
-        code: Code attribute of the epp/response/result element.
-        message: Content of the epp/response/result/msg element.
-        data: Content of the epp/response/result/resData element.
-        cl_tr_id: Content of the epp/response/trID/clTRID element.
-        sv_tr_id: Content of the epp/response/trID/svTRID element.
+        roid: Content of the epp/response/resData/infData/roid element.
+        statuses: Content of the epp/response/resData/infData/status element.
+        cl_id: Content of the epp/response/resData/infData/clID element.
+        cr_id: Content of the epp/response/resData/infData/crID element.
+        cr_date: Content of the epp/response/resData/infData/crDate element.
+        up_id: Content of the epp/response/resData/infData/upID element.
+        up_date: Content of the epp/response/resData/infData/upDate element.
+        tr_date: Content of the epp/response/resData/infData/trDate element.
+        auth_info: Content of the epp/response/resData/infData/authInfo element.
     """
 
-    @dataclass
-    class Item(ExtractModelMixin):
-        """Dataclass representing queried item info in the info result.
+    _namespace: ClassVar[str]
 
-        Attributes:
-            roid: Content of the epp/response/resData/infData/roid element.
-            statuses: Content of the epp/response/resData/infData/status element.
-            cl_id: Content of the epp/response/resData/infData/clID element.
-            cr_id: Content of the epp/response/resData/infData/crID element.
-            cr_date: Content of the epp/response/resData/infData/crDate element.
-            up_id: Content of the epp/response/resData/infData/upID element.
-            up_date: Content of the epp/response/resData/infData/upDate element.
-            tr_date: Content of the epp/response/resData/infData/trDate element.
-            auth_info: Content of the epp/response/resData/infData/authInfo element.
-        """
+    roid: str
+    statuses: List[Status]
+    cl_id: str
+    cr_id: Optional[str]
+    cr_date: Optional[datetime]
+    up_id: Optional[str]
+    up_date: Optional[datetime]
+    tr_date: Optional[datetime]
+    auth_info: Optional[str]
 
-        _namespace: ClassVar[str]
+    @classmethod
+    def extract(cls, element: Element) -> 'InfoResultData':
+        """Extract params for own init from the element."""
+        return cls(**cls._get_params(element))
 
-        roid: str
-        statuses: List[Status]
-        cl_id: str
-        cr_id: Optional[str]
-        cr_date: Optional[datetime]
-        up_id: Optional[str]
-        up_date: Optional[datetime]
-        tr_date: Optional[datetime]
-        auth_info: Optional[str]
-
-        @classmethod
-        def extract(cls, element: Element) -> 'InfoResult.Item':
-            """Extract params for own init from the element."""
-            return cls(**cls._get_params(element))
-
-        @classmethod
-        def _get_params(cls, element: Element) -> Mapping[str, Any]:
-            params: Mapping[str, Any] = {
-                'roid': cls._find_text(element, f'./{cls._namespace}:roid'),
-                'statuses': [Status.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:status')],
-                'cl_id': cls._find_text(element, f'./{cls._namespace}:clID'),
-                'cr_id': cls._find_text(element, f'./{cls._namespace}:crID'),
-                'cr_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:crDate')),
-                'up_id': cls._find_text(element, f'./{cls._namespace}:upID'),
-                'up_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:upDate')),
-                'tr_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:trDate')),
-                'auth_info': cls._find_text(element, f'./{cls._namespace}:authInfo'),
-            }
-            return params
+    @classmethod
+    def _get_params(cls, element: Element) -> Mapping[str, Any]:
+        params: Mapping[str, Any] = {
+            'roid': cls._find_text(element, f'./{cls._namespace}:roid'),
+            'statuses': [Status.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:status')],
+            'cl_id': cls._find_text(element, f'./{cls._namespace}:clID'),
+            'cr_id': cls._find_text(element, f'./{cls._namespace}:crID'),
+            'cr_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:crDate')),
+            'up_id': cls._find_text(element, f'./{cls._namespace}:upID'),
+            'up_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:upDate')),
+            'tr_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:trDate')),
+            'auth_info': cls._find_text(element, f'./{cls._namespace}:authInfo'),
+        }
+        return params
 
 
 @dataclass
-class InfoDomainResult(InfoResult):
+class InfoDomainResultData(InfoResultData):
+    """Dataclass representing domain info in the info domain result.
+
+    Attributes:
+        cl_id: Content of the epp/response/resData/infData/clID element.
+        cr_id: Content of the epp/response/resData/infData/crID element.
+        cr_date: Content of the epp/response/resData/infData/crDate element.
+        up_id: Content of the epp/response/resData/infData/upID element.
+        up_date: Content of the epp/response/resData/infData/upDate element.
+        tr_date: Content of the epp/response/resData/infData/trDate element.
+        auth_info: Content of the epp/response/resData/infData/authInfo element.
+        name: Content of the epp/response/resData/infData/name element.
+        registrant: Content of the epp/response/resData/infData/registrant element.
+        admins: Content of the epp/response/resData/infData/admin element.
+        nsset: Content of the epp/response/resData/infData/nsset element.
+        keyset: Content of the epp/response/resData/infData/keyset element.
+        ex_date: Content of the epp/response/resData/infData/exDate element.
+    """
+
+    _namespace = 'domain'
+
+    name: str
+    registrant: Optional[str]
+    admins: List[str]
+    nsset: Optional[str]
+    keyset: Optional[str]
+    ex_date: Optional[date]
+
+    @classmethod
+    def _get_params(cls, element: Element) -> Mapping[str, Any]:
+        params: Mapping[str, Any] = {
+            'name': cls._find_text(element, f'./{cls._namespace}:name'),
+            'registrant': cls._find_text(element, f'./{cls._namespace}:registrant'),
+            'admins': cls._find_all_text(element, f'./{cls._namespace}:admin'),
+            'nsset': cls._find_text(element, f'./{cls._namespace}:nsset'),
+            'keyset': cls._find_text(element, f'./{cls._namespace}:keyset'),
+            'ex_date': cls._optional(cls._parse_date, cls._find_text(element, f'./{cls._namespace}:exDate')),
+        }
+        return {**super()._get_params(element), **params}
+
+
+@dataclass
+class InfoContactResultData(InfoResultData):
+    """Dataclass representing contact info in the info contact result.
+
+    Attributes:
+        cl_id: Content of the epp/response/resData/infData/clID element.
+        cr_id: Content of the epp/response/resData/infData/crID element.
+        cr_date: Content of the epp/response/resData/infData/crDate element.
+        up_id: Content of the epp/response/resData/infData/upID element.
+        up_date: Content of the epp/response/resData/infData/upDate element.
+        tr_date: Content of the epp/response/resData/infData/trDate element.
+        auth_info: Content of the epp/response/resData/infData/authInfo element.
+        id: Content of the epp/response/resData/infData/id element.
+        postal_info: Content of the epp/response/resData/infData/postalInfo element.
+        voice: Content of the epp/response/resData/infData/voice element.
+        fax: Content of the epp/response/resData/infData/fax element.
+        email: Content of the epp/response/resData/infData/email element.
+        disclose: Content of the epp/response/resData/infData/disclose element.
+        vat: Content of the epp/response/resData/infData/vat element.
+        ident: Content of the epp/response/resData/infData/ident element.
+        notify_email: Content of the epp/response/resData/infData/notifyEmail element.
+    """
+
+    _namespace = 'contact'
+
+    id: str
+    postal_info: PostalInfo
+    voice: Optional[str]
+    fax: Optional[str]
+    email: Optional[str]
+    disclose: Optional[Disclose]
+    vat: Optional[str]
+    ident: Optional[Ident]
+    notify_email: Optional[str]
+
+    @classmethod
+    def _get_params(cls, element: Element) -> Mapping[str, Any]:
+        params: Mapping[str, Any] = {
+            'id': cls._find_text(element, f'./{cls._namespace}:id'),
+            'postal_info': PostalInfo.extract(cls._find(element, f'./{cls._namespace}:postalInfo')),
+            'voice': cls._find_text(element, f'./{cls._namespace}:voice'),
+            'fax': cls._find_text(element, f'./{cls._namespace}:fax'),
+            'email': cls._find_text(element, f'./{cls._namespace}:email'),
+            'disclose': cls._optional(Disclose.extract, cls._find(element, f'./{cls._namespace}:disclose')),
+            'vat': cls._find_text(element, f'./{cls._namespace}:vat'),
+            'ident': cls._optional(Ident.extract, cls._find(element, f'./{cls._namespace}:ident')),
+            'notify_email': cls._find_text(element, f'./{cls._namespace}:notifyEmail'),
+        }
+        return {**super()._get_params(element), **params}
+
+
+@dataclass
+class InfoKeysetResultData(InfoResultData):
+    """Dataclass representing keyset info in the info keyset result.
+
+    Attributes:
+        cl_id: Content of the epp/response/resData/infData/clID element.
+        cr_id: Content of the epp/response/resData/infData/crID element.
+        cr_date: Content of the epp/response/resData/infData/crDate element.
+        up_id: Content of the epp/response/resData/infData/upID element.
+        up_date: Content of the epp/response/resData/infData/upDate element.
+        tr_date: Content of the epp/response/resData/infData/trDate element.
+        auth_info: Content of the epp/response/resData/infData/authInfo element.
+        id: Content of the epp/response/resData/infData/id element.
+        dnskeys: Content of the epp/response/resData/infData/dnskey elements.
+        techs: Content of the epp/response/resData/infData/tech elements.
+    """
+
+    _namespace = 'keyset'
+
+    id: str
+    dnskeys: Sequence[Dnskey]
+    techs: Sequence[str]
+
+    @classmethod
+    def _get_params(cls, element: Element) -> Mapping[str, Any]:
+        params: Mapping[str, Any] = {
+            'id': cls._find_text(element, f'./{cls._namespace}:id'),
+            'dnskeys': [Dnskey.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:dnskey')],
+            'techs': cls._find_all_text(element, f'./{cls._namespace}:tech'),
+        }
+        return {**super()._get_params(element), **params}
+
+
+@dataclass
+class InfoNssetResultData(InfoResultData):
+    """Dataclass representing nsset info in the info nsset result.
+
+    Attributes:
+        cl_id: Content of the epp/response/resData/infData/clID element.
+        cr_id: Content of the epp/response/resData/infData/crID element.
+        cr_date: Content of the epp/response/resData/infData/crDate element.
+        up_id: Content of the epp/response/resData/infData/upID element.
+        up_date: Content of the epp/response/resData/infData/upDate element.
+        tr_date: Content of the epp/response/resData/infData/trDate element.
+        auth_info: Content of the epp/response/resData/infData/authInfo element.
+        id: Content of the epp/response/resData/infData/id element.
+        nss: Content of the epp/response/resData/infData/ns elements.
+        techs: Content of the epp/response/resData/infData/tech elements.
+        report_level: Content of the epp/response/resData/infData/reportlevel elements.
+    """
+
+    _namespace = 'nsset'
+
+    id: str
+    nss: Sequence[Ns]
+    techs: Sequence[str]
+    report_level: int
+
+    @classmethod
+    def _get_params(cls, element: Element) -> Mapping[str, Any]:
+        params: Mapping[str, Any] = {
+            'id': cls._find_text(element, f'./{cls._namespace}:id'),
+            'nss': [Ns.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:ns')],
+            'techs': cls._find_all_text(element, f'./{cls._namespace}:tech'),
+            'report_level': int(cls._find_text(element, f'./{cls._namespace}:reportlevel')),
+        }
+        return {**super()._get_params(element), **params}
+
+
+@dataclass
+class InfoDomainResult(Result):
     """Represents EPP Result which responds to the Info domain command.
 
     Attributes:
@@ -102,53 +252,12 @@ class InfoDomainResult(InfoResult):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    @dataclass
-    class Domain(InfoResult.Item):
-        """Dataclass representing domain info in the info domain result.
-
-        Attributes:
-            cl_id: Content of the epp/response/resData/infData/clID element.
-            cr_id: Content of the epp/response/resData/infData/crID element.
-            cr_date: Content of the epp/response/resData/infData/crDate element.
-            up_id: Content of the epp/response/resData/infData/upID element.
-            up_date: Content of the epp/response/resData/infData/upDate element.
-            tr_date: Content of the epp/response/resData/infData/trDate element.
-            auth_info: Content of the epp/response/resData/infData/authInfo element.
-            name: Content of the epp/response/resData/infData/name element.
-            registrant: Content of the epp/response/resData/infData/registrant element.
-            admins: Content of the epp/response/resData/infData/admin element.
-            nsset: Content of the epp/response/resData/infData/nsset element.
-            keyset: Content of the epp/response/resData/infData/keyset element.
-            ex_date: Content of the epp/response/resData/infData/exDate element.
-        """
-
-        _namespace = 'domain'
-
-        name: str
-        registrant: Optional[str]
-        admins: List[str]
-        nsset: Optional[str]
-        keyset: Optional[str]
-        ex_date: Optional[date]
-
-        @classmethod
-        def _get_params(cls, element: Element) -> Mapping[str, Any]:
-            params: Mapping[str, Any] = {
-                'name': cls._find_text(element, f'./{cls._namespace}:name'),
-                'registrant': cls._find_text(element, f'./{cls._namespace}:registrant'),
-                'admins': cls._find_all_text(element, f'./{cls._namespace}:admin'),
-                'nsset': cls._find_text(element, f'./{cls._namespace}:nsset'),
-                'keyset': cls._find_text(element, f'./{cls._namespace}:keyset'),
-                'ex_date': cls._optional(cls._parse_date, cls._find_text(element, f'./{cls._namespace}:exDate')),
-            }
-            return {**super()._get_params(element), **params}
-
     _res_data_path: ClassVar[str] = './domain:infData'
-    _res_data_class: ClassVar = Domain
+    _res_data_class: ClassVar = InfoDomainResultData
 
 
 @dataclass
-class InfoContactResult(InfoResult):
+class InfoContactResult(Result):
     """Represents EPP Result which responds to the Info contact command.
 
     Attributes:
@@ -159,62 +268,12 @@ class InfoContactResult(InfoResult):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    @dataclass
-    class Contact(InfoResult.Item):
-        """Dataclass representing contact info in the info contact result.
-
-        Attributes:
-            cl_id: Content of the epp/response/resData/infData/clID element.
-            cr_id: Content of the epp/response/resData/infData/crID element.
-            cr_date: Content of the epp/response/resData/infData/crDate element.
-            up_id: Content of the epp/response/resData/infData/upID element.
-            up_date: Content of the epp/response/resData/infData/upDate element.
-            tr_date: Content of the epp/response/resData/infData/trDate element.
-            auth_info: Content of the epp/response/resData/infData/authInfo element.
-            id: Content of the epp/response/resData/infData/id element.
-            postal_info: Content of the epp/response/resData/infData/postalInfo element.
-            voice: Content of the epp/response/resData/infData/voice element.
-            fax: Content of the epp/response/resData/infData/fax element.
-            email: Content of the epp/response/resData/infData/email element.
-            disclose: Content of the epp/response/resData/infData/disclose element.
-            vat: Content of the epp/response/resData/infData/vat element.
-            ident: Content of the epp/response/resData/infData/ident element.
-            notify_email: Content of the epp/response/resData/infData/notifyEmail element.
-        """
-
-        _namespace = 'contact'
-
-        id: str
-        postal_info: PostalInfo
-        voice: Optional[str]
-        fax: Optional[str]
-        email: Optional[str]
-        disclose: Optional[Disclose]
-        vat: Optional[str]
-        ident: Optional[Ident]
-        notify_email: Optional[str]
-
-        @classmethod
-        def _get_params(cls, element: Element) -> Mapping[str, Any]:
-            params: Mapping[str, Any] = {
-                'id': cls._find_text(element, f'./{cls._namespace}:id'),
-                'postal_info': PostalInfo.extract(cls._find(element, f'./{cls._namespace}:postalInfo')),
-                'voice': cls._find_text(element, f'./{cls._namespace}:voice'),
-                'fax': cls._find_text(element, f'./{cls._namespace}:fax'),
-                'email': cls._find_text(element, f'./{cls._namespace}:email'),
-                'disclose': cls._optional(Disclose.extract, cls._find(element, f'./{cls._namespace}:disclose')),
-                'vat': cls._find_text(element, f'./{cls._namespace}:vat'),
-                'ident': cls._optional(Ident.extract, cls._find(element, f'./{cls._namespace}:ident')),
-                'notify_email': cls._find_text(element, f'./{cls._namespace}:notifyEmail'),
-            }
-            return {**super()._get_params(element), **params}
-
     _res_data_path: ClassVar[str] = './contact:infData'
-    _res_data_class: ClassVar = Contact
+    _res_data_class: ClassVar = InfoContactResultData
 
 
 @dataclass
-class InfoKeysetResult(InfoResult):
+class InfoKeysetResult(Result):
     """Represents EPP Result which responds to the Info keyset command.
 
     Attributes:
@@ -225,44 +284,12 @@ class InfoKeysetResult(InfoResult):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    @dataclass
-    class Keyset(InfoResult.Item):
-        """Dataclass representing keyset info in the info keyset result.
-
-        Attributes:
-            cl_id: Content of the epp/response/resData/infData/clID element.
-            cr_id: Content of the epp/response/resData/infData/crID element.
-            cr_date: Content of the epp/response/resData/infData/crDate element.
-            up_id: Content of the epp/response/resData/infData/upID element.
-            up_date: Content of the epp/response/resData/infData/upDate element.
-            tr_date: Content of the epp/response/resData/infData/trDate element.
-            auth_info: Content of the epp/response/resData/infData/authInfo element.
-            id: Content of the epp/response/resData/infData/id element.
-            dnskeys: Content of the epp/response/resData/infData/dnskey elements.
-            techs: Content of the epp/response/resData/infData/tech elements.
-        """
-
-        _namespace = 'keyset'
-
-        id: str
-        dnskeys: Sequence[Dnskey]
-        techs: Sequence[str]
-
-        @classmethod
-        def _get_params(cls, element: Element) -> Mapping[str, Any]:
-            params: Mapping[str, Any] = {
-                'id': cls._find_text(element, f'./{cls._namespace}:id'),
-                'dnskeys': [Dnskey.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:dnskey')],
-                'techs': cls._find_all_text(element, f'./{cls._namespace}:tech'),
-            }
-            return {**super()._get_params(element), **params}
-
     _res_data_path: ClassVar[str] = './keyset:infData'
-    _res_data_class: ClassVar = Keyset
+    _res_data_class: ClassVar = InfoKeysetResultData
 
 
 @dataclass
-class InfoNssetResult(InfoResult):
+class InfoNssetResult(Result):
     """Represents EPP Result which responds to the Info nsset command.
 
     Attributes:
@@ -273,40 +300,5 @@ class InfoNssetResult(InfoResult):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    @dataclass
-    class Nsset(InfoResult.Item):
-        """Dataclass representing nsset info in the info nsset result.
-
-        Attributes:
-            cl_id: Content of the epp/response/resData/infData/clID element.
-            cr_id: Content of the epp/response/resData/infData/crID element.
-            cr_date: Content of the epp/response/resData/infData/crDate element.
-            up_id: Content of the epp/response/resData/infData/upID element.
-            up_date: Content of the epp/response/resData/infData/upDate element.
-            tr_date: Content of the epp/response/resData/infData/trDate element.
-            auth_info: Content of the epp/response/resData/infData/authInfo element.
-            id: Content of the epp/response/resData/infData/id element.
-            nss: Content of the epp/response/resData/infData/ns elements.
-            techs: Content of the epp/response/resData/infData/tech elements.
-            report_level: Content of the epp/response/resData/infData/reportlevel elements.
-        """
-
-        _namespace = 'nsset'
-
-        id: str
-        nss: Sequence[Ns]
-        techs: Sequence[str]
-        report_level: int
-
-        @classmethod
-        def _get_params(cls, element: Element) -> Mapping[str, Any]:
-            params: Mapping[str, Any] = {
-                'id': cls._find_text(element, f'./{cls._namespace}:id'),
-                'nss': [Ns.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:ns')],
-                'techs': cls._find_all_text(element, f'./{cls._namespace}:tech'),
-                'report_level': int(cls._find_text(element, f'./{cls._namespace}:reportlevel')),
-            }
-            return {**super()._get_params(element), **params}
-
     _res_data_path: ClassVar[str] = './nsset:infData'
-    _res_data_class: ClassVar = Nsset
+    _res_data_class: ClassVar = InfoNssetResultData

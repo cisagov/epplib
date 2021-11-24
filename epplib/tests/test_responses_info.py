@@ -22,7 +22,8 @@ from unittest import TestCase
 
 from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, PostalInfo
 from epplib.responses import InfoContactResult, InfoDomainResult, InfoKeysetResult, InfoNssetResult
-from epplib.responses.info import Status
+from epplib.responses.info import (InfoContactResultData, InfoDomainResultData, InfoKeysetResultData,
+                                   InfoNssetResultData, Status)
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
 
@@ -32,7 +33,7 @@ class TestInfoDomainResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_info_domain_minimal.xml').read_bytes()
         result = InfoDomainResult.parse(xml, SCHEMA)
         expected = [
-            InfoDomainResult.Domain(
+            InfoDomainResultData(
                 name='mydomain.cz',
                 roid='D0009907597-CZ',
                 statuses=[Status('ok', 'Object is without restrictions', 'en')],
@@ -57,7 +58,7 @@ class TestInfoDomainResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_info_domain.xml').read_bytes()
         result = InfoDomainResult.parse(xml, SCHEMA)
         expected = [
-            InfoDomainResult.Domain(
+            InfoDomainResultData(
                 name='mydomain.cz',
                 roid='D0009907597-CZ',
                 statuses=[Status('ok', 'Object is without restrictions', 'en')],
@@ -91,7 +92,7 @@ class TestInfoContactResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_info_contact.xml').read_bytes()
         result = InfoContactResult.parse(xml, SCHEMA)
         expected = [
-            InfoContactResult.Contact(
+            InfoContactResultData(
                 roid='C0009746170-CZ',
                 statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
                 cl_id='REG-CLID',
@@ -120,7 +121,7 @@ class TestInfoContactResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_info_contact_minimal.xml').read_bytes()
         result = InfoContactResult.parse(xml, SCHEMA)
         expected = [
-            InfoContactResult.Contact(
+            InfoContactResultData(
                 roid='C0009746170-CZ',
                 statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
                 cl_id='REG-CLID',
@@ -157,7 +158,7 @@ class TestInfoKeysetResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_info_keyset.xml').read_bytes()
         result = InfoKeysetResult.parse(xml, SCHEMA)
         expected = [
-            InfoKeysetResult.Keyset(
+            InfoKeysetResultData(
                 roid='K0009907596-CZ',
                 statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
                 cl_id='REG-MYREG',
@@ -183,7 +184,7 @@ class TestInfoKeysetResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_info_keyset_minimal.xml').read_bytes()
         result = InfoKeysetResult.parse(xml, SCHEMA)
         expected = [
-            InfoKeysetResult.Keyset(
+            InfoKeysetResultData(
                 roid='K0009907596-CZ',
                 statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
                 cl_id='REG-MYREG',
@@ -214,7 +215,7 @@ class TestInfoNssetResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_info_nsset.xml').read_bytes()
         result = InfoNssetResult.parse(xml, SCHEMA)
         expected = [
-            InfoNssetResult.Nsset(
+            InfoNssetResultData(
                 roid='N0009907595-CZ',
                 statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
                 cl_id='REG-MYREG',
@@ -241,7 +242,7 @@ class TestInfoNssetResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_info_nsset_minimal.xml').read_bytes()
         result = InfoNssetResult.parse(xml, SCHEMA)
         expected = [
-            InfoNssetResult.Nsset(
+            InfoNssetResultData(
                 roid='N0009907595-CZ',
                 statuses=[Status('linked', 'Has relation to other records in the registry', 'en')],
                 cl_id='REG-MYREG',
