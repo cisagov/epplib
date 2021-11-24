@@ -18,13 +18,13 @@
 
 """Module providing EPP update commands."""
 from dataclasses import dataclass, field
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Union
 
 from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import Disclose, Ident, PostalInfo
+from epplib.models import Disclose, Dnskey, Ident, PostalInfo
 from epplib.responses import Result
 
 
@@ -166,3 +166,59 @@ class UpdateContact(Command):
             SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'notifyEmail')).text = self.notify_email
 
         return change
+
+
+@dataclass
+class UpdateKeyset(Command):
+    """EPP update keyset command.
+
+    Attributes:
+        id: Content of epp/command/update/update/id element.
+        add: Content of epp/command/update/update/add element.
+        rem: Content of epp/command/update/update/rem element.
+        auth_info: Content of epp/command/update/update/chg/authInfo element.
+    """
+
+    response_class = Result
+
+    id: str
+    add: Sequence[Union[Dnskey, str]] = field(default_factory=list)
+    rem: Sequence[Union[Dnskey, str]] = field(default_factory=list)
+    auth_info: Optional[str] = None
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command tag specific for UpdateKeyset.
+
+        Returns:
+            Element with a keyset to update.
+        """
+        update = Element(QName(NAMESPACE.EPP, 'update'))
+
+        keyset_update = SubElement(update, QName(NAMESPACE.NIC_KEYSET, 'update'))
+        keyset_update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_KEYSET)
+
+        SubElement(keyset_update, QName(NAMESPACE.NIC_KEYSET, 'id')).text = self.id
+
+        add = Element(QName(NAMESPACE.NIC_KEYSET, 'add'))
+        for item in self.add:
+            if isinstance(item, Dnskey):
+                add.append(item.get_payload())
+            else:
+                SubElement(add, QName(NAMESPACE.NIC_KEYSET, 'tech')).text = item
+        if len(add):
+            keyset_update.append(add)
+
+        rem = Element(QName(NAMESPACE.NIC_KEYSET, 'rem'))
+        for item in self.rem:
+            if isinstance(item, Dnskey):
+                rem.append(item.get_payload())
+            else:
+                SubElement(rem, QName(NAMESPACE.NIC_KEYSET, 'tech')).text = item
+        if len(rem):
+            keyset_update.append(rem)
+
+        if self.auth_info is not None:
+            chg = SubElement(keyset_update, QName(NAMESPACE.NIC_KEYSET, 'chg'))
+            SubElement(chg, QName(NAMESPACE.NIC_KEYSET, 'authInfo')).text = self.auth_info
+
+        return update
