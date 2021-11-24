@@ -24,7 +24,8 @@ from typing import ClassVar
 
 from lxml.etree import Element
 
-from epplib.responses.base import Result, ResultData
+from epplib.models import ExtractModelMixin
+from epplib.responses.base import Result
 
 
 @dataclass
@@ -40,7 +41,7 @@ class CreditInfoResult(Result):
     """
 
     @dataclass
-    class ZoneCredit(ResultData):
+    class ZoneCredit(ExtractModelMixin):
         """Dataclass representing zone credit in the credit info result.
 
         Attributes:

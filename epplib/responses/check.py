@@ -23,7 +23,8 @@ from typing import ClassVar, Optional
 
 from lxml.etree import Element
 
-from epplib.responses.base import Result, ResultData
+from epplib.models import ExtractModelMixin
+from epplib.responses.base import Result
 
 
 @dataclass
@@ -39,7 +40,7 @@ class CheckDomainResult(Result):
     """
 
     @dataclass
-    class Domain(ResultData):
+    class Domain(ExtractModelMixin):
         """Dataclass representing domain availability in the check domain result.
 
         Attributes:
@@ -79,7 +80,7 @@ class CheckContactResult(Result):
     """
 
     @dataclass
-    class Contact(ResultData):
+    class Contact(ExtractModelMixin):
         """Dataclass representing contact availability in the check contact result.
 
         Attributes:
@@ -119,7 +120,7 @@ class CheckNssetResult(Result):
     """
 
     @dataclass
-    class Nsset(ResultData):
+    class Nsset(ExtractModelMixin):
         """Dataclass representing nsset availability in the check nsset result.
 
         Attributes:
@@ -159,7 +160,7 @@ class CheckKeysetResult(Result):
     """
 
     @dataclass
-    class Keyset(ResultData):
+    class Keyset(ExtractModelMixin):
         """Dataclass representing keyset availability in the check keyset result.
 
         Attributes:

@@ -25,7 +25,8 @@ from typing import ClassVar, Optional
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element
 
-from epplib.responses.base import Result, ResultData
+from epplib.models import ExtractModelMixin
+from epplib.responses.base import Result
 
 
 @dataclass
@@ -41,7 +42,7 @@ class CreateDomainResult(Result):
     """
 
     @dataclass
-    class Domain(ResultData):
+    class Domain(ExtractModelMixin):
         """Dataclass representing result of domain creation.
 
         Attributes:
@@ -81,7 +82,7 @@ class CreateNonDomainResult(Result):
     """
 
     @dataclass
-    class NonDomain(ResultData):
+    class NonDomain(ExtractModelMixin):
         """Dataclass representing result of creation of object other than domain.
 
         Attributes:

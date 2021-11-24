@@ -29,7 +29,7 @@ from lxml.etree import Element, QName, XMLSchema
 
 from epplib.constants import NAMESPACE
 from epplib.exceptions import ParsingError
-from epplib.models import Statement
+from epplib.models import ExtractModelMixin, Statement
 from epplib.responses.extensions import EnumInfoExtension, MailingAddressExtension, ResponseExtension
 from epplib.responses.poll_messages import POLL_MESSAGE_TYPES, PollMessage
 from epplib.utils import ParseXMLMixin, safe_parse
@@ -40,7 +40,7 @@ EXTENSIONS: Dict[QName, Type[ResponseExtension]] = {
 }
 LOGGER = logging.getLogger(__name__)
 
-T = TypeVar('T', bound='ResultData')
+T = TypeVar('T', bound='ExtractModelMixin')
 
 GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence[Statement], datetime, relativedelta, str]]
 
@@ -201,15 +201,6 @@ class Greeting(Response):
                 raise ParsingError('Could not parse "{}" as relative expiry.'.format(text)) from exception
         else:
             raise ValueError('Expected expiry specification. Found "{}" instead.'.format(tag))
-
-
-class ResultData(ParseXMLMixin, ABC):
-    """Base class for data obtained from epp/response/resData element."""
-
-    @classmethod
-    @abstractmethod
-    def extract(cls, element: Element) -> 'ResultData':
-        """Extract params for own init from the element."""
 
 
 @dataclass

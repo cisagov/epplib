@@ -24,7 +24,8 @@ from typing import ClassVar, Optional
 
 from lxml.etree import Element
 
-from epplib.responses.base import Result, ResultData
+from epplib.models import ExtractModelMixin
+from epplib.responses.base import Result
 
 
 @dataclass
@@ -40,7 +41,7 @@ class RenewDomainResult(Result):
     """
 
     @dataclass
-    class Domain(ResultData):
+    class Domain(ExtractModelMixin):
         """Dataclass representing domain availability in the renew domain result.
 
         Attributes:
