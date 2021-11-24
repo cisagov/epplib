@@ -21,9 +21,9 @@ from typing import Any, Dict
 from lxml.builder import ElementMaker
 from lxml.etree import QName, fromstring
 
-from epplib.commands import UpdateContact, UpdateDomain, UpdateKeyset
+from epplib.commands import UpdateContact, UpdateDomain, UpdateKeyset, UpdateNsset
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, PostalInfo
+from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, PostalInfo
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root, sub_dict
 
 
@@ -240,6 +240,69 @@ class TestUpdateKeyset(XMLTestCase):
                     keyset.update(
                         {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
                         keyset.id(self.params['id']),
+                    ),
+                ),
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+
+class TestUpdateNsset(XMLTestCase):
+    params: Dict[str, Any] = {
+        'id': 'NID-MYNSSET',
+        'add': [
+            Ns('ns.otherdomain.cz', ['217.31.207.130']),
+            'CID-TECH1',
+        ],
+        'rem': [
+            Ns(name='ns2.mydomain.cz'),
+            'CID-TECH2',
+        ],
+        'auth_info': 'trnpwd',
+        'reportlevel': 4,
+    }
+    required = ['id']
+
+    def test_valid(self):
+        self.assertRequestValid(UpdateNsset, self.params)
+        self.assertRequestValid(UpdateNsset, sub_dict(self.params, self.required))
+
+    def test_data_full(self):
+        root = fromstring(UpdateNsset(**self.params).xml())
+        nsset = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        expected = make_epp_root(
+            EM.command(
+                EM.update(
+                    nsset.update(
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
+                        nsset.id(self.params['id']),
+                        nsset.add(
+                            self.params['add'][0].get_payload(),
+                            nsset.tech(self.params['add'][1]),
+                        ),
+                        nsset.rem(
+                            nsset.name(self.params['rem'][0].name),
+                            nsset.tech(self.params['rem'][1]),
+                        ),
+                        nsset.chg(
+                            nsset.authInfo(self.params['auth_info']),
+                            nsset.reportlevel(str(self.params['reportlevel'])),
+                        ),
+                    ),
+                ),
+            )
+        )
+        self.assertXMLEqual(root, expected)
+
+    def test_data_required(self):
+        root = fromstring(UpdateNsset(**sub_dict(self.params, self.required)).xml())
+        nsset = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        expected = make_epp_root(
+            EM.command(
+                EM.update(
+                    nsset.update(
+                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
+                        nsset.id(self.params['id']),
                     ),
                 ),
             )
