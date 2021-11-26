@@ -56,6 +56,32 @@ class CreateContactMailingAddressExtension(CommandExtension):
 
 
 @dataclass
+class UpdateContactMailingAddressExtension(CommandExtension):
+    """Mailing address extension for Update contact command.
+
+    Attributes:
+        addr: If set it makes the content of extension/update/set/mailing/addr element
+              if None it causes extension/update/rem/mailing element to appear
+    """
+
+    addr: Optional[ExtraAddr]
+
+    def get_payload(self) -> Element:
+        """Create EPP Elements specific to CreateContactMailingAddressExtension."""
+        update = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, 'update'))
+        update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_EXTRA_ADDR)
+
+        if self.addr is None:
+            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, 'rem'))
+            SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
+        else:
+            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, 'set'))
+            mailing = SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
+            mailing.append(self.addr.get_payload())
+        return update
+
+
+@dataclass
 class EnumExtension(CommandExtension):
     """ENUM extension for Create Domain command.
 
