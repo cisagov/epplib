@@ -18,16 +18,19 @@
 
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
+from typing import Any, Dict
 from unittest import TestCase
 
 from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
-from epplib.models import TestResult
-from epplib.responses.poll_messages import (ContactTransfer, DelData, DnsOutageData, DomainDeletion, DomainTransfer,
-                                            ExpData, IdleContactDeletion, IdleKeysetDeletion, IdleNssetDeletion,
-                                            ImpendingExpData, ImpendingValExpData, KeysetTransfer, LowCredit,
-                                            NssetTransfer, RequestUsage, TechnicalCheckResult, ValExpData)
+from epplib.models import PostalInfo, TestResult
+from epplib.models.info import InfoContactResultData, InfoDomainResultData, InfoKeysetResultData, InfoNssetResultData
+from epplib.responses.poll_messages import (ContactTransfer, ContactUpdate, DelData, DnsOutageData, DomainDeletion,
+                                            DomainTransfer, DomainUpdate, ExpData, IdleContactDeletion,
+                                            IdleKeysetDeletion, IdleNssetDeletion, ImpendingExpData,
+                                            ImpendingValExpData, KeysetTransfer, KeysetUpdate, LowCredit, NssetTransfer,
+                                            NssetUpdate, RequestUsage, TechnicalCheckResult, ValExpData)
 
 
 class TestPollMessages(TestCase):
@@ -134,6 +137,192 @@ class TestPollMessages(TestCase):
                 result = cls.extract(data)
                 expected = cls(id='SOME-ID', tr_date=date(2017, 7, 25), cl_id='REG-FRED_A')
                 self.assertEqual(result, expected)
+
+    def test_domain_update(self):
+        params: Dict[str, Any] = {
+            'roid': 'D0009907597',
+            'cl_id': 'REG-MYREG',
+            'statuses': [],
+            'cr_id': None,
+            'cr_date': None,
+            'up_id': None,
+            'up_date': None,
+            'tr_date': None,
+            'name': 'mydomain.cz',
+            'registrant': None,
+            'admins': [],
+            'nsset': None,
+            'keyset': None,
+            'ex_date': None,
+        }
+
+        EM = ElementMaker(namespace=NAMESPACE.NIC_DOMAIN)
+        element = EM.updateData(
+            EM.opTRID('123abc'),
+            EM.oldData(
+                EM.infData(
+                    EM.roid('D0009907597'),
+                    EM.clID('REG-MYREG'),
+                    EM.name(params['name']),
+                    EM.authInfo('aaa'),
+                ),
+            ),
+            EM.newData(
+                EM.infData(
+                    EM.roid('D0009907597'),
+                    EM.clID('REG-MYREG'),
+                    EM.name(params['name']),
+                    EM.authInfo('bbb'),
+                ),
+            ),
+        )
+        result = DomainUpdate.extract(element)
+        expected = DomainUpdate(
+            op_trid='123abc',
+            old_data=InfoDomainResultData(auth_info='aaa', **params),
+            new_data=InfoDomainResultData(auth_info='bbb', **params),
+        )
+        self.assertEqual(result, expected)
+
+    def test_contact_update(self):
+        params: Dict[str, Any] = {
+            'roid': 'D0009907597',
+            'cl_id': 'REG-MYREG',
+            'statuses': [],
+            'cr_id': None,
+            'cr_date': None,
+            'up_id': None,
+            'up_date': None,
+            'tr_date': None,
+            'id': 'CID',
+            'postal_info': PostalInfo('John', None),
+            'voice': None,
+            'fax': None,
+            'email': None,
+            'disclose': None,
+            'vat': None,
+            'ident': None,
+            'notify_email': None,
+        }
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        element = EM.updateData(
+            EM.opTRID('123abc'),
+            EM.oldData(
+                EM.infData(
+                    EM.roid('D0009907597'),
+                    EM.clID('REG-MYREG'),
+                    EM.id(params['id']),
+                    EM.authInfo('aaa'),
+                    params['postal_info'].get_payload(),
+                ),
+            ),
+            EM.newData(
+                EM.infData(
+                    EM.roid('D0009907597'),
+                    EM.clID('REG-MYREG'),
+                    EM.id(params['id']),
+                    EM.authInfo('bbb'),
+                    params['postal_info'].get_payload(),
+                ),
+            ),
+        )
+        result = ContactUpdate.extract(element)
+
+        expected = ContactUpdate(
+            op_trid='123abc',
+            old_data=InfoContactResultData(auth_info='aaa', **params),
+            new_data=InfoContactResultData(auth_info='bbb', **params),
+        )
+        self.assertEqual(result, expected)
+
+    def test_keyset_update(self):
+        params: Dict[str, Any] = {
+            'roid': 'D0009907597',
+            'cl_id': 'REG-MYREG',
+            'statuses': [],
+            'cr_id': None,
+            'cr_date': None,
+            'up_id': None,
+            'up_date': None,
+            'tr_date': None,
+            'id': 'KID',
+            'dnskeys': [],
+            'techs': [],
+        }
+        EM = ElementMaker(namespace=NAMESPACE.NIC_KEYSET)
+        element = EM.updateData(
+            EM.opTRID('123abc'),
+            EM.oldData(
+                EM.infData(
+                    EM.roid('D0009907597'),
+                    EM.clID('REG-MYREG'),
+                    EM.id(params['id']),
+                    EM.authInfo('aaa'),
+                ),
+            ),
+            EM.newData(
+                EM.infData(
+                    EM.roid('D0009907597'),
+                    EM.clID('REG-MYREG'),
+                    EM.id(params['id']),
+                    EM.authInfo('bbb'),
+                ),
+            ),
+        )
+        result = KeysetUpdate.extract(element)
+
+        expected = KeysetUpdate(
+            op_trid='123abc',
+            old_data=InfoKeysetResultData(auth_info='aaa', **params),
+            new_data=InfoKeysetResultData(auth_info='bbb', **params),
+        )
+        self.assertEqual(result, expected)
+
+    def test_nsset_update(self):
+        params: Dict[str, Any] = {
+            'roid': 'D0009907597',
+            'cl_id': 'REG-MYREG',
+            'statuses': [],
+            'cr_id': None,
+            'cr_date': None,
+            'up_id': None,
+            'up_date': None,
+            'tr_date': None,
+            'id': 'NID',
+            'nss': [],
+            'techs': [],
+            'report_level': 4,
+        }
+        EM = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
+        element = EM.updateData(
+            EM.opTRID('123abc'),
+            EM.oldData(
+                EM.infData(
+                    EM.roid('D0009907597'),
+                    EM.clID('REG-MYREG'),
+                    EM.id(params['id']),
+                    EM.reportlevel(str(params['report_level'])),
+                    EM.authInfo('aaa'),
+                ),
+            ),
+            EM.newData(
+                EM.infData(
+                    EM.roid('D0009907597'),
+                    EM.clID('REG-MYREG'),
+                    EM.id(params['id']),
+                    EM.reportlevel(str(params['report_level'])),
+                    EM.authInfo('bbb'),
+                ),
+            ),
+        )
+        result = NssetUpdate.extract(element)
+
+        expected = NssetUpdate(
+            op_trid='123abc',
+            old_data=InfoNssetResultData(auth_info='aaa', **params),
+            new_data=InfoNssetResultData(auth_info='bbb', **params),
+        )
+        self.assertEqual(result, expected)
 
     def test_idle_object_deletion(self):
         classes = (

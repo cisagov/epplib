@@ -21,14 +21,18 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, ClassVar, Mapping, Sequence, Type, cast
+from typing import Any, ClassVar, Generic, Mapping, Sequence, Type, TypeVar, cast
 
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element, QName
 
 from epplib.constants import NAMESPACE
 from epplib.models import TestResult
+from epplib.models.info import (InfoContactResultData, InfoDomainResultData, InfoKeysetResultData, InfoNssetResultData,
+                                InfoResultData)
 from epplib.utils import ParseXMLMixin
+
+T = TypeVar('T', bound='InfoResultData')
 
 
 class PollMessage(ABC):
@@ -273,6 +277,66 @@ class NssetTransfer(ObjectTransfer):
 
 
 @dataclass
+class ObjectUpdate(ParseXMLMixin, PollMessage, Generic[T]):
+    """Object update poll message."""
+
+    _prefix: ClassVar[str]
+    _inf_data_cls: ClassVar[Type[T]]
+
+    op_trid: str
+    old_data: T
+    new_data: T
+
+    @classmethod
+    def extract(cls, element: Element) -> 'ObjectUpdate':
+        """Extract the Message from the element."""
+        op_trid = cls._find_text(element, f'./{cls._prefix}:opTRID')
+        old_data = cls._inf_data_cls.extract(cls._find(element, f'./{cls._prefix}:oldData/{cls._prefix}:infData'))
+        new_data = cls._inf_data_cls.extract(cls._find(element, f'./{cls._prefix}:newData/{cls._prefix}:infData'))
+        return cls(op_trid=op_trid, old_data=old_data, new_data=new_data)
+
+
+@dataclass
+class DomainUpdate(ObjectUpdate):
+    """Domain update poll message."""
+
+    _prefix = 'domain'
+    _inf_data_cls = InfoDomainResultData
+
+    tag = QName(NAMESPACE.NIC_DOMAIN, 'updateData')
+
+
+@dataclass
+class ContactUpdate(ObjectUpdate):
+    """Contact update poll message."""
+
+    _prefix = 'contact'
+    _inf_data_cls = InfoContactResultData
+
+    tag = QName(NAMESPACE.NIC_CONTACT, 'updateData')
+
+
+@dataclass
+class KeysetUpdate(ObjectUpdate):
+    """Keyset update poll message."""
+
+    _prefix = 'keyset'
+    _inf_data_cls = InfoKeysetResultData
+
+    tag = QName(NAMESPACE.NIC_KEYSET, 'updateData')
+
+
+@dataclass
+class NssetUpdate(ObjectUpdate):
+    """Nsset update poll message."""
+
+    _prefix = 'nsset'
+    _inf_data_cls = InfoNssetResultData
+
+    tag = QName(NAMESPACE.NIC_NSSET, 'updateData')
+
+
+@dataclass
 class IdleObjectDeletion(ParseXMLMixin, PollMessage):
     """Idle object deletion poll message."""
 
@@ -374,6 +438,10 @@ POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
     ContactTransfer.tag: ContactTransfer,
     KeysetTransfer.tag: KeysetTransfer,
     NssetTransfer.tag: NssetTransfer,
+    DomainUpdate.tag: DomainUpdate,
+    ContactUpdate.tag: ContactUpdate,
+    KeysetUpdate.tag: KeysetUpdate,
+    NssetUpdate.tag: NssetUpdate,
     IdleContactDeletion.tag: IdleContactDeletion,
     IdleKeysetDeletion.tag: IdleKeysetDeletion,
     IdleNssetDeletion.tag: IdleNssetDeletion,
