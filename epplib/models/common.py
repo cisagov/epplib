@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module providing base classes to EPP command responses."""
+"""Common models used accross epplib."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, unique
