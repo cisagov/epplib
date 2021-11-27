@@ -230,7 +230,7 @@ class TestInfoNssetResult(TestCase):
                     Ns('ns.otherdomain.cz', []),
                 ],
                 techs=['CID-TECH2', 'CID-TECH3'],
-                report_level=4,
+                reportlevel=4,
             )
         ]
 
@@ -254,7 +254,7 @@ class TestInfoNssetResult(TestCase):
                 id='NID-MYNSSET',
                 nss=[],
                 techs=['CID-TECH2'],
-                report_level=4,
+                reportlevel=4,
             )
         ]
 

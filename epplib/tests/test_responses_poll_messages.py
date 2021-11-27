@@ -291,7 +291,7 @@ class TestPollMessages(TestCase):
             'id': 'NID',
             'nss': [],
             'techs': [],
-            'report_level': 4,
+            'reportlevel': 4,
         }
         EM = ElementMaker(namespace=NAMESPACE.NIC_NSSET)
         element = EM.updateData(
@@ -301,7 +301,7 @@ class TestPollMessages(TestCase):
                     EM.roid('D0009907597'),
                     EM.clID('REG-MYREG'),
                     EM.id(params['id']),
-                    EM.reportlevel(str(params['report_level'])),
+                    EM.reportlevel(str(params['reportlevel'])),
                     EM.authInfo('aaa'),
                 ),
             ),
@@ -310,7 +310,7 @@ class TestPollMessages(TestCase):
                     EM.roid('D0009907597'),
                     EM.clID('REG-MYREG'),
                     EM.id(params['id']),
-                    EM.reportlevel(str(params['report_level'])),
+                    EM.reportlevel(str(params['reportlevel'])),
                     EM.authInfo('bbb'),
                 ),
             ),

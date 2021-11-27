@@ -151,7 +151,7 @@ class CreateNsset(Command):
         nss: Content of command/create/create/nss tag.
         tech: Content of command/create/create/tech tag.
         auth_info: Content of command/create/create/authInfo tag.
-        report_level: Content of command/create/create/reportlevel tag.
+        reportlevel: Content of command/create/create/reportlevel tag.
     """
 
     response_class = CreateNssetResult
@@ -160,7 +160,7 @@ class CreateNsset(Command):
     nss: Sequence[Ns]
     tech: Sequence[str]
     auth_info: Optional[str] = None
-    report_level: Optional[int] = None
+    reportlevel: Optional[int] = None
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command tag specific for CreateContact.
@@ -178,8 +178,8 @@ class CreateNsset(Command):
             SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'tech')).text = item
         if self.auth_info is not None:
             SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'authInfo')).text = self.auth_info
-        if self.report_level is not None:
-            SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'reportlevel')).text = str(self.report_level)
+        if self.reportlevel is not None:
+            SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'reportlevel')).text = str(self.reportlevel)
         return create
 
 
