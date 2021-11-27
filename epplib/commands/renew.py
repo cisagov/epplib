@@ -46,7 +46,7 @@ class RenewDomain(Command):
     period: Optional[Period] = None
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for RenewDomain.
+        """Create subelements of the command element specific for RenewDomain.
 
         Returns:
             Element with a list of domains to renew.

@@ -48,7 +48,15 @@ class PollMessage(ABC):
 
 @dataclass
 class LowCredit(ParseXMLMixin, PollMessage):
-    """Low credit poll message."""
+    """Low credit poll message.
+
+    Attributes:
+        zone: Content of the epp/response/msgQ/msg/lowCreditData/zone element.
+        limit_zone: Content of the epp/response/msgQ/msg/lowCreditData/limit/zone element.
+        limit: Content of the epp/response/msgQ/msg/lowCreditData/limit/credit element.
+        credit_zone: Content of the epp/response/msgQ/msg/lowCreditData/credit/zone element.
+        credit: Content of the epp/response/msgQ/msg/lowCreditData/credit/credit element.
+    """
 
     tag = QName(NAMESPACE.FRED, 'lowCreditData')
 
@@ -71,7 +79,15 @@ class LowCredit(ParseXMLMixin, PollMessage):
 
 @dataclass
 class RequestUsage(ParseXMLMixin, PollMessage):
-    """Request usage poll message."""
+    """Request usage poll message.
+
+    Attributes:
+        period_from: Content of the epp/response/msgQ/msg/requestFeeInfoData/periodFrom element.
+        period_to: Content of the epp/response/msgQ/msg/requestFeeInfoData/periodTo element.
+        total_free_count: Content of the epp/response/msgQ/msg/requestFeeInfoData/totalFreeCount element.
+        used_count: Content of the epp/response/msgQ/msg/requestFeeInfoData/usedCount element.
+        price: Content of the epp/response/msgQ/msg/requestFeeInfoData/price element.
+    """
 
     tag = QName(NAMESPACE.FRED, 'requestFeeInfoData')
 
@@ -100,7 +116,12 @@ class RequestUsage(ParseXMLMixin, PollMessage):
 
 @dataclass
 class DomainExpiration(ParseXMLMixin, PollMessage):
-    """Domain expiration poll message."""
+    """Domain expiration poll message.
+
+    Attributes:
+        name: Content of the epp/response/msgQ/msg/*/name element.
+        ex_date: Content of the epp/response/msgQ/msg/*/exDate element.
+    """
 
     name: str
     ex_date: date
@@ -143,7 +164,12 @@ class DelData(DomainExpiration):
 
 @dataclass
 class DomainValidation(ParseXMLMixin, PollMessage):
-    """Domain validation poll message."""
+    """Domain validation poll message.
+
+    Attributes:
+        name: Content of the epp/response/msgQ/msg/*/name element.
+        val_ex_date: Content of the epp/response/msgQ/msg/*/valExDate element.
+    """
 
     _NAMESPACES = {
         **ParseXMLMixin._NAMESPACES,
@@ -176,7 +202,12 @@ class ValExpData(DomainValidation):
 
 
 class ObjectTransfer(ParseXMLMixin, PollMessage):
-    """Object transfer poll message."""
+    """Object transfer poll message.
+
+    Attributes:
+        tr_date: Content of the epp/response/msgQ/msg/trnData/tr_date element.
+        cl_id: Content of the epp/response/msgQ/msg/trnData/clID element.
+    """
 
     _prefix: ClassVar[str]
 
@@ -194,7 +225,13 @@ class ObjectTransfer(ParseXMLMixin, PollMessage):
 
 @dataclass
 class DomainTransfer(ObjectTransfer):
-    """Domain transfer poll message."""
+    """Domain transfer poll message.
+
+    Attributes:
+        name: Content of the epp/response/msgQ/msg/trnData/name element.
+        tr_date: Content of the epp/response/msgQ/msg/trnData/tr_date element.
+        cl_id: Content of the epp/response/msgQ/msg/trnData/clID element.
+    """
 
     _prefix = 'domain'
     tag = QName(NAMESPACE.NIC_DOMAIN, 'trnData')
@@ -215,7 +252,13 @@ class DomainTransfer(ObjectTransfer):
 
 @dataclass
 class ContactTransfer(ObjectTransfer):
-    """Contact transfer poll message."""
+    """Contact transfer poll message.
+
+    Attributes:
+        id: Content of the epp/response/msgQ/msg/trnData/id element.
+        tr_date: Content of the epp/response/msgQ/msg/trnData/tr_date element.
+        cl_id: Content of the epp/response/msgQ/msg/trnData/clID element.
+    """
 
     _prefix = 'contact'
     tag = QName(NAMESPACE.NIC_CONTACT, 'trnData')
@@ -236,7 +279,13 @@ class ContactTransfer(ObjectTransfer):
 
 @dataclass
 class KeysetTransfer(ObjectTransfer):
-    """Keyset transfer poll message."""
+    """Keyset transfer poll message.
+
+    Attributes:
+        id: Content of the epp/response/msgQ/msg/trnData/id element.
+        tr_date: Content of the epp/response/msgQ/msg/trnData/tr_date element.
+        cl_id: Content of the epp/response/msgQ/msg/trnData/clID element.
+    """
 
     _prefix = 'keyset'
     tag = QName(NAMESPACE.NIC_KEYSET, 'trnData')
@@ -257,7 +306,13 @@ class KeysetTransfer(ObjectTransfer):
 
 @dataclass
 class NssetTransfer(ObjectTransfer):
-    """Nsset transfer poll message."""
+    """Nsset transfer poll message.
+
+    Attributes:
+        id: Content of the epp/response/msgQ/msg/trnData/id element.
+        tr_date: Content of the epp/response/msgQ/msg/trnData/tr_date element.
+        cl_id: Content of the epp/response/msgQ/msg/trnData/clID element.
+    """
 
     _prefix = 'nsset'
     tag = QName(NAMESPACE.NIC_NSSET, 'trnData')
@@ -278,7 +333,13 @@ class NssetTransfer(ObjectTransfer):
 
 @dataclass
 class ObjectUpdate(ParseXMLMixin, PollMessage, Generic[T]):
-    """Object update poll message."""
+    """Object update poll message.
+
+    Attributes:
+        op_trid: Content of the epp/response/msgQ/msg/updateData/opTRID element.
+        old_data: Content of the epp/response/msgQ/msg/updateData/oldData element.
+        new_data: Content of the epp/response/msgQ/msg/updateData/newData element.
+    """
 
     _prefix: ClassVar[str]
     _inf_data_cls: ClassVar[Type[T]]
@@ -338,7 +399,11 @@ class NssetUpdate(ObjectUpdate):
 
 @dataclass
 class IdleObjectDeletion(ParseXMLMixin, PollMessage):
-    """Idle object deletion poll message."""
+    """Idle object deletion poll message.
+
+    Attributes:
+        id: Content of the epp/response/msgQ/msg/idleDelData/id element.
+    """
 
     _prefix: ClassVar[str]
 
@@ -391,7 +456,12 @@ class IdleNssetDeletion(IdleObjectDeletion):
 
 @dataclass
 class DomainDeletion(ParseXMLMixin, PollMessage):
-    """Domain deletion poll message."""
+    """Domain deletion poll message.
+
+    Attributes:
+        name: Content of the epp/response/msgQ/msg/delData/name element.
+        ex_date: Content of the epp/response/msgQ/msg/delData/exDate element.
+    """
 
     tag = QName(NAMESPACE.NIC_DOMAIN, 'delData')
 
@@ -408,7 +478,13 @@ class DomainDeletion(ParseXMLMixin, PollMessage):
 
 @dataclass
 class TechnicalCheckResult(ParseXMLMixin, PollMessage):
-    """Technical check result poll message."""
+    """Technical check result poll message.
+
+    Attributes:
+        id: Content of the epp/response/msgQ/msg/testData/id element.
+        names: Content of the epp/response/msgQ/msg/testData/name elements.
+        results: Content of the epp/response/msgQ/msg/testData/results element.
+    """
 
     tag = QName(NAMESPACE.NIC_NSSET, 'testData')
 

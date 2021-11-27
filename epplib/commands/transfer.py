@@ -33,7 +33,7 @@ class Transfer(Command):
     auth_info: str
 
     def _get_transfer_payload(self, namespace: str, schema_location: str, tag: str, item: str) -> Element:
-        """Create subelements of the command tag specific for the Transfer command.
+        """Create subelements of the command element specific for the Transfer command.
 
         Returns:
             Element with a the item to transfer.
@@ -53,15 +53,15 @@ class TransferDomain(Transfer):
     """EPP Domain Transfer command.
 
     Attributes:
-        name: Content of command/transfer/transfer/name tag.
-        auth_info: Content of command/transfer/transfer/auth_info tag.
+        name: Content of command/transfer/transfer/name element.
+        auth_info: Content of command/transfer/transfer/auth_info element.
     """
 
     name: str
     auth_info: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for TransferDomain.
+        """Create subelements of the command element specific for TransferDomain.
 
         Returns:
             Element with a domain to transfer.
@@ -74,15 +74,15 @@ class TransferContact(Transfer):
     """EPP Contact Transfer command.
 
     Attributes:
-        id: Content of command/transfer/transfer/id tag.
-        auth_info: Content of command/transfer/transfer/auth_info tag.
+        id: Content of command/transfer/transfer/id element.
+        auth_info: Content of command/transfer/transfer/auth_info element.
     """
 
     id: str
     auth_info: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for TransferContact.
+        """Create subelements of the command element specific for TransferContact.
 
         Returns:
             Element with a contact to transfer.
@@ -95,15 +95,15 @@ class TransferKeyset(Transfer):
     """EPP Keyset Transfer command.
 
     Attributes:
-        id: Content of command/transfer/transfer/id tag.
-        auth_info: Content of command/transfer/transfer/auth_info tag.
+        id: Content of command/transfer/transfer/id element.
+        auth_info: Content of command/transfer/transfer/auth_info element.
     """
 
     id: str
     auth_info: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for TransferKeyset.
+        """Create subelements of the command element specific for TransferKeyset.
 
         Returns:
             Element with a keyset to transfer.
@@ -116,15 +116,15 @@ class TransferNsset(Transfer):
     """EPP Nsset Transfer command.
 
     Attributes:
-        id: Content of command/transfer/transfer/id tag.
-        auth_info: Content of command/transfer/transfer/auth_info tag.
+        id: Content of command/transfer/transfer/id element.
+        auth_info: Content of command/transfer/transfer/auth_info element.
     """
 
     id: str
     auth_info: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for TransferNsset.
+        """Create subelements of the command element specific for TransferNsset.
 
         Returns:
             Element with a nsset to transfer.

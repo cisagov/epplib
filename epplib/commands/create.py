@@ -33,13 +33,13 @@ class CreateDomain(Command):
     """EPP Create Domain command.
 
     Attributes:
-        name: Domain name to register
-        registrant: Registrant ID
-        period: Period of the registration validity
-        nsset: nsset ID
-        keyset: keyset ID
-        admin: administrator contact ID
-        auth_info: authInfo for domain transfers
+        name: Content of the epp/command/create/create/name element.
+        registrant: Content of the epp/command/create/create/registrant element.
+        period: Content of the epp/command/create/create/period element.
+        nsset: Content of the epp/command/create/create/nsset element.
+        keyset: Content of the epp/command/create/create/keyset element.
+        admin: Content of the epp/command/create/create/admin element.
+        auth_info: Content of the epp/command/create/create/authInfo element.
     """
 
     response_class = CreateDomainResult
@@ -54,7 +54,7 @@ class CreateDomain(Command):
     auth_info: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CreateDomain.
+        """Create subelements of the command element specific for CreateDomain.
 
         Returns:
             Element with a domain to create.
@@ -85,16 +85,16 @@ class CreateContact(Command):
     """EPP Create Contact command.
 
     Attributes:
-        id: Content of command/create/create/id tag.
-        postal_info: Content of command/create/create/postalInfo tag.
-        email: Content of command/create/create/email tag.
-        voice: Content of command/create/create/voice tag.
-        fax: Content of command/create/create/fax tag.
-        auth_info: Content of command/create/create/authInfo tag.
-        disclose: Content of command/create/create/disclose tag.
-        vat: Content of command/create/create/vat tag.
-        ident: Content of command/create/create/ident tag.
-        notify_email: Content of command/create/create/notifyEmail tag.
+        id: Content of command/create/create/id element.
+        postal_info: Content of command/create/create/postalInfo element.
+        email: Content of command/create/create/email element.
+        voice: Content of command/create/create/voice element.
+        fax: Content of command/create/create/fax element.
+        auth_info: Content of command/create/create/authInfo element.
+        disclose: Content of command/create/create/disclose element.
+        vat: Content of command/create/create/vat element.
+        ident: Content of command/create/create/ident element.
+        notify_email: Content of command/create/create/notifyEmail element.
     """
 
     response_class = CreateContactResult
@@ -111,7 +111,7 @@ class CreateContact(Command):
     notify_email: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CreateContact.
+        """Create subelements of the command element specific for CreateContact.
 
         Returns:
             Element with a contact to create.
@@ -147,11 +147,11 @@ class CreateNsset(Command):
     """EPP Create Nsset command.
 
     Attributes:
-        id: Content of command/create/create/id tag.
-        nss: Content of command/create/create/nss tag.
-        tech: Content of command/create/create/tech tag.
-        auth_info: Content of command/create/create/authInfo tag.
-        reportlevel: Content of command/create/create/reportlevel tag.
+        id: Content of command/create/create/id element.
+        nss: Content of command/create/create/nss element.
+        tech: Content of command/create/create/tech element.
+        auth_info: Content of command/create/create/authInfo element.
+        reportlevel: Content of command/create/create/reportlevel element.
     """
 
     response_class = CreateNssetResult
@@ -163,7 +163,7 @@ class CreateNsset(Command):
     reportlevel: Optional[int] = None
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CreateContact.
+        """Create subelements of the command element specific for CreateContact.
 
         Returns:
             Element with a contact to create.
@@ -188,10 +188,10 @@ class CreateKeyset(Command):
     """EPP Create Keyset command.
 
     Attributes:
-        id: Content of command/create/create/id tag.
-        dnskeys: Content of command/create/create/dnskey tags.
-        tech: Content of command/create/create/tech tag.
-        auth_info: Content of command/create/create/authInfo tag.
+        id: Content of command/create/create/id element.
+        dnskeys: Content of command/create/create/dnskey elements.
+        tech: Content of command/create/create/tech element.
+        auth_info: Content of command/create/create/authInfo element.
     """
 
     response_class = CreateKeysetResult
@@ -202,7 +202,7 @@ class CreateKeyset(Command):
     auth_info: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CreateContact.
+        """Create subelements of the command element specific for CreateContact.
 
         Returns:
             Element with a contact to create.

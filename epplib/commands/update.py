@@ -53,7 +53,7 @@ class UpdateDomain(Command):
     auth_info: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for UpdateDomain.
+        """Create subelements of the command element specific for UpdateDomain.
 
         Returns:
             Element with a domain to update.
@@ -94,16 +94,16 @@ class UpdateContact(Command):
     """EPP update contact command.
 
     Attributes:
-        id: Content of epp/command/update/update/id tag.
-        postal_info: Content of epp/command/update/update/chg/postalInfo tag.
-        voice: Content of epp/command/update/update/chg/voice tag.
-        fax: Content of epp/command/update/update/chg/fax tag.
-        email: Content of epp/command/update/update/chg/email tag.
-        auth_info: Content of epp/command/update/update/chg/authInfo tag.
-        disclose: Content of epp/command/update/update/chg/disclose tag.
-        vat: Content of epp/command/update/update/chg/vat tag.
-        ident: Content of epp/command/update/update/chg/ident tag.
-        notify_email: Content of epp/command/update/update/chg/notifyEmail tag.
+        id: Content of epp/command/update/update/id element.
+        postal_info: Content of epp/command/update/update/chg/postalInfo element.
+        voice: Content of epp/command/update/update/chg/voice element.
+        fax: Content of epp/command/update/update/chg/fax element.
+        email: Content of epp/command/update/update/chg/email element.
+        auth_info: Content of epp/command/update/update/chg/authInfo element.
+        disclose: Content of epp/command/update/update/chg/disclose element.
+        vat: Content of epp/command/update/update/chg/vat element.
+        ident: Content of epp/command/update/update/chg/ident element.
+        notify_email: Content of epp/command/update/update/chg/notifyEmail element.
     """
 
     response_class = Result
@@ -120,7 +120,7 @@ class UpdateContact(Command):
     notify_email: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for UpdateContact.
+        """Create subelements of the command element specific for UpdateContact.
 
         Returns:
             Element with a contact to update.
@@ -187,7 +187,7 @@ class UpdateKeyset(Command):
     auth_info: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for UpdateKeyset.
+        """Create subelements of the command element specific for UpdateKeyset.
 
         Returns:
             Element with a keyset to update.
@@ -245,7 +245,7 @@ class UpdateNsset(Command):
     reportlevel: Optional[int] = None
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for UpdateNsset.
+        """Create subelements of the command element specific for UpdateNsset.
 
         Returns:
             Element with a nsset to update.

@@ -27,11 +27,7 @@ from epplib.responses import InfoContactResult, InfoDomainResult, InfoKeysetResu
 
 
 class Info(Command):
-    """Base class for EPP Info commands.
-
-    Attributes:
-        name: Domain name to query
-    """
+    """Base class for EPP Info commands."""
 
     def _get_info_payload(self, namespace: str, schema_location: str, tag: str, item: str) -> Element:
         """Create subelements specific for info command.
@@ -54,14 +50,14 @@ class InfoDomain(Info):
     """EPP Info Domain command.
 
     Attributes:
-        name: Domain name to query
+        name: Content of the epp/command/info/info/name element.
     """
 
     response_class = InfoDomainResult
     name: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for InfoDomain.
+        """Create subelements of the command element specific for InfoDomain.
 
         Returns:
             Element with a domain to query.
@@ -74,14 +70,14 @@ class InfoContact(Info):
     """EPP Info Contact command.
 
     Attributes:
-        id: Contact id to query
+        id: Content of the epp/command/info/info/id element.
     """
 
     response_class = InfoContactResult
     id: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for InfoContact.
+        """Create subelements of the command element specific for InfoContact.
 
         Returns:
             Element with a contact to query.
@@ -94,14 +90,14 @@ class InfoKeyset(Info):
     """EPP Info Keyset command.
 
     Attributes:
-        id: Keyset id to query
+        id: Content of the epp/command/info/info/id element.
     """
 
     response_class = InfoKeysetResult
     id: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for InfoKeyset.
+        """Create subelements of the command element specific for InfoKeyset.
 
         Returns:
             Element with a keyset to query.
@@ -114,14 +110,14 @@ class InfoNsset(Info):
     """EPP Info Nsset command.
 
     Attributes:
-        id: Nsset id to query
+        id: Content of the epp/command/info/info/id element.
     """
 
     response_class = InfoNssetResult
     id: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for InfoNsset.
+        """Create subelements of the command element specific for InfoNsset.
 
         Returns:
             Element with a nsset to query.

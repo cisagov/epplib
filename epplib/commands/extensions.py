@@ -32,7 +32,7 @@ class Extension(Request):
     """Base class for EPP Extensions."""
 
     def _get_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the epp tag specific for the given Command.
+        """Create subelements of the epp element specific for the given Command.
 
         Returns:
             Element with the Extension payload.
@@ -44,7 +44,7 @@ class Extension(Request):
 
     @abstractmethod
     def _get_extension_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for the given Extension subclass.
+        """Create subelements of the extension element specific for the given Extension subclass.
 
         Returns:
             Element with the Extension specific payload.
@@ -55,7 +55,7 @@ class FredExtCommand(Extension):
     """Base class for Fred ext commands."""
 
     def _get_extension_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for Fred ext command.
+        """Create subelements of the extension element specific for Fred ext command.
 
         Returns:
             Element with the Fred ext command payload.
@@ -73,7 +73,7 @@ class CreditInfoRequest(FredExtCommand):
     response_class = CreditInfoResult
 
     def _get_extension_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for Credit info request.
+        """Create subelements of the extension element specific for Credit info request.
 
         Returns:
             Element with Credit info request payload.
@@ -90,7 +90,7 @@ class SendAuthInfo(FredExtCommand):
     response_class = Result
 
     def _get_auth_info_payload(self, namespace: str, location: str, tag: str, item: str, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for send auth info.
+        """Create subelements of the extension element specific for send auth info.
 
         Returns:
             Element with send auth info request payload.
@@ -104,7 +104,13 @@ class SendAuthInfo(FredExtCommand):
 
 @dataclass
 class TestNsset(FredExtCommand):
-    """Test Nsset EPP Extension command."""
+    """Test Nsset EPP Extension command.
+
+    Attributes:
+        id: Content of the epp/extension/extcommand/test/test/id element.
+        level: Content of the epp/extension/extcommand/test/test/level element.
+        names: Content of the epp/extension/extcommand/test/test/name elements.
+    """
 
     response_class = Result
 
@@ -113,7 +119,7 @@ class TestNsset(FredExtCommand):
     names: Sequence[str] = field(default_factory=list)
 
     def _get_extension_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for test nsset.
+        """Create subelements of the extension element specific for test nsset.
 
         Returns:
             Element with test nsset request payload.
@@ -135,13 +141,17 @@ class TestNsset(FredExtCommand):
 
 @dataclass
 class SendAuthInfoContact(SendAuthInfo):
-    """Fred send auth info for contact EPP Extension."""
+    """Fred send auth info for contact EPP Extension.
+
+    Attributes:
+        id: Content of the epp/extension/extcommand/sendAuthInfo/sendAuthInfo/id element.
+    """
 
     response_class = Result
     id: str
 
     def _get_extension_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for send auth info.
+        """Create subelements of the extension element specific for send auth info.
 
         Returns:
             Element with send auth info request payload.
@@ -160,13 +170,17 @@ class SendAuthInfoContact(SendAuthInfo):
 
 @dataclass
 class SendAuthInfoDomain(SendAuthInfo):
-    """Fred send auth info for domain EPP Extension."""
+    """Fred send auth info for domain EPP Extension.
+
+    Attributes:
+        name: Content of the epp/extension/extcommand/sendAuthInfo/sendAuthInfo/name element.
+    """
 
     response_class = Result
     name: str
 
     def _get_extension_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for send auth info.
+        """Create subelements of the extension element specific for send auth info.
 
         Returns:
             Element with send auth info request payload.
@@ -185,13 +199,17 @@ class SendAuthInfoDomain(SendAuthInfo):
 
 @dataclass
 class SendAuthInfoKeyset(SendAuthInfo):
-    """Fred send auth info for keyset EPP Extension."""
+    """Fred send auth info for keyset EPP Extension.
+
+    Attributes:
+        id: Content of the epp/extension/extcommand/sendAuthInfo/sendAuthInfo/id element.
+    """
 
     response_class = Result
     id: str
 
     def _get_extension_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for send auth info.
+        """Create subelements of the extension element specific for send auth info.
 
         Returns:
             Element with send auth info request payload.
@@ -210,13 +228,17 @@ class SendAuthInfoKeyset(SendAuthInfo):
 
 @dataclass
 class SendAuthInfoNsset(SendAuthInfo):
-    """Fred send auth info for nsset EPP Extension."""
+    """Fred send auth info for nsset EPP Extension.
+
+    Attributes:
+        id: Content of the epp/extension/extcommand/sendAuthInfo/sendAuthInfo/id element.
+    """
 
     response_class = Result
     id: str
 
     def _get_extension_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for send auth info.
+        """Create subelements of the extension element specific for send auth info.
 
         Returns:
             Element with send auth info request payload.
