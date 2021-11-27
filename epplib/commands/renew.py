@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module providing EPP commands."""
+"""Module providing EPP renew command."""
 from dataclasses import dataclass
 from datetime import date
 from typing import Optional
