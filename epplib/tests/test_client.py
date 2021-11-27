@@ -23,10 +23,11 @@ from unittest.mock import Mock, call, patch
 
 from freezegun import freeze_time
 from lxml.etree import Element, XMLSchema
+from testfixtures import LogCapture
 
 from epplib.client import Client
 from epplib.commands import Request
-from epplib.responses import Greeting, Response
+from epplib.responses import Greeting, Response, Result
 from epplib.transport import Transport
 
 GREETING = (Path(__file__).parent / 'data/responses/greeting_template.xml').read_bytes().replace(b'{expiry}', b'')
@@ -151,3 +152,53 @@ class TestClient(TestCase):
 
         self.assertEqual(type(response), DummyResponse)
         self.assertEqual(cast(DummyResponse, response).raw_response, DummyTransport.raw_response)
+
+    @patch('epplib.client.Client._genereate_tr_id')
+    @patch('epplib.client.Client._receive')
+    def test_cl_tr_id_check_warning(self, mock_receive, mock_generate_id):
+        transport = Mock(wraps=DummyTransport())
+        mock_generate_id.return_value = 'abc'
+        mock_receive.return_value = Result(code=1000, msg='Message', res_data=[], cl_tr_id='Wrong', sv_tr_id='00001')
+
+        client = Client(transport, None)
+        request = DummyRequest()
+        with client:
+            with LogCapture(propagate=False) as log_handler:
+                client.send(request)
+
+        mock_receive.assert_called()
+        log_handler.check(
+            ('epplib.client', 'WARNING', 'clTRID of the response (Wrong) differs from the clTRID of the request (abc).')
+        )
+
+    @patch('epplib.client.Client._genereate_tr_id')
+    @patch('epplib.client.Client._receive')
+    def test_cl_tr_id_check_correct(self, mock_receive, mock_generate_id):
+        transport = Mock(wraps=DummyTransport())
+        mock_generate_id.return_value = 'expected'
+        mock_receive.return_value = Result(code=1000, msg='Message', res_data=[], cl_tr_id='expected', sv_tr_id='00001')
+
+        client = Client(transport, None)
+        request = DummyRequest()
+        with client:
+            with LogCapture(propagate=False) as log_handler:
+                client.send(request)
+
+        mock_receive.assert_called()
+        log_handler.check()
+
+    @patch('epplib.client.Client._genereate_tr_id')
+    @patch('epplib.client.Client._receive')
+    def test_cl_tr_id_check_not_expected(self, mock_receive, mock_generate_id):
+        transport = Mock(wraps=DummyTransport())
+        mock_generate_id.return_value = 'expected'
+        mock_receive.return_value = DummyResponse(b'0', None)
+
+        client = Client(transport, None)
+        request = DummyRequest()
+        with client:
+            with LogCapture(propagate=False) as log_handler:
+                client.send(request)
+
+        mock_receive.assert_called()
+        log_handler.check()

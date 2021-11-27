@@ -17,6 +17,7 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 """A client to send EPP commands and receive responses."""
+import logging
 from datetime import datetime
 from os import PathLike
 from random import choices
@@ -30,6 +31,7 @@ from epplib.responses import Greeting, Response
 from epplib.transport import Transport
 
 PathType = Union[str, PathLike]
+LOGGER = logging.getLogger(__name__)
 
 
 class Client:
@@ -77,10 +79,15 @@ class Client:
         Args:
             request: The command to be sent to the server.
         """
-        message = request.xml(tr_id=self._genereate_tr_id(), schema=self.schema)
+        tr_id = self._genereate_tr_id()
+        message = request.xml(tr_id=tr_id, schema=self.schema)
         self.transport.send(message)
 
-        return self._receive(request.response_class)
+        response = self._receive(request.response_class)
+        if hasattr(response, 'cl_tr_id') and (response.cl_tr_id != tr_id):  # type: ignore[attr-defined]
+            log_message = 'clTRID of the response ({}) differs from the clTRID of the request ({}).'
+            LOGGER.warning(log_message.format(response.cl_tr_id, tr_id))  # type: ignore[attr-defined]
+        return response
 
     def _receive(self, response_class: Type[Response]) -> Response:
         """Receive a response from the server (possibly without sending a command).
