@@ -20,10 +20,9 @@ from datetime import date, datetime, timedelta, timezone
 from typing import cast
 from unittest import TestCase
 
-from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, PostalInfo
+from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, PostalInfo, Status
+from epplib.models.info import InfoContactResultData, InfoDomainResultData, InfoKeysetResultData, InfoNssetResultData
 from epplib.responses import InfoContactResult, InfoDomainResult, InfoKeysetResult, InfoNssetResult
-from epplib.responses.info import (InfoContactResultData, InfoDomainResultData, InfoKeysetResultData,
-                                   InfoNssetResultData, Status)
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
 
