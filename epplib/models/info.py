@@ -218,7 +218,7 @@ class InfoNssetResultData(InfoResultData):
         id: Content of the epp/response/resData/infData/id element.
         nss: Content of the epp/response/resData/infData/ns elements.
         techs: Content of the epp/response/resData/infData/tech elements.
-        report_level: Content of the epp/response/resData/infData/reportlevel elements.
+        reportlevel: Content of the epp/response/resData/infData/reportlevel elements.
     """
 
     _namespace = 'nsset'
@@ -226,7 +226,7 @@ class InfoNssetResultData(InfoResultData):
     id: str
     nss: Sequence[Ns]
     techs: Sequence[str]
-    report_level: int
+    reportlevel: int
 
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
@@ -234,6 +234,6 @@ class InfoNssetResultData(InfoResultData):
             'id': cls._find_text(element, f'./{cls._namespace}:id'),
             'nss': [Ns.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:ns')],
             'techs': cls._find_all_text(element, f'./{cls._namespace}:tech'),
-            'report_level': int(cls._find_text(element, f'./{cls._namespace}:reportlevel')),
+            'reportlevel': int(cls._find_text(element, f'./{cls._namespace}:reportlevel')),
         }
         return {**super()._get_params(element), **params}

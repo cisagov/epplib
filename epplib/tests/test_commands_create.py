@@ -199,7 +199,7 @@ class TestCreateNsset(XMLTestCase):
         ],
         'tech': ['CID-TECH1', 'CID-TECH2'],
         'auth_info': 'abc123',
-        'report_level': 1,
+        'reportlevel': 1,
     }
     required = ['id', 'nss', 'tech']
 
@@ -220,7 +220,7 @@ class TestCreateNsset(XMLTestCase):
                         nsset.tech(self.params['tech'][0]),
                         nsset.tech(self.params['tech'][1]),
                         nsset.authInfo(self.params['auth_info']),
-                        nsset.reportlevel(str(self.params['report_level'])),
+                        nsset.reportlevel(str(self.params['reportlevel'])),
                     ),
                 ),
             )
