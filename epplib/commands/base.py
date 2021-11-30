@@ -52,7 +52,7 @@ class Request(ABC):
 
     @abstractmethod
     def _get_payload(self, tr_id: Optional[str]) -> Element:
-        """Create subelements of the epp tag specific for the given Request subclass.
+        """Create subelements of the epp element specific for the given Request subclass.
 
         Returns:
             Element with the Request payload.
@@ -65,7 +65,7 @@ class Hello(Request):
     response_class = Greeting
 
     def _get_payload(self, tr_id: Optional[str]) -> Element:
-        """Create subelements of the epp tag specific for the given Request subclass.
+        """Create subelements of the epp element specific for the given Request subclass.
 
         Returns:
             Element with the payload of the Hello command.
@@ -88,7 +88,7 @@ class Command(Request):
         self.extensions.append(extension)
 
     def _get_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the epp tag specific for the given Command.
+        """Create subelements of the epp element specific for the given Command.
 
         Returns:
             Element with the Command payload.
@@ -108,14 +108,14 @@ class Command(Request):
 
     @abstractmethod
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for the given Command subclass.
+        """Create subelements of the command element specific for the given Command subclass.
 
         Returns:
             Element with the Command specific payload.
         """
 
     def _get_extension_payload(self) -> Sequence[Element]:
-        """Create extension subelements of the command tag specific to the given Command subclass.
+        """Create extension subelements of the command element specific to the given Command subclass.
 
         Returns:
             Elements with the extension payload.
@@ -128,13 +128,13 @@ class Login(Command):
     """EPP Login command.
 
     Attributes:
-        cl_id: EPP clID
-        password: EPP pw
-        new_pw: EPP newPW
-        version: EPP options/version
-        lang: EPP options/lang
-        obj_uris: EPP/svcs/objURI
-        ext_uris: EPP/svcs/svcExtension/extURI
+        cl_id: Content of the epp/command/login/clID element.
+        password: Content of the epp/command/login/pw element.
+        new_pw: Content of the epp/command/login/newPW element.
+        version: Content of the epp/command/login/options/version element.
+        lang: Content of the epp/command/login/options/lang element.
+        obj_uris: Content of the epp/command/login/svcs/objURI element.
+        ext_uris: Content of the epp/command/login/svcs/svcExtension/extURI element.
     """
 
     response_class = Result
@@ -148,7 +148,7 @@ class Login(Command):
     ext_uris: List[str] = field(default_factory=list)
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for Login.
+        """Create subelements of the command element specific for Login.
 
         Returns:
             Element with the Login specific payload.
@@ -183,7 +183,7 @@ class Logout(Command):
     response_class = Result
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for Logout.
+        """Create subelements of the command element specific for Logout.
 
         Returns:
             Element with the Logout specific payload.

@@ -41,7 +41,7 @@ class CreateContactMailingAddressExtension(CommandExtension):
     """Mailing address extension for Create contact command.
 
     Attributes:
-        addr: Content of extension/create/mailing/addr element
+        addr: Content of extension/create/mailing/addr element.
     """
 
     addr: ExtraAddr
@@ -60,8 +60,8 @@ class EnumExtension(CommandExtension):
     """ENUM extension for Create Domain command.
 
     Attributes:
-        val_ex_date: Content of extension/create/valExDate element
-        publish: Content of extension/create/publish element
+        val_ex_date: Content of extension/create/valExDate element.
+        publish: Content of extension/create/publish element.
     """
 
     tag: ClassVar[str]
@@ -86,8 +86,8 @@ class CreateDomainEnumExtension(EnumExtension):
     """ENUM extension for Create domain command.
 
     Attributes:
-        val_ex_date: Content of extension/create/valExDate element
-        publish: Content of extension/create/publish element
+        val_ex_date: Content of extension/create/valExDate element.
+        publish: Content of extension/create/publish element.
     """
 
     tag = 'create'
@@ -98,8 +98,8 @@ class RenewDomainEnumExtension(EnumExtension):
     """ENUM extension for Renew domain command.
 
     Attributes:
-        val_ex_date: Content of extension/create/valExDate element
-        publish: Content of extension/create/publish element
+        val_ex_date: Content of extension/create/valExDate element.
+        publish: Content of extension/create/publish element.
     """
 
     tag = 'renew'

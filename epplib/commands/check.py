@@ -31,7 +31,7 @@ class Check(Command):
     """Base class for EPP Check commands."""
 
     def _get_check_payload(self, namespace: str, schema_location: str, tag: str, items: Sequence[str]) -> Element:
-        """Create subelements of the command tag specific for the Check command.
+        """Create subelements of the command element specific for the Check command.
 
         Returns:
             Element with a list of items to check.
@@ -51,14 +51,14 @@ class CheckDomain(Check):
     """EPP Domain Check command.
 
     Attributes:
-        names: List of domains to check.
+        names: Content of the epp/command/check/check/name elements.
     """
 
     response_class = CheckDomainResult
     names: List[str]
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CheckDomain.
+        """Create subelements of the command element specific for CheckDomain.
 
         Returns:
             Element with a list of domains to check.
@@ -71,7 +71,7 @@ class CheckContact(Check):
     """EPP Check contact command.
 
     Attributes:
-        ids: List of contacts to check.
+        ids: Content of the epp/command/check/check/id elements.
     """
 
     response_class = CheckContactResult
@@ -79,7 +79,7 @@ class CheckContact(Check):
     ids: List[str]
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CheckContact.
+        """Create subelements of the command element specific for CheckContact.
 
         Returns:
             Element with a list of contacts to check.
@@ -92,7 +92,7 @@ class CheckNsset(Check):
     """EPP Check nsset command.
 
     Attributes:
-        ids: List of nssets to check.
+        ids: Content of the epp/command/check/check/id elements.
     """
 
     response_class = CheckNssetResult
@@ -100,7 +100,7 @@ class CheckNsset(Check):
     ids: List[str]
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CheckNsset.
+        """Create subelements of the command element specific for CheckNsset.
 
         Returns:
             Element with a list of nssets to check.
@@ -113,7 +113,7 @@ class CheckKeyset(Check):
     """EPP Check keyset command.
 
     Attributes:
-        ids: List of keysets to check.
+        ids: Content of the epp/command/check/check/id elements.
     """
 
     response_class = CheckKeysetResult
@@ -121,7 +121,7 @@ class CheckKeyset(Check):
     ids: List[str]
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for CheckKeyset.
+        """Create subelements of the command element specific for CheckKeyset.
 
         Returns:
             Element with a list of keysets to check.

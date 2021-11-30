@@ -35,7 +35,7 @@ class List(FredExtCommand):
     tag: ClassVar[str]
 
     def _get_extension_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for List command.
+        """Create subelements of the extension element specific for List command.
 
         Returns:
             Element with List request payload.
@@ -83,7 +83,7 @@ class ListBy(FredExtCommand):
         """Get id or name of the item."""
 
     def _get_extension_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for ListBy command.
+        """Create subelements of the extension element specific for ListBy command.
 
         Returns:
             Element with List request payload.
@@ -186,7 +186,7 @@ class GetResults(FredExtCommand):
     response_class = GetResultsResult
 
     def _get_extension_payload(self, tr_id: str = None) -> Element:
-        """Create subelements of the extension tag specific for Get results command.
+        """Create subelements of the extension element specific for Get results command.
 
         Returns:
             Element with get results payload.

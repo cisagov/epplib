@@ -32,7 +32,7 @@ class Delete(Command):
     response_class = Result
 
     def _get_delete_payload(self, namespace: str, schema_location: str, tag: str, item: str) -> Element:
-        """Create subelements of the command tag specific for the Delete command.
+        """Create subelements of the command element specific for the Delete command.
 
         Returns:
             Element with the item to delete.
@@ -51,13 +51,13 @@ class DeleteDomain(Delete):
     """EPP Domain Delete command.
 
     Attributes:
-        name: Name of the domain to delete.
+        name: Content of the epp/command/delete/delete/name element.
     """
 
     name: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for DeleteDomain.
+        """Create subelements of the command element specific for DeleteDomain.
 
         Returns:
             Element with a list of domains to delete.
@@ -70,13 +70,13 @@ class DeleteContact(Delete):
     """EPP Delete contact command.
 
     Attributes:
-        id: Contact to delete.
+        id: Content of the epp/command/delete/delete/id element.
     """
 
     id: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for DeleteContact.
+        """Create subelements of the command element specific for DeleteContact.
 
         Returns:
             Element with the contact to delete.
@@ -89,13 +89,13 @@ class DeleteKeyset(Delete):
     """EPP Delete keyset command.
 
     Attributes:
-        id: Keyset to delete.
+        id: Content of the epp/command/delete/delete/id element.
     """
 
     id: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for DeleteKeyset.
+        """Create subelements of the command element specific for DeleteKeyset.
 
         Returns:
             Element with the keyset to delete.
@@ -108,13 +108,13 @@ class DeleteNsset(Delete):
     """EPP Delete nsset command.
 
     Attributes:
-        id: Nsset to delete.
+        id: Content of the epp/command/delete/delete/id element.
     """
 
     id: str
 
     def _get_command_payload(self) -> Element:
-        """Create subelements of the command tag specific for DeleteNsset.
+        """Create subelements of the command element specific for DeleteNsset.
 
         Returns:
             Element with the nsset to delete.
