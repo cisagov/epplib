@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module providing base EPP commands."""
+"""Module providing EPP extension commands."""
 from abc import abstractmethod
 from dataclasses import dataclass, field
 from typing import Optional, Sequence

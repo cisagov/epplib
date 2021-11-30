@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module providing data models for commands and responses."""
+"""Module providing data models for EPP commands and responses."""
 
 from .common import (Addr, ContactAddr, Disclose, DiscloseField, Dnskey, ExtraAddr, ExtractModelMixin, Ident, IdentType,
                      Ns, PayloadModelMixin, Period, PostalInfo, Statement, Status, TestResult, Unit)

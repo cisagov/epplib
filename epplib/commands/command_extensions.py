@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module providing extensions to EPP commands."""
+"""Module providing EPP command extensions."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date

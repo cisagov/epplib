@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Module providing responses to EPP check commands."""
+"""Module providing responses to EPP info commands."""
 
 from dataclasses import dataclass
 from typing import ClassVar

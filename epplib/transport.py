@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
-"""A transport layer to support the Epp client."""
+"""A transport layer to support the EPP client."""
 import socket
 import ssl
 from abc import ABC, abstractmethod
