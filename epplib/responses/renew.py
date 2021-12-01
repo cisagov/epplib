@@ -19,12 +19,9 @@
 """Module providing responses to EPP renew commands."""
 
 from dataclasses import dataclass
-from datetime import date
-from typing import ClassVar, Optional
+from typing import ClassVar
 
-from lxml.etree import Element
-
-from epplib.models import ExtractModelMixin
+from epplib.models.renew import RenewDomainResultData
 from epplib.responses.base import Result
 
 
@@ -40,26 +37,5 @@ class RenewDomainResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    @dataclass
-    class Domain(ExtractModelMixin):
-        """Dataclass representing domain availability in the renew domain result.
-
-        Attributes:
-            name: Content of the epp/response/resData/renData/name element.
-            ex_date: Avail attribute of the epp/response/resData/renData//name element.
-        """
-
-        name: str
-        ex_date: Optional[date]
-
-        @classmethod
-        def extract(cls, element: Element) -> 'RenewDomainResult.Domain':
-            """Extract params for own init from the element."""
-            params = (
-                cls._find_text(element, './domain:name'),
-                cls._optional(cls._parse_date, cls._find_text(element, './domain:exDate')),
-            )
-            return cls(*params)
-
     _res_data_path: ClassVar[str] = './domain:renData'
-    _res_data_class: ClassVar = Domain
+    _res_data_class: ClassVar = RenewDomainResultData
