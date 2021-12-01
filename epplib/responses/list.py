@@ -21,9 +21,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from lxml.etree import Element
-
-from epplib.models import ExtractModelMixin
+from epplib.models.list import GetResultsResultData, ListResultData
 from epplib.responses.base import Result
 
 
@@ -39,24 +37,8 @@ class ListResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    @dataclass
-    class InfoResponse(ExtractModelMixin):
-        """Dataclass representing the list command result.
-
-        Attributes:
-            count: Content of the epp/response/resData/infoResponse/count element.
-        """
-
-        count: int
-
-        @classmethod
-        def extract(cls, element: Element) -> 'ListResult.InfoResponse':
-            """Extract params for own init from the element."""
-            count = int(cls._find_text(element, './fred:count'))
-            return cls(count=count)
-
     _res_data_path: ClassVar[str] = './fred:infoResponse'
-    _res_data_class: ClassVar = InfoResponse
+    _res_data_class: ClassVar = ListResultData
 
 
 @dataclass
@@ -71,14 +53,5 @@ class GetResultsResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    class Item(ExtractModelMixin, str):
-        """Class representing the list command result."""
-
-        @classmethod
-        def extract(cls, element: Element) -> 'GetResultsResult.Item':
-            """Extract params for own init from the element."""
-            value = cls._find_text(element, '.')
-            return cls(value)
-
     _res_data_path: ClassVar[str] = './fred:resultsList/fred:item'
-    _res_data_class: ClassVar = Item
+    _res_data_class: ClassVar = GetResultsResultData
