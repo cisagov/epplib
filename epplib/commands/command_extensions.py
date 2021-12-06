@@ -56,6 +56,32 @@ class CreateContactMailingAddressExtension(CommandExtension):
 
 
 @dataclass
+class UpdateContactMailingAddressExtension(CommandExtension):
+    """Mailing address extension for Update contact command.
+
+    Attributes:
+        addr: If set it makes the content of extension/update/set/mailing/addr element
+              if None it causes extension/update/rem/mailing element to appear
+    """
+
+    addr: Optional[ExtraAddr]
+
+    def get_payload(self) -> Element:
+        """Create EPP Elements specific to CreateContactMailingAddressExtension."""
+        update = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, 'update'))
+        update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_EXTRA_ADDR)
+
+        if self.addr is None:
+            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, 'rem'))
+            SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
+        else:
+            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, 'set'))
+            mailing = SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
+            mailing.append(self.addr.get_payload())
+        return update
+
+
+@dataclass
 class EnumExtension(CommandExtension):
     """ENUM extension for Create Domain command.
 
@@ -70,15 +96,15 @@ class EnumExtension(CommandExtension):
     publish: Optional[bool] = None
 
     def get_payload(self) -> Element:
-        """Create EPP Elements specific to CreateDomainEnumExtension."""
-        create = Element(QName(NAMESPACE.NIC_ENUMVAL, self.tag))
-        create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_ENUMVAL)
+        """Create EPP Elements specific to DomainEnumExtension."""
+        root = Element(QName(NAMESPACE.NIC_ENUMVAL, self.tag))
+        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_ENUMVAL)
         if self.val_ex_date is not None:
-            expiration_date = SubElement(create, QName(NAMESPACE.NIC_ENUMVAL, 'valExDate'))
+            expiration_date = SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, 'valExDate'))
             expiration_date.text = str(self.val_ex_date)
         if self.publish is not None:
-            SubElement(create, QName(NAMESPACE.NIC_ENUMVAL, 'publish')).text = str(self.publish).lower()
-        return create
+            SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, 'publish')).text = str(self.publish).lower()
+        return root
 
 
 @dataclass
@@ -103,3 +129,27 @@ class RenewDomainEnumExtension(EnumExtension):
     """
 
     tag = 'renew'
+
+
+@dataclass
+class UpdateDomainEnumExtension(EnumExtension):
+    """ENUM extension for Update Domain command.
+
+    Attributes:
+        val_ex_date: Content of extension/create/valExDate element
+        publish: Content of extension/create/publish element
+    """
+
+    tag = 'update'
+
+    def get_payload(self) -> Element:
+        """Create EPP Elements specific to UpdateDomainEnumExtension."""
+        root = Element(QName(NAMESPACE.NIC_ENUMVAL, self.tag))
+        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_ENUMVAL)
+        change = SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, 'chg'))
+        if self.val_ex_date is not None:
+            expiration_date = SubElement(change, QName(NAMESPACE.NIC_ENUMVAL, 'valExDate'))
+            expiration_date.text = str(self.val_ex_date)
+        if self.publish is not None:
+            SubElement(change, QName(NAMESPACE.NIC_ENUMVAL, 'publish')).text = str(self.publish).lower()
+        return root
