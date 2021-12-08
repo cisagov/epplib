@@ -21,7 +21,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date
-from typing import ClassVar, Mapping, Optional
+from typing import ClassVar, Dict, Mapping, Optional, Type
 
 from lxml.etree import Element, QName
 
@@ -116,3 +116,9 @@ class MailingAddressExtension(ParseXMLMixin, ResponseExtension):
         """
         addr = ExtraAddr.extract(cls._find(element, 'extra-addr:addr'))
         return cls(addr=addr)
+
+
+EXTENSIONS: Dict[QName, Type[ResponseExtension]] = {
+    EnumInfoExtension.tag: EnumInfoExtension,
+    MailingAddressExtension.tag: MailingAddressExtension,
+}
