@@ -20,6 +20,7 @@ from datetime import date
 from typing import cast
 from unittest import TestCase
 
+from epplib.models.renew import RenewDomainResultData
 from epplib.responses import RenewDomainResult
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
@@ -37,7 +38,7 @@ class TestRenewDomainResult(TestCase):
                 xml = template.replace(b'{ex_date}', tag)
                 result = RenewDomainResult.parse(xml, SCHEMA)
                 expected = [
-                    RenewDomainResult.Domain('mydomain.cz', ex_date),
+                    RenewDomainResultData('mydomain.cz', ex_date),
                 ]
                 self.assertEqual(result.code, 1000)
                 self.assertEqual(cast(RenewDomainResult, result).res_data, expected)

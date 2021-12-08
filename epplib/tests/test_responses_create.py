@@ -20,6 +20,8 @@ from datetime import date, datetime, timedelta, timezone
 from typing import cast
 from unittest import TestCase
 
+from epplib.models.create import (CreateContactResultData, CreateDomainResultData, CreateKeysetResultData,
+                                  CreateNssetResultData)
 from epplib.responses import CreateContactResult, CreateDomainResult, CreateKeysetResult, CreateNssetResult
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
@@ -31,7 +33,7 @@ class TestCreateDomainResult(TestCase):
         xml = xml_template.replace(b'{exDate}', b'<domain:exDate>2018-08-09</domain:exDate>')
         result = CreateDomainResult.parse(xml, SCHEMA)
         expected = [
-            CreateDomainResult.Domain(
+            CreateDomainResultData(
                 'thisdomain.cz',
                 datetime(2017, 8, 9, 12, 31, 49, tzinfo=timezone(timedelta(hours=2))),
                 date(2018, 8, 9)
@@ -45,7 +47,7 @@ class TestCreateDomainResult(TestCase):
         xml = xml_template.replace(b'{exDate}', b'')
         result = CreateDomainResult.parse(xml, SCHEMA)
         expected = [
-            CreateDomainResult.Domain(
+            CreateDomainResultData(
                 'thisdomain.cz',
                 datetime(2017, 8, 9, 12, 31, 49, tzinfo=timezone(timedelta(hours=2))),
                 None
@@ -66,7 +68,7 @@ class TestCreateContactResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_create_contact.xml').read_bytes()
         result = CreateContactResult.parse(xml, SCHEMA)
         expected = [
-            CreateContactResult.Contact(
+            CreateContactResultData(
                 'CID-MYCONTACT',
                 datetime(2017, 7, 28, 12, 11, 43, tzinfo=timezone(timedelta(hours=2))),
             )
@@ -86,7 +88,7 @@ class TestCreateNssetResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_create_nsset.xml').read_bytes()
         result = CreateNssetResult.parse(xml, SCHEMA)
         expected = [
-            CreateNssetResult.Nsset(
+            CreateNssetResultData(
                 'NID-ANSSET',
                 datetime(2017, 8, 9, 15, 53, 15, tzinfo=timezone(timedelta(hours=2))),
             )
@@ -106,7 +108,7 @@ class TestCreateKeysetResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_create_keyset.xml').read_bytes()
         result = CreateKeysetResult.parse(xml, SCHEMA)
         expected = [
-            CreateKeysetResult.Keyset(
+            CreateKeysetResultData(
                 'KID-AKEYSET',
                 datetime(2017, 8, 9, 15, 53, 15, tzinfo=timezone(timedelta(hours=2))),
             )

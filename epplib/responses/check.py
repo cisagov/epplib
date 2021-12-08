@@ -19,11 +19,10 @@
 """Module providing responses to EPP check commands."""
 
 from dataclasses import dataclass
-from typing import ClassVar, Optional
+from typing import ClassVar
 
-from lxml.etree import Element
-
-from epplib.models import ExtractModelMixin
+from epplib.models.check import (CheckContactResultData, CheckDomainResultData, CheckKeysetResultData,
+                                 CheckNssetResultData)
 from epplib.responses.base import Result
 
 
@@ -39,32 +38,8 @@ class CheckDomainResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    @dataclass
-    class Domain(ExtractModelMixin):
-        """Dataclass representing domain availability in the check domain result.
-
-        Attributes:
-            name: Content of the epp/response/resData/chkData/cd/name element.
-            avail: Avail attribute of the epp/response/resData/chkData/cd/name element.
-            reason: Content of the epp/response/resData/chkData/cd/reason element.
-        """
-
-        name: str
-        avail: Optional[bool]
-        reason: Optional[str] = None
-
-        @classmethod
-        def extract(cls, element: Element) -> 'CheckDomainResult.Domain':
-            """Extract params for own init from the element."""
-            params = (
-                cls._find_text(element, './domain:name'),
-                cls._str_to_bool(cls._find_attrib(element, './domain:name', 'avail')),
-                cls._find_text(element, './domain:reason'),
-            )
-            return cls(*params)
-
     _res_data_path: ClassVar[str] = './domain:chkData/domain:cd'
-    _res_data_class: ClassVar = Domain
+    _res_data_class: ClassVar = CheckDomainResultData
 
 
 @dataclass
@@ -79,32 +54,8 @@ class CheckContactResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    @dataclass
-    class Contact(ExtractModelMixin):
-        """Dataclass representing contact availability in the check contact result.
-
-        Attributes:
-            id: Content of the epp/response/resData/chkData/cd/id element.
-            avail: Avail attribute of the epp/response/resData/chkData/cd/id element.
-            reason: Content of the epp/response/resData/chkData/cd/reason element.
-        """
-
-        id: str
-        avail: Optional[bool]
-        reason: Optional[str] = None
-
-        @classmethod
-        def extract(cls, element: Element) -> 'CheckContactResult.Contact':
-            """Extract params for own init from the element."""
-            params = (
-                cls._find_text(element, './contact:id'),
-                cls._str_to_bool(cls._find_attrib(element, './contact:id', 'avail')),
-                cls._find_text(element, './contact:reason'),
-            )
-            return cls(*params)
-
     _res_data_path = './contact:chkData/contact:cd'
-    _res_data_class: ClassVar = Contact
+    _res_data_class: ClassVar = CheckContactResultData
 
 
 @dataclass
@@ -119,32 +70,8 @@ class CheckNssetResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    @dataclass
-    class Nsset(ExtractModelMixin):
-        """Dataclass representing nsset availability in the check nsset result.
-
-        Attributes:
-            id: Content of the epp/response/resData/chkData/cd/id element.
-            avail: Avail attribute of the epp/response/resData/chkData/cd/id element.
-            reason: Content of the epp/response/resData/chkData/cd/reason element.
-        """
-
-        id: str
-        avail: Optional[bool]
-        reason: Optional[str] = None
-
-        @classmethod
-        def extract(cls, element: Element) -> 'CheckNssetResult.Nsset':
-            """Extract params for own init from the element."""
-            params = (
-                cls._find_text(element, './nsset:id'),
-                cls._str_to_bool(cls._find_attrib(element, './nsset:id', 'avail')),
-                cls._find_text(element, './nsset:reason'),
-            )
-            return cls(*params)
-
     _res_data_path = './nsset:chkData/nsset:cd'
-    _res_data_class: ClassVar = Nsset
+    _res_data_class: ClassVar = CheckNssetResultData
 
 
 @dataclass
@@ -159,29 +86,5 @@ class CheckKeysetResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    @dataclass
-    class Keyset(ExtractModelMixin):
-        """Dataclass representing keyset availability in the check keyset result.
-
-        Attributes:
-            id: Content of the epp/response/resData/chkData/cd/id element.
-            avail: Avail attribute of the epp/response/resData/chkData/cd/id element.
-            reason: Content of the epp/response/resData/chkData/cd/reason element.
-        """
-
-        id: str
-        avail: Optional[bool]
-        reason: Optional[str] = None
-
-        @classmethod
-        def extract(cls, element: Element) -> 'CheckKeysetResult.Keyset':
-            """Extract params for own init from the element."""
-            params = (
-                cls._find_text(element, './keyset:id'),
-                cls._str_to_bool(cls._find_attrib(element, './keyset:id', 'avail')),
-                cls._find_text(element, './keyset:reason'),
-            )
-            return cls(*params)
-
     _res_data_path = './keyset:chkData/keyset:cd'
-    _res_data_class: ClassVar = Keyset
+    _res_data_class: ClassVar = CheckKeysetResultData

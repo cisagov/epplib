@@ -19,6 +19,8 @@
 from typing import cast
 from unittest import TestCase
 
+from epplib.models.check import (CheckContactResultData, CheckDomainResultData, CheckKeysetResultData,
+                                 CheckNssetResultData)
 from epplib.responses import CheckContactResult, CheckDomainResult, CheckKeysetResult, CheckNssetResult
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
@@ -29,8 +31,8 @@ class TestCheckDomainResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_check_domain.xml').read_bytes()
         result = CheckDomainResult.parse(xml, SCHEMA)
         expected = [
-            CheckDomainResult.Domain('mydomain.cz', True),
-            CheckDomainResult.Domain('somedomain.cz', False, 'already registered.'),
+            CheckDomainResultData('mydomain.cz', True),
+            CheckDomainResultData('somedomain.cz', False, 'already registered.'),
         ]
         self.assertEqual(result.code, 1000)
         self.assertEqual(cast(CheckDomainResult, result).res_data, expected)
@@ -47,8 +49,8 @@ class TestCheckContactResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_check_contact.xml').read_bytes()
         result = CheckContactResult.parse(xml, SCHEMA)
         expected = [
-            CheckContactResult.Contact('CID-MYOWN', False, 'already registered.'),
-            CheckContactResult.Contact('CID-NONE', True),
+            CheckContactResultData('CID-MYOWN', False, 'already registered.'),
+            CheckContactResultData('CID-NONE', True),
         ]
         self.assertEqual(result.code, 1000)
         self.assertEqual(cast(CheckContactResult, result).res_data, expected)
@@ -65,8 +67,8 @@ class TestResultCheckNsset(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_check_nsset.xml').read_bytes()
         result = CheckNssetResult.parse(xml, SCHEMA)
         expected = [
-            CheckNssetResult.Nsset('NID-MYNSSET', False, 'already registered.'),
-            CheckNssetResult.Nsset('NID-NONE', True),
+            CheckNssetResultData('NID-MYNSSET', False, 'already registered.'),
+            CheckNssetResultData('NID-NONE', True),
         ]
         self.assertEqual(result.code, 1000)
         self.assertEqual(cast(CheckNssetResult, result).res_data, expected)
@@ -83,8 +85,8 @@ class TestResultCheckKeyset(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_check_keyset.xml').read_bytes()
         result = CheckKeysetResult.parse(xml, SCHEMA)
         expected = [
-            CheckKeysetResult.Keyset('KID-MYKEYSET', False, 'already registered.'),
-            CheckKeysetResult.Keyset('KID-NONE', True),
+            CheckKeysetResultData('KID-MYKEYSET', False, 'already registered.'),
+            CheckKeysetResultData('KID-NONE', True),
         ]
         self.assertEqual(result.code, 1000)
         self.assertEqual(cast(CheckKeysetResult, result).res_data, expected)

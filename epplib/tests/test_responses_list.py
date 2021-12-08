@@ -19,6 +19,7 @@
 from typing import cast
 from unittest import TestCase
 
+from epplib.models.list import ListResultData
 from epplib.responses import GetResultsResult, ListResult
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
@@ -29,7 +30,7 @@ class TestListResult(TestCase):
         xml = (BASE_DATA_PATH / 'responses/result_list.xml').read_bytes()
         result = ListResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(ListResult, result).res_data, [ListResult.InfoResponse(4)])
+        self.assertEqual(cast(ListResult, result).res_data, [ListResultData(4)])
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()

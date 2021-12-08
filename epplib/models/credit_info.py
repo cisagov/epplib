@@ -19,23 +19,30 @@
 """Module providing responses to EPP credit info command."""
 
 from dataclasses import dataclass
-from typing import ClassVar
+from decimal import Decimal
 
-from epplib.models.credit_info import CreditInfoResultData
-from epplib.responses.base import Result
+from lxml.etree import Element
+
+from epplib.models import ExtractModelMixin
 
 
 @dataclass
-class CreditInfoResult(Result):
-    """Represents EPP Result which responds to the Check domain command.
+class CreditInfoResultData(ExtractModelMixin):
+    """Dataclass representing zone credit in the credit info result.
 
     Attributes:
-        code: Code attribute of the epp/response/result element.
-        msg: Content of the epp/response/result/msg element.
-        res_data: Content of the epp/response/result/resData element.
-        cl_tr_id: Content of the epp/response/trID/clTRID element.
-        sv_tr_id: Content of the epp/response/trID/svTRID element.
+        zone: Content of the epp/response/resData/resCreditInfo/zoneCredit/zone element.
+        credit: Content of the epp/response/resData/resCreditInfo/zoneCredit/credit element.
     """
 
-    _res_data_path: ClassVar[str] = './fred:resCreditInfo/fred:zoneCredit'
-    _res_data_class: ClassVar = CreditInfoResultData
+    zone: str
+    credit: Decimal
+
+    @classmethod
+    def extract(cls, element: Element) -> 'CreditInfoResultData':
+        """Extract params for own init from the element."""
+        params = (
+            cls._find_text(element, './fred:zone'),
+            Decimal(cls._find_text(element, './fred:credit')),
+        )
+        return cls(*params)
