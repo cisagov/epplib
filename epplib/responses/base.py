@@ -315,7 +315,7 @@ class Result(Response, Generic[T]):
             for child in element:
                 extension_class = EXTENSIONS.get(child.tag, None)
                 if extension_class is None:
-                    LOGGER.warn('Could not find class to extract extension {}.'.format(child.tag))
+                    LOGGER.warning('Could not find class to extract extension {}.'.format(child.tag))
                 else:
                     data.append(extension_class.extract(child))
         return data
