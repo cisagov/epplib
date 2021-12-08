@@ -246,7 +246,7 @@ class TestResultExtensions(TestCase):
         self.assertEqual(result, [])
 
         message = 'Could not find class to extract extension {urn:ietf:params:xml:ns:epp-1.0}unknown.'
-        log_handler.check(('epplib.responses.base', 'INFO', message))
+        log_handler.check(('epplib.responses.base', 'WARNING', message))
 
     def test_extract(self):
         EXT = ElementMaker(namespace='dummy')
