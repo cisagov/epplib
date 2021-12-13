@@ -17,7 +17,7 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 """Module providing EPP create commands."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, Sequence
 
 from lxml.etree import Element, QName, SubElement
@@ -38,7 +38,7 @@ class CreateDomain(Command):
         period: Content of the epp/command/create/create/period element.
         nsset: Content of the epp/command/create/create/nsset element.
         keyset: Content of the epp/command/create/create/keyset element.
-        admin: Content of the epp/command/create/create/admin element.
+        admins: Content of the epp/command/create/create/admin elements.
         auth_info: Content of the epp/command/create/create/authInfo element.
     """
 
@@ -50,7 +50,7 @@ class CreateDomain(Command):
     unit: Unit = Unit.YEAR
     nsset: Optional[str] = None
     keyset: Optional[str] = None
-    admin: Optional[str] = None
+    admins: Sequence[str] = field(default_factory=list)
     auth_info: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
@@ -72,8 +72,8 @@ class CreateDomain(Command):
         if self.keyset is not None:
             SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'keyset')).text = self.keyset
         SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'registrant')).text = self.registrant
-        if self.admin is not None:
-            SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = self.admin
+        for item in self.admins:
+            SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = item
         if self.auth_info is not None:
             SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.auth_info
 

@@ -34,7 +34,7 @@ class TestCreateDomain(XMLTestCase):
         'nsset': 'NID-MYNSSET',
         'keyset': 'KID-MYKEYSET',
         'registrant': 'CID-MYOWN',
-        'admin': 'CID-ADMIN1',
+        'admins': ['CID-ADMIN1', 'CID-ADMIN2'],
         'auth_info': '12345',
     }
     required = ['name', 'registrant']
@@ -56,7 +56,8 @@ class TestCreateDomain(XMLTestCase):
                         domain.nsset(self.params['nsset']),
                         domain.keyset(self.params['keyset']),
                         domain.registrant(self.params['registrant']),
-                        domain.admin(self.params['admin']),
+                        domain.admin(self.params['admins'][0]),
+                        domain.admin(self.params['admins'][1]),
                         domain.authInfo(self.params['auth_info']),
                     ),
                 ),
