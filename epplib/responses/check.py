@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -19,7 +19,6 @@
 """Module providing responses to EPP check commands."""
 
 from dataclasses import dataclass
-from typing import ClassVar
 
 from epplib.models.check import (CheckContactResultData, CheckDomainResultData, CheckKeysetResultData,
                                  CheckNssetResultData)
@@ -27,7 +26,7 @@ from epplib.responses.base import Result
 
 
 @dataclass
-class CheckDomainResult(Result):
+class CheckDomainResult(Result[CheckDomainResultData]):
     """Represents EPP Result which responds to the Check domain command.
 
     Attributes:
@@ -38,12 +37,12 @@ class CheckDomainResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path: ClassVar[str] = './domain:chkData/domain:cd'
-    _res_data_class: ClassVar = CheckDomainResultData
+    _res_data_path = './domain:chkData/domain:cd'
+    _res_data_class = CheckDomainResultData
 
 
 @dataclass
-class CheckContactResult(Result):
+class CheckContactResult(Result[CheckContactResultData]):
     """Represents EPP Result which responds to the Check contact command.
 
     Attributes:
@@ -55,11 +54,11 @@ class CheckContactResult(Result):
     """
 
     _res_data_path = './contact:chkData/contact:cd'
-    _res_data_class: ClassVar = CheckContactResultData
+    _res_data_class = CheckContactResultData
 
 
 @dataclass
-class CheckNssetResult(Result):
+class CheckNssetResult(Result[CheckNssetResultData]):
     """Represents EPP Result which responds to the Check nsset command.
 
     Attributes:
@@ -71,11 +70,11 @@ class CheckNssetResult(Result):
     """
 
     _res_data_path = './nsset:chkData/nsset:cd'
-    _res_data_class: ClassVar = CheckNssetResultData
+    _res_data_class = CheckNssetResultData
 
 
 @dataclass
-class CheckKeysetResult(Result):
+class CheckKeysetResult(Result[CheckKeysetResultData]):
     """Represents EPP Result which responds to the Check keyset command.
 
     Attributes:
@@ -87,4 +86,4 @@ class CheckKeysetResult(Result):
     """
 
     _res_data_path = './keyset:chkData/keyset:cd'
-    _res_data_class: ClassVar = CheckKeysetResultData
+    _res_data_class = CheckKeysetResultData

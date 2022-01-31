@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -32,7 +32,8 @@ from epplib.models.info import (InfoContactResultData, InfoDomainResultData, Inf
                                 InfoResultData)
 from epplib.utils import ParseXMLMixin
 
-T = TypeVar('T', bound='InfoResultData')
+T = TypeVar('T', bound=InfoResultData)
+ObjectUpdateT = TypeVar('ObjectUpdateT', bound='ObjectUpdate')
 
 
 class PollMessage(ABC):
@@ -342,23 +343,23 @@ class ObjectUpdate(ParseXMLMixin, PollMessage, Generic[T]):
     """
 
     _prefix: ClassVar[str]
-    _inf_data_cls: ClassVar[Type[T]]
+    _inf_data_cls: ClassVar[Type[InfoResultData]]
 
     op_trid: str
     old_data: T
     new_data: T
 
     @classmethod
-    def extract(cls, element: Element) -> 'ObjectUpdate':
+    def extract(cls: Type[ObjectUpdateT], element: Element) -> ObjectUpdateT:
         """Extract the Message from the element."""
         op_trid = cls._find_text(element, f'./{cls._prefix}:opTRID')
         old_data = cls._inf_data_cls.extract(cls._find(element, f'./{cls._prefix}:oldData/{cls._prefix}:infData'))
         new_data = cls._inf_data_cls.extract(cls._find(element, f'./{cls._prefix}:newData/{cls._prefix}:infData'))
-        return cls(op_trid=op_trid, old_data=old_data, new_data=new_data)
+        return cls(op_trid=op_trid, old_data=cast(T, old_data), new_data=cast(T, new_data))
 
 
 @dataclass
-class DomainUpdate(ObjectUpdate):
+class DomainUpdate(ObjectUpdate[InfoDomainResultData]):
     """Domain update poll message."""
 
     _prefix = 'domain'
@@ -368,7 +369,7 @@ class DomainUpdate(ObjectUpdate):
 
 
 @dataclass
-class ContactUpdate(ObjectUpdate):
+class ContactUpdate(ObjectUpdate[InfoContactResultData]):
     """Contact update poll message."""
 
     _prefix = 'contact'
@@ -378,7 +379,7 @@ class ContactUpdate(ObjectUpdate):
 
 
 @dataclass
-class KeysetUpdate(ObjectUpdate):
+class KeysetUpdate(ObjectUpdate[InfoKeysetResultData]):
     """Keyset update poll message."""
 
     _prefix = 'keyset'
@@ -388,7 +389,7 @@ class KeysetUpdate(ObjectUpdate):
 
 
 @dataclass
-class NssetUpdate(ObjectUpdate):
+class NssetUpdate(ObjectUpdate[InfoNssetResultData]):
     """Nsset update poll message."""
 
     _prefix = 'nsset'

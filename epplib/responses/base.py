@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -36,7 +36,9 @@ from epplib.utils import ParseXMLMixin, safe_parse
 
 LOGGER = logging.getLogger(__name__)
 
-T = TypeVar('T', bound='ExtractModelMixin')
+T = TypeVar('T', bound=ExtractModelMixin)
+ResponseT = TypeVar('ResponseT', bound='Response')
+ResultT = TypeVar('ResultT', bound='Result')
 
 GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence[Statement], datetime, relativedelta, str]]
 
@@ -55,7 +57,7 @@ class Response(ParseXMLMixin, ABC):
         pass  # pragma: no cover
 
     @classmethod
-    def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'Response':
+    def parse(cls: Type[ResponseT], raw_response: bytes, schema: XMLSchema = None) -> ResponseT:
         """Parse the xml response into the dataclass.
 
         Args:
@@ -253,7 +255,7 @@ class Result(Response, Generic[T]):
     """
 
     _payload_tag: ClassVar = QName(NAMESPACE.EPP, 'response')
-    _res_data_class: ClassVar[Optional[Type[T]]] = None
+    _res_data_class: ClassVar[Optional[Type[ExtractModelMixin]]] = None
     _res_data_path: ClassVar[Optional[str]] = None
 
     code: int
@@ -265,14 +267,14 @@ class Result(Response, Generic[T]):
     msg_q: Optional[MsgQ] = None
 
     @classmethod
-    def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'Result':
+    def parse(cls: Type[ResultT], raw_response: bytes, schema: XMLSchema = None) -> ResultT:
         """Parse the xml response into the Result dataclass.
 
         Args:
             raw_response: The raw XML response which will be parsed into the Response object.
             schema: A XML schema used to validate the parsed Response. No validation is done if schema is None.
         """
-        return cast('Result', super().parse(raw_response, schema))
+        return super().parse(raw_response, schema)
 
     @classmethod
     def _extract_payload(cls, element: Element) -> Mapping[str, Any]:
@@ -304,7 +306,7 @@ class Result(Response, Generic[T]):
         else:
             data = []
             for item in element.findall(cls._res_data_path, namespaces=cls._NAMESPACES):
-                item_data = cls._res_data_class.extract(item)
+                item_data = cast(T, cls._res_data_class.extract(item))
                 data.append(item_data)
         return data
 

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -23,11 +23,11 @@ from typing import ClassVar, Optional
 
 from epplib.models.create import (CreateContactResultData, CreateDomainResultData, CreateKeysetResultData,
                                   CreateNssetResultData)
-from epplib.responses.base import Result
+from epplib.responses.base import Result, T
 
 
 @dataclass
-class CreateDomainResult(Result):
+class CreateDomainResult(Result[CreateDomainResultData]):
     """Represents EPP Result which responds to the create domain command.
 
     Attributes:
@@ -38,12 +38,12 @@ class CreateDomainResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path: ClassVar[str] = './domain:creData'
-    _res_data_class: ClassVar = CreateDomainResultData
+    _res_data_path = './domain:creData'
+    _res_data_class = CreateDomainResultData
 
 
 @dataclass
-class CreateNonDomainResult(Result):
+class CreateNonDomainResult(Result[T]):
     """Represents EPP Result which responds to the create command for objects other than domain.
 
     Attributes:
@@ -55,12 +55,11 @@ class CreateNonDomainResult(Result):
     """
 
     _namespace_prefix: ClassVar[Optional[str]] = None
-    _res_data_path: ClassVar[str] = './{}:creData'.format(_namespace_prefix)
-    _res_data_class: ClassVar = None
+    _res_data_path = './{}:creData'.format(_namespace_prefix)
 
 
 @dataclass
-class CreateContactResult(CreateNonDomainResult):
+class CreateContactResult(CreateNonDomainResult[CreateContactResultData]):
     """Represents EPP Result which responds to the create contact command.
 
     Attributes:
@@ -72,12 +71,12 @@ class CreateContactResult(CreateNonDomainResult):
     """
 
     _namespace_prefix: ClassVar[Optional[str]] = 'contact'
-    _res_data_path: ClassVar[str] = './{}:creData'.format(_namespace_prefix)
-    _res_data_class: ClassVar = CreateContactResultData
+    _res_data_path = './{}:creData'.format(_namespace_prefix)
+    _res_data_class = CreateContactResultData
 
 
 @dataclass
-class CreateNssetResult(CreateNonDomainResult):
+class CreateNssetResult(CreateNonDomainResult[CreateNssetResultData]):
     """Represents EPP Result which responds to the create nsset command.
 
     Attributes:
@@ -89,12 +88,12 @@ class CreateNssetResult(CreateNonDomainResult):
     """
 
     _namespace_prefix: ClassVar[Optional[str]] = 'nsset'
-    _res_data_path: ClassVar[str] = './{}:creData'.format(_namespace_prefix)
-    _res_data_class: ClassVar = CreateNssetResultData
+    _res_data_path = './{}:creData'.format(_namespace_prefix)
+    _res_data_class = CreateNssetResultData
 
 
 @dataclass
-class CreateKeysetResult(CreateNonDomainResult):
+class CreateKeysetResult(CreateNonDomainResult[CreateKeysetResultData]):
     """Represents EPP Result which responds to the create keyset command.
 
     Attributes:
@@ -106,5 +105,5 @@ class CreateKeysetResult(CreateNonDomainResult):
     """
 
     _namespace_prefix: ClassVar[Optional[str]] = 'keyset'
-    _res_data_path: ClassVar[str] = './{}:creData'.format(_namespace_prefix)
-    _res_data_class: ClassVar = CreateKeysetResultData
+    _res_data_path = './{}:creData'.format(_namespace_prefix)
+    _res_data_class = CreateKeysetResultData
