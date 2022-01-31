@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -44,7 +44,7 @@ Params = TypedDict('Params', {
 
 def server(
     hostname: str, port: int, server_ready: synchronize.Event, pipe: Connection = None, message: bytes = None,
-):  # pragma: no cover
+) -> None:  # pragma: no cover
     with socket(AF_INET, SOCK_STREAM) as listening:
         listening.bind((hostname, port))
         listening.listen()

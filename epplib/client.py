@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -22,6 +22,7 @@ from datetime import datetime
 from os import PathLike
 from random import choices
 from string import ascii_lowercase, digits
+from types import TracebackType
 from typing import Optional, Type, Union
 
 from lxml.etree import XMLSchema
@@ -54,14 +55,15 @@ class Client:
         self.schema = schema
         self.greeting: Optional[Greeting] = None
 
-    def __enter__(self):
+    def __enter__(self) -> 'Client':
         self.connect()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> None:
         self.close()
 
-    def connect(self):
+    def connect(self) -> None:
         """Open the connection to the EPP server.
 
         After the connection is opened the server sends Greeting which is automaticaly received and stored.
@@ -69,7 +71,7 @@ class Client:
         self.transport.connect()
         self._receive(Greeting)
 
-    def close(self):
+    def close(self) -> None:
         """Close the connection gracefully."""
         self.transport.close()
 

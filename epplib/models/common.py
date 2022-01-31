@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -392,7 +392,7 @@ class Status(ExtractModelMixin):
     description: str
     lang: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.lang is None:
             self.lang = 'en'
 

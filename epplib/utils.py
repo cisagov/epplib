@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -20,7 +20,7 @@
 
 import re
 from datetime import date
-from typing import Callable, ClassVar, List, Mapping, Optional, Pattern, TypeVar
+from typing import Callable, ClassVar, List, Mapping, Optional, Pattern, TypeVar, cast
 
 from dateutil.parser import parse as parse_datetime
 from dateutil.relativedelta import relativedelta
@@ -78,11 +78,11 @@ class ParseXMLMixin:
 
     @classmethod
     def _find_all(cls, element: Element, path: str) -> List[Element]:
-        return element.findall(path, namespaces=cls._NAMESPACES)
+        return cast(List[Element], element.findall(path, namespaces=cls._NAMESPACES))
 
     @classmethod
     def _find_text(cls, element: Element, path: str) -> str:
-        return element.findtext(path, namespaces=cls._NAMESPACES)
+        return cast(str, element.findtext(path, namespaces=cls._NAMESPACES))
 
     @classmethod
     def _find_all_text(cls, element: Element, path: str) -> List[str]:
@@ -92,7 +92,7 @@ class ParseXMLMixin:
     def _find_attrib(cls, element: Element, path: str, attrib: str) -> Optional[str]:
         found = element.find(path, namespaces=cls._NAMESPACES)
         if found is not None:
-            return found.attrib.get(attrib)
+            return cast(Optional[str], found.attrib.get(attrib))
         else:
             return None
 

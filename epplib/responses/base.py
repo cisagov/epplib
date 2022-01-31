@@ -53,7 +53,7 @@ class Response(ParseXMLMixin, ABC):
     _payload_tag: ClassVar[QName]
 
     # Concrete Responses are supposed to be dataclasses. ABC can not be a dataclass. We need to specify init for typing.
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         pass  # pragma: no cover
 
     @classmethod
@@ -137,7 +137,7 @@ class Greeting(Response):
             raw_response: The raw XML response which will be parsed into the Response object.
             schema: A XML schema used to validate the parsed Response. No validation is done if schema is None.
         """
-        return cast('Greeting', super().parse(raw_response, schema))
+        return super().parse(raw_response, schema)
 
     @classmethod
     def _extract_payload(cls, element: Element) -> GreetingPayload:

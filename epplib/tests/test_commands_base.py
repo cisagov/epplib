@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -35,7 +35,7 @@ EXTENSION_NAMESPACE = 'extension:name:space'
 
 class DummyResponse(Response):
     @classmethod
-    def _parse_payload(csl, element) -> Dict[str, Any]:
+    def _parse_payload(cls, element: Element) -> Dict[str, Any]:
         return dict()  # pragma: no cover
 
 
