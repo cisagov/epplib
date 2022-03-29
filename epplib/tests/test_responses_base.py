@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -18,7 +18,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import ClassVar, Mapping, cast
+from typing import Any, ClassVar, Mapping, cast
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -207,11 +207,15 @@ class TestGreeting(TestCase):
             Greeting._extract_expiry(expiry)
 
 
-class TestResult(TestCase):
+# Tests here are independent on the Result's resData.
+TestResult = Result[Any]
+
+
+class ResultTest(TestCase):
 
     def test_parse(self):
         xml = (BASE_DATA_PATH / 'responses/result.xml').read_bytes()
-        result = Result.parse(xml, SCHEMA)
+        result = TestResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 1000)
         self.assertEqual(result.msg, 'Command completed successfully')
         self.assertEqual(result.res_data, None)
@@ -235,13 +239,13 @@ class TestResultExtensions(TestCase):
 
     def test_extract_none(self):
         extension = None
-        result = Result._extract_extensions(extension)
+        result = TestResult._extract_extensions(extension)
         self.assertEqual(result, [])
 
     def test_extract_unknown(self):
         extension = EM.extension(EM.unknown())
         with LogCapture('epplib.responses.base', propagate=False) as log_handler:
-            result = Result._extract_extensions(extension)
+            result = TestResult._extract_extensions(extension)
 
         self.assertEqual(result, [])
 
@@ -254,12 +258,12 @@ class TestResultExtensions(TestCase):
             EXT.dummyExtension('Gazpacho!'),
             EXT.otherExtension(value='1'),
         )
-        result = Result._extract_extensions(extension)
+        result = TestResult._extract_extensions(extension)
         self.assertEqual(result, [DummyExtension('Gazpacho!'), OtherExtension(1)])
 
     def test_parse(self):
         xml = (BASE_DATA_PATH / 'responses/result_dummy_extension.xml').read_bytes()
-        result = Result.parse(xml)
+        result = TestResult.parse(xml)
         self.assertEqual(result.extensions, [DummyExtension('Gazpacho!')])
 
 
@@ -346,7 +350,7 @@ class TestMsgQ(TestCase):
 
     def test_parse(self):
         xml = (BASE_DATA_PATH / 'responses/result_dummy_poll_message.xml').read_bytes()
-        result = Result.parse(xml)
+        result = TestResult.parse(xml)
         expected = MsgQ(
             count=7,
             id='19596173',

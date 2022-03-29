@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -19,14 +19,13 @@
 """Module providing responses to EPP info commands."""
 
 from dataclasses import dataclass
-from typing import ClassVar
 
 from epplib.models.info import InfoContactResultData, InfoDomainResultData, InfoKeysetResultData, InfoNssetResultData
 from epplib.responses.base import Result
 
 
 @dataclass
-class InfoDomainResult(Result):
+class InfoDomainResult(Result[InfoDomainResultData]):
     """Represents EPP Result which responds to the Info domain command.
 
     Attributes:
@@ -37,12 +36,12 @@ class InfoDomainResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path: ClassVar[str] = './domain:infData'
-    _res_data_class: ClassVar = InfoDomainResultData
+    _res_data_path = './domain:infData'
+    _res_data_class = InfoDomainResultData
 
 
 @dataclass
-class InfoContactResult(Result):
+class InfoContactResult(Result[InfoContactResultData]):
     """Represents EPP Result which responds to the Info contact command.
 
     Attributes:
@@ -53,12 +52,12 @@ class InfoContactResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path: ClassVar[str] = './contact:infData'
-    _res_data_class: ClassVar = InfoContactResultData
+    _res_data_path = './contact:infData'
+    _res_data_class = InfoContactResultData
 
 
 @dataclass
-class InfoKeysetResult(Result):
+class InfoKeysetResult(Result[InfoKeysetResultData]):
     """Represents EPP Result which responds to the Info keyset command.
 
     Attributes:
@@ -69,12 +68,12 @@ class InfoKeysetResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path: ClassVar[str] = './keyset:infData'
-    _res_data_class: ClassVar = InfoKeysetResultData
+    _res_data_path = './keyset:infData'
+    _res_data_class = InfoKeysetResultData
 
 
 @dataclass
-class InfoNssetResult(Result):
+class InfoNssetResult(Result[InfoNssetResultData]):
     """Represents EPP Result which responds to the Info nsset command.
 
     Attributes:
@@ -85,5 +84,5 @@ class InfoNssetResult(Result):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path: ClassVar[str] = './nsset:infData'
-    _res_data_class: ClassVar = InfoNssetResultData
+    _res_data_path = './nsset:infData'
+    _res_data_class = InfoNssetResultData
