@@ -11,9 +11,6 @@ cache:
 
 ########################################################################################################################
 # Basic declarations
-.py36: &py36
-    image: "$DOCKER_REGISTRY/python/tox:3.6"
-
 .py37: &py37
     image: "$DOCKER_REGISTRY/python/tox:3.7"
 
@@ -22,6 +19,9 @@ cache:
 
 .py39: &py39
     image: "$DOCKER_REGISTRY/python/tox:3.9"
+
+.py310: &py310
+    image: "$DOCKER_REGISTRY/python/tox:3.10"
 
 .test: &test
     before_script:
@@ -42,10 +42,6 @@ licensing:
     script:
         - license-check -v
 
-test:py36:
-    <<: *test
-    <<: *py36
-
 test:py37:
     <<: *test
     <<: *py37
@@ -57,3 +53,7 @@ test:py38:
 test:py39:
     <<: *test
     <<: *py39
+
+test:py310:
+    <<: *test
+    <<: *py310
