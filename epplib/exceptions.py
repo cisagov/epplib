@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -28,11 +28,11 @@ class EpplibException(Exception):
 class ParsingError(EpplibException):
     """Error to indicate a failure while parsing of the EPP response."""
 
-    def __init__(self, *args, raw_response: Any = None):
+    def __init__(self, *args: Any, raw_response: Any = None):
         self.raw_response = raw_response
         super().__init__(*args)
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.raw_response is None:
             appendix = ''
         else:

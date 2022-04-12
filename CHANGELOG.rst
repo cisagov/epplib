@@ -6,5 +6,6 @@ ChangeLog
    :local:
 
 0.0.1 (unpublished)
-------------------
+-------------------
+
 Initial version

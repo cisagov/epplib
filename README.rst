@@ -3,7 +3,7 @@ Fred-epplib
 ===========
 
 Fred EPP library provides the means to communicate with an EPP server. It consists from four main modules: `client`,
-`commands`, `responses`, and `models`. 
+`commands`, `responses`, and `models`.
 
 The `Client` class in the `client` module is used to exchange the messages with the server. Module `commands` contains
 the dataclasses representing the commands which may be sent to the server. `responses` module contains the dataclasses

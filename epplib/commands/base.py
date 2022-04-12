@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -19,7 +19,7 @@
 """Module providing base EPP commands."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import ClassVar, List, Optional, Sequence, Type
+from typing import ClassVar, List, Optional, Sequence, Type, cast
 
 from lxml.etree import Element, ElementTree, QName, SubElement, XMLSchema, tostring
 
@@ -48,7 +48,7 @@ class Request(ABC):
         if schema is not None:
             schema.assertValid(document)
 
-        return tostring(document, encoding='utf-8', xml_declaration=True)
+        return cast(bytes, tostring(document, encoding='utf-8', xml_declaration=True))
 
     @abstractmethod
     def _get_payload(self, tr_id: Optional[str]) -> Element:
@@ -76,7 +76,7 @@ class Hello(Request):
 class Command(Request):
     """Base class for EPP Commands."""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.extensions: List[CommandExtension] = []
 
     def add_extension(self, extension: CommandExtension) -> None:

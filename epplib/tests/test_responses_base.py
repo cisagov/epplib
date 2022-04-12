@@ -18,7 +18,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Any, ClassVar, Mapping, cast
+from typing import Any, ClassVar, Mapping
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -43,7 +43,7 @@ class DummyResponse(Response):
 
     @classmethod
     def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'DummyResponse':
-        return cast(DummyResponse, super().parse(raw_response, schema))
+        return super().parse(raw_response, schema)
 
     @classmethod
     def _extract_payload(cls, element: Element) -> Mapping[str, str]:

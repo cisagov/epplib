@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -107,7 +107,7 @@ class TestClient(TestCase):
         client.connect()
         self.assertEqual(transport.mock_calls, [call.connect(), call.receive()])
         self.assertIsInstance(client.greeting, Greeting)
-        self.assertEqual(client.greeting.sv_id, 'EPP server (DSDng)')  # type: ignore
+        self.assertEqual(client.greeting.sv_id, 'EPP server (DSDng)')
 
     def test_close(self):
         transport = Mock(spec=Transport)

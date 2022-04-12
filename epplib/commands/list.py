@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -79,7 +79,7 @@ class ListBy(FredExtCommand):
     item_tag: ClassVar[str]
 
     @abstractmethod
-    def _get_item_id(self):
+    def _get_item_id(self) -> str:
         """Get id or name of the item."""
 
     def _get_extension_payload(self, tr_id: str = None) -> Element:
@@ -105,7 +105,7 @@ class ListDomainsByContact(ListBy):
 
     id: str
 
-    def _get_item_id(self):
+    def _get_item_id(self) -> str:
         """Get id or name of the item."""
         return self.id
 
@@ -119,7 +119,7 @@ class ListDomainsByNsset(ListBy):
 
     id: str
 
-    def _get_item_id(self):
+    def _get_item_id(self) -> str:
         """Get id or name of the item."""
         return self.id
 
@@ -133,7 +133,7 @@ class ListDomainsByKeyset(ListBy):
 
     id: str
 
-    def _get_item_id(self):
+    def _get_item_id(self) -> str:
         """Get id or name of the item."""
         return self.id
 
@@ -147,7 +147,7 @@ class ListNssetsByContact(ListBy):
 
     id: str
 
-    def _get_item_id(self):
+    def _get_item_id(self) -> str:
         """Get id or name of the item."""
         return self.id
 
@@ -161,7 +161,7 @@ class ListKeysetsByContact(ListBy):
 
     id: str
 
-    def _get_item_id(self):
+    def _get_item_id(self) -> str:
         """Get id or name of the item."""
         return self.id
 
@@ -175,7 +175,7 @@ class ListNssetsByNs(ListBy):
 
     name: str
 
-    def _get_item_id(self):
+    def _get_item_id(self) -> str:
         """Get id or name of the item."""
         return self.name
 

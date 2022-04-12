@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -39,7 +39,7 @@ SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
 EM = ElementMaker(namespace=NAMESPACE.EPP)
 
 
-def make_epp_root(*elements, **kwargs) -> Element:
+def make_epp_root(*elements: Element, **kwargs: Any) -> Element:
     """Create root element of EPP so we do not have to repeat boilerplate code."""
     attrib = {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.XSI}
     attrib.update(kwargs)
@@ -55,9 +55,9 @@ class XMLTestCase(TestCase):
     """TestCase with aditional methods for testing xml trees."""
 
     def assertRequestValid(self, request_class: Type[Request], params: Mapping[str, Any],
-                           extension: CommandExtension = None):
+                           extension: CommandExtension = None) -> None:
         """Assert that the generated XML complies with the schema."""
-        request = request_class(**params)  # type: ignore
+        request = request_class(**params)
         if extension is not None:
             cast(Command, request).add_extension(extension)
         xml = request.xml(tr_id='tr_id_123')
@@ -91,6 +91,6 @@ class XMLTestCase(TestCase):
 
     def _prepare_for_diff(self, doc: Element) -> List[str]:  # pragma: no cover - Only called when the test fails.
         """Convert Element to unified_diff input format."""
-        string = tostring(doc, pretty_print=True, encoding='unicode')
+        string = cast(str, tostring(doc, pretty_print=True, encoding='unicode'))
         lines = string.splitlines(keepends=True)
         return lines

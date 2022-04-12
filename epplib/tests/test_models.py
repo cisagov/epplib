@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -35,7 +35,7 @@ class TestAddr(XMLTestCase):
             'sp': 'Province'
         }
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
-        addr = ContactAddr(**params)  # type: ignore
+        addr = ContactAddr(**params)
         expected = EM.addr(
             EM.street(params['street'][0]),
             EM.street(params['street'][1]),
@@ -54,7 +54,7 @@ class TestAddr(XMLTestCase):
             'cc': 'CZ',
         }
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
-        addr = ContactAddr(**params)  # type: ignore
+        addr = ContactAddr(**params)
         expected = EM.addr(
             EM.street(params['street'][0]),
             EM.city(params['city']),
