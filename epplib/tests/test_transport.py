@@ -15,7 +15,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
-
+#
+import ssl
 import sys
 from multiprocessing import Event, Pipe, Process, synchronize
 from multiprocessing.connection import Connection
@@ -25,6 +26,8 @@ from typing import Optional
 from unittest import TestCase
 from unittest.mock import patch
 
+from testfixtures import LogCapture
+
 from epplib.transport import SocketTransport, TransportError
 
 if sys.version_info >= (3, 8):  # pragma: no cover
@@ -33,13 +36,15 @@ else:  # pragma: no cover
     from typing_extensions import TypedDict
 
 BASE_DATA_PATH = Path(__file__).parent / 'data'
-Params = TypedDict('Params', {
-    'hostname': str,
-    'port': int,
-    'cert_file': Optional[Path],
-    'key_file': Optional[Path],
-    'password': Optional[str],
-})
+OptionalParams = TypedDict(
+    'OptionalParams',
+    {'cert_file': Optional[Path], 'key_file': Optional[Path], 'password': Optional[str], 'verify': bool},
+    total=False)
+
+
+class Params(OptionalParams):
+    hostname: str
+    port: int
 
 
 def server(
@@ -61,6 +66,11 @@ def server(
 
 
 class TestSocketTransport(TestCase):
+    def setUp(self):
+        self.log_handler = LogCapture('epplib', propagate=False)
+
+    def tearDown(self):
+        self.log_handler.uninstall()
 
     params: Params = {
         'hostname': 'localhost',
@@ -97,9 +107,6 @@ class TestSocketTransport(TestCase):
         params: Params = {
             'hostname': 'localhost',
             'port': 64000,
-            'cert_file': None,
-            'key_file': None,
-            'password': None,
         }
         transport = SocketTransport(**params)
         transport.connect()
@@ -114,6 +121,32 @@ class TestSocketTransport(TestCase):
         )
         create_connection_mock.assert_called_once_with((self.params['hostname'], self.params['port']))
         context.wrap_socket.return_value.close.assert_called_once_with()
+
+    @patch('epplib.transport.ssl.create_default_context')
+    @patch('epplib.transport.socket.create_connection')
+    def test_connect_no_verify(self, create_connection_mock, create_context_mock):
+        params: Params = {
+            'hostname': 'localhost',
+            'port': 64000,
+            'verify': False,
+        }
+        transport = SocketTransport(**params)
+        transport.connect()
+        transport.close()
+
+        context = create_context_mock.return_value
+
+        self.assertFalse(context.check_hostname)
+        self.assertEqual(context.verify_mode, ssl.CERT_NONE)
+        context.load_cert_chain.assert_not_called()
+        context.wrap_socket.assert_called_once_with(
+            create_connection_mock.return_value,
+            server_hostname=self.params['hostname']
+        )
+        create_connection_mock.assert_called_once_with((self.params['hostname'], self.params['port']))
+        context.wrap_socket.return_value.close.assert_called_once_with()
+
+        self.log_handler.check(('epplib.transport', 'WARNING', "Verification of the peer certificate is disabled."))
 
     @patch('epplib.transport.ssl.create_default_context', autospec=True)
     def test_send(self, context_mock):
