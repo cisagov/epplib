@@ -26,6 +26,10 @@ See the example below
 
 .. code-block:: python
 
+    from epplib.client import Client
+    from epplib.commands import InfoDomain, Login, Logout
+    from epplib.transport import SocketTransport
+
     hostname = 'localhost'
     port = 12345
     cert_file = 'path/to/cert.pem'
@@ -40,6 +44,6 @@ See the example below
 
         info = InfoDomain(name='mydomain.cz')
         response_info = client.send(info)
-        print(response_info.res_data.ex_date)
+        print(response_info.res_data[0].ex_date)
 
         client.send(Logout())
