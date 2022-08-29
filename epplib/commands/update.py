@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -75,7 +75,8 @@ class UpdateDomain(Command):
             for item in self.rem:
                 SubElement(rem, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = item
 
-        if self.nsset or self.keyset or self.registrant or self.auth_info:
+        if self.nsset is not None or self.keyset is not None or \
+                self.registrant is not None or self.auth_info is not None:
             chg = SubElement(domain_update, QName(NAMESPACE.NIC_DOMAIN, 'chg'))
             if self.nsset is not None:
                 SubElement(chg, QName(NAMESPACE.NIC_DOMAIN, 'nsset')).text = self.nsset
