@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -71,6 +71,33 @@ class TestUpdateDomain(XMLTestCase):
             )
         )
         self.assertXMLEqual(root, expected)
+
+    def test_data_partial_with_false_like_values(self):
+        domain = ElementMaker(namespace=NAMESPACE.NIC_DOMAIN)
+
+        tags = (
+            ('nsset', 'nsset'),
+            ('keyset', 'keyset'),
+            ('registrant', 'registrant'),
+            ('authInfo', 'auth_info'),
+        )
+        for tag, variable in tags:
+            with self.subTest(tag=tag):
+                root = fromstring(UpdateDomain(**sub_dict(self.params, self.required), **{variable: ""}).xml())
+                expected = make_epp_root(
+                    EM.command(
+                        EM.update(
+                            domain.update(
+                                {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
+                                domain.name(self.params['name']),
+                                domain.chg(
+                                    domain(tag),
+                                ),
+                            ),
+                        ),
+                    )
+                )
+                self.assertXMLEqual(root, expected)
 
     def test_data_required(self):
         domain = ElementMaker(namespace=NAMESPACE.NIC_DOMAIN)
