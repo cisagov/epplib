@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -18,4 +18,4 @@
 
 """Fred-epplib is FRED EPP library."""
 
-__version__ = '0.0.1'
+__version__ = '0.1.1'
