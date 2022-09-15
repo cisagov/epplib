@@ -83,6 +83,7 @@ class Client:
         """
         tr_id = self._genereate_tr_id()
         message = request.xml(tr_id=tr_id, schema=self.schema)
+        self._log_raw_xml(message)
         self.transport.send(message)
 
         response = self._receive(request.response_class)
@@ -98,6 +99,7 @@ class Client:
             response_class: A class to parse the response.
         """
         response_raw = self.transport.receive()
+        self._log_raw_xml(response_raw)
         response_parsed = response_class.parse(response_raw, self.schema)
 
         if isinstance(response_parsed, Greeting):
@@ -109,3 +111,12 @@ class Client:
         random = ''.join(choices(ascii_lowercase + digits, k=6))  # nosec - Not a security feature.
         timestamp = datetime.now().isoformat()
         return '{}#{}'.format(random, timestamp)
+
+    def _log_raw_xml(self, xml: bytes) -> None:
+        """Log raw xml, try converting it to UTF-8."""
+        try:
+            xml_final: Union[str, bytes] = str(xml, encoding="utf-8")
+        except UnicodeDecodeError:
+            xml_final = xml
+
+        LOGGER.debug(xml_final)

@@ -168,6 +168,7 @@ class TestClient(TestCase):
 
         mock_receive.assert_called()
         log_handler.check(
+            ('epplib.client', 'DEBUG', 'This is the Request!'),
             ('epplib.client', 'WARNING', 'clTRID of the response (Wrong) differs from the clTRID of the request (abc).')
         )
 
@@ -181,11 +182,13 @@ class TestClient(TestCase):
         client = Client(transport, None)
         request = DummyRequest()
         with client:
-            with LogCapture(propagate=False) as log_handler:
+            with LogCapture(propagate=False, level=3) as log_handler:
                 client.send(request)
 
         mock_receive.assert_called()
-        log_handler.check()
+        log_handler.check(
+            ('epplib.client', 'DEBUG', 'This is the Request!')
+        )
 
     @patch('epplib.client.Client._genereate_tr_id')
     @patch('epplib.client.Client._receive')
@@ -201,4 +204,19 @@ class TestClient(TestCase):
                 client.send(request)
 
         mock_receive.assert_called()
-        log_handler.check()
+        log_handler.check(
+            ('epplib.client', 'DEBUG', 'This is the Request!')
+        )
+
+    @patch('epplib.client.Client._genereate_tr_id')
+    @patch('epplib.client.Client._receive')
+    def test_log_raw_xml_error(self, mock_receive, mock_generate_id):
+        transport = Mock(wraps=DummyTransport())
+
+        client = Client(transport, None)
+        with LogCapture(propagate=False) as log_handler:
+            client._log_raw_xml(b'\xff')
+
+        log_handler.check(
+            ('epplib.client', 'DEBUG', "b'\\xff'")
+        )
