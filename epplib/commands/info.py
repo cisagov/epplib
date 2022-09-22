@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -18,6 +18,7 @@
 
 """Module providing EPP info commands."""
 from dataclasses import dataclass
+from typing import Optional
 
 from lxml.etree import Element, QName, SubElement
 
@@ -29,7 +30,8 @@ from epplib.responses import InfoContactResult, InfoDomainResult, InfoKeysetResu
 class Info(Command):
     """Base class for EPP Info commands."""
 
-    def _get_info_payload(self, namespace: str, schema_location: str, tag: str, item: str) -> Element:
+    def _get_info_payload(self, namespace: str, schema_location: str,
+                          tag: str, item: str, auth_info: Optional[str] = None) -> Element:
         """Create subelements specific for info command.
 
         Returns:
@@ -41,6 +43,9 @@ class Info(Command):
         domain_info.set(QName(NAMESPACE.XSI, 'schemaLocation'), schema_location)
 
         SubElement(domain_info, QName(namespace, tag)).text = item
+
+        if auth_info is not None:
+            SubElement(domain_info, QName(namespace, "authInfo")).text = auth_info
 
         return info
 
@@ -55,6 +60,7 @@ class InfoDomain(Info):
 
     response_class = InfoDomainResult
     name: str
+    auth_info: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command element specific for InfoDomain.
@@ -62,7 +68,8 @@ class InfoDomain(Info):
         Returns:
             Element with a domain to query.
         """
-        return self._get_info_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.name)
+        return self._get_info_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN,
+                                      'name', self.name, self.auth_info)
 
 
 @dataclass
@@ -75,6 +82,7 @@ class InfoContact(Info):
 
     response_class = InfoContactResult
     id: str
+    auth_info: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command element specific for InfoContact.
@@ -82,7 +90,7 @@ class InfoContact(Info):
         Returns:
             Element with a contact to query.
         """
-        return self._get_info_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id)
+        return self._get_info_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id, self.auth_info)
 
 
 @dataclass
@@ -95,6 +103,7 @@ class InfoKeyset(Info):
 
     response_class = InfoKeysetResult
     id: str
+    auth_info: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command element specific for InfoKeyset.
@@ -102,7 +111,7 @@ class InfoKeyset(Info):
         Returns:
             Element with a keyset to query.
         """
-        return self._get_info_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id)
+        return self._get_info_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id, self.auth_info)
 
 
 @dataclass
@@ -115,6 +124,7 @@ class InfoNsset(Info):
 
     response_class = InfoNssetResult
     id: str
+    auth_info: Optional[str] = None
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command element specific for InfoNsset.
@@ -122,4 +132,4 @@ class InfoNsset(Info):
         Returns:
             Element with a nsset to query.
         """
-        return self._get_info_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.id)
+        return self._get_info_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.id, self.auth_info)

@@ -34,7 +34,7 @@ T = TypeVar('T')
 U = TypeVar('U')
 
 BASE_DATA_PATH = Path(__file__).parent / 'data'
-SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.1.xsd'))
+SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.3.xsd'))
 
 EM = ElementMaker(namespace=NAMESPACE.EPP)
 
