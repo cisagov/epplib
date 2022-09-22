@@ -31,9 +31,9 @@ class TestInfoDomain(XMLTestCase):
         self.params = {'name': 'mydoma.in', 'auth_info': 'pswd'}
 
     def test_valid(self):
-        self.assertRequestValid(InfoNsset, self.params)
+        self.assertRequestValid(InfoDomain, self.params)
         self.params.pop("auth_info")
-        self.assertRequestValid(InfoNsset, self.params)
+        self.assertRequestValid(InfoDomain, self.params)
 
     def test_data(self):
         root = fromstring(InfoDomain(**self.params).xml())
@@ -75,9 +75,9 @@ class TestInfoContact(XMLTestCase):
         self.params = {'id': 'CID-MYCONTACT', 'auth_info': 'pswd'}
 
     def test_valid(self):
-        self.assertRequestValid(InfoNsset, self.params)
+        self.assertRequestValid(InfoContact, self.params)
         self.params.pop("auth_info")
-        self.assertRequestValid(InfoNsset, self.params)
+        self.assertRequestValid(InfoContact, self.params)
 
     def test_data(self):
         root = fromstring(InfoContact(**self.params).xml())
@@ -119,9 +119,9 @@ class TestInfoKeyset(XMLTestCase):
         self.params = {'id': 'KID-MYKEYSET', 'auth_info': 'pswd'}
 
     def test_valid(self):
-        self.assertRequestValid(InfoNsset, self.params)
+        self.assertRequestValid(InfoKeyset, self.params)
         self.params.pop("auth_info")
-        self.assertRequestValid(InfoNsset, self.params)
+        self.assertRequestValid(InfoKeyset, self.params)
 
     def test_data(self):
         root = fromstring(InfoKeyset(**self.params).xml())
