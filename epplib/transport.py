@@ -151,7 +151,10 @@ class SocketTransport(Transport):
             while len(response) < expected_length:
                 response += self.socket.recv(min(self.CHUNK_SIZE, expected_length - len(response)))
 
-            return response
+            if response:
+                return response
+
+            raise TransportError('Empty response recieved.')
 
         except OSError as error:
             raise TransportError('Socket closed.') from error

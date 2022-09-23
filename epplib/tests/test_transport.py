@@ -57,7 +57,7 @@ def server(
         connection, _ = listening.accept()
 
         with connection:
-            if message:
+            if message is not None:
                 message_length = (len(message) + 4).to_bytes(4, 'big')
                 connection.sendall(message_length + message)
             received = connection.recv(1024)
@@ -198,6 +198,32 @@ class TestSocketTransport(TestCase):
 
         process.join()
         self.assertEqual(received, message)
+
+    @patch('epplib.transport.ssl.create_default_context', autospec=True)
+    def test_receive_empty(self, context_mock):
+        context_mock.return_value.wrap_socket = lambda x, **kwargs: x
+        server_ready = Event()
+
+        message = b''
+
+        server_args = {
+            'hostname': self.params['hostname'],
+            'port': self.params['port'],
+            'server_ready': server_ready,
+            'message': message,
+        }
+        process = Process(target=server, kwargs=server_args)
+        process.start()
+
+        server_ready.wait()
+        transport = SocketTransport(**self.params)
+        transport.connect()
+
+        with self.assertRaisesRegex(TransportError, 'Empty response recieved\\.'):
+            transport.receive()
+
+        transport.close()
+        process.join()
 
     def test_not_connected(self):
         transport = SocketTransport(**self.params)
