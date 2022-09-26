@@ -129,6 +129,7 @@ class SocketTransport(Transport):
         try:
             self.socket.sendall(message_length + message)
         except OSError as error:
+            _LOGGER.debug("Error in send: %r", error)
             raise TransportError('Socket closed.') from error
 
     def receive(self) -> bytes:
@@ -157,4 +158,5 @@ class SocketTransport(Transport):
             raise TransportError('Empty response recieved.')
 
         except OSError as error:
+            _LOGGER.debug("Error in receive: %r", error)
             raise TransportError('Socket closed.') from error
