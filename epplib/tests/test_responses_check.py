@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -15,8 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
-
-from typing import cast
+#
 from unittest import TestCase
 
 from epplib.models.check import (CheckContactResultData, CheckDomainResultData, CheckKeysetResultData,
@@ -35,7 +34,7 @@ class TestCheckDomainResult(TestCase):
             CheckDomainResultData('somedomain.cz', False, 'already registered.'),
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckDomainResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -53,7 +52,7 @@ class TestCheckContactResult(TestCase):
             CheckContactResultData('CID-NONE', True),
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckContactResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -71,7 +70,7 @@ class TestResultCheckNsset(TestCase):
             CheckNssetResultData('NID-NONE', True),
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckNssetResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -89,7 +88,7 @@ class TestResultCheckKeyset(TestCase):
             CheckKeysetResultData('KID-NONE', True),
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CheckKeysetResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()

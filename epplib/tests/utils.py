@@ -19,7 +19,7 @@
 from difflib import unified_diff
 from itertools import zip_longest
 from pathlib import Path
-from typing import Any, List, Mapping, Sequence, Type, TypeVar, cast
+from typing import Any, List, Mapping, Optional, Sequence, Type, TypeVar, cast
 from unittest import TestCase
 
 from lxml.builder import ElementMaker
@@ -55,7 +55,7 @@ class XMLTestCase(TestCase):
     """TestCase with aditional methods for testing xml trees."""
 
     def assertRequestValid(self, request_class: Type[Request], params: Mapping[str, Any],
-                           extension: CommandExtension = None) -> None:
+                           extension: Optional[CommandExtension] = None) -> None:
         """Assert that the generated XML complies with the schema."""
         request = request_class(**params)
         if extension is not None:

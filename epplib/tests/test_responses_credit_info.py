@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -15,9 +15,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
-
+#
 from decimal import Decimal
-from typing import cast
 from unittest import TestCase
 
 from epplib.models.credit_info import CreditInfoResultData
@@ -35,7 +34,7 @@ class TestCreditInfoResult(TestCase):
             CreditInfoResultData('cz', Decimal(82640)),
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CreditInfoResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()

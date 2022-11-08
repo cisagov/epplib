@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -31,7 +31,7 @@ from epplib.responses import CreditInfoResult, Result
 class Extension(Request):
     """Base class for EPP Extensions."""
 
-    def _get_payload(self, tr_id: str = None) -> Element:
+    def _get_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the epp element specific for the given Command.
 
         Returns:
@@ -43,7 +43,7 @@ class Extension(Request):
         return extension_element
 
     @abstractmethod
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the extension element specific for the given Extension subclass.
 
         Returns:
@@ -54,7 +54,7 @@ class Extension(Request):
 class FredExtCommand(Extension):
     """Base class for Fred ext commands."""
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the extension element specific for Fred ext command.
 
         Returns:
@@ -72,7 +72,7 @@ class CreditInfoRequest(FredExtCommand):
 
     response_class = CreditInfoResult
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the extension element specific for Credit info request.
 
         Returns:
@@ -89,7 +89,8 @@ class SendAuthInfo(FredExtCommand):
 
     response_class = Result
 
-    def _get_auth_info_payload(self, namespace: str, location: str, tag: str, item: str, tr_id: str = None) -> Element:
+    def _get_auth_info_payload(self, namespace: str, location: str, tag: str, item: str, tr_id: Optional[str] = None,
+                               ) -> Element:
         """Create subelements of the extension element specific for send auth info.
 
         Returns:
@@ -118,7 +119,7 @@ class TestNsset(FredExtCommand):
     level: Optional[int] = None
     names: Sequence[str] = field(default_factory=list)
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the extension element specific for test nsset.
 
         Returns:
@@ -150,7 +151,7 @@ class SendAuthInfoContact(SendAuthInfo):
     response_class = Result
     id: str
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the extension element specific for send auth info.
 
         Returns:
@@ -179,7 +180,7 @@ class SendAuthInfoDomain(SendAuthInfo):
     response_class = Result
     name: str
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the extension element specific for send auth info.
 
         Returns:
@@ -208,7 +209,7 @@ class SendAuthInfoKeyset(SendAuthInfo):
     response_class = Result
     id: str
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the extension element specific for send auth info.
 
         Returns:
@@ -237,7 +238,7 @@ class SendAuthInfoNsset(SendAuthInfo):
     response_class = Result
     id: str
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the extension element specific for send auth info.
 
         Returns:

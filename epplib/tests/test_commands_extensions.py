@@ -17,7 +17,7 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import Any, Dict, Mapping
+from typing import Any, Dict, Mapping, Optional
 
 from lxml.builder import ElementMaker
 from lxml.etree import Element, QName, fromstring
@@ -43,7 +43,7 @@ class DummyResponse(Response):
 class DummyExtension(Extension):
     response_class = DummyResponse
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         root = Element(QName(EXTENSION_NAMESPACE, 'dummy'))
         if tr_id is not None:
             root.text = tr_id

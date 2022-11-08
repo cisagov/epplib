@@ -19,7 +19,7 @@
 """Module providing EPP list commands."""
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import ClassVar
+from typing import ClassVar, Optional
 
 from lxml.etree import Element, QName, SubElement
 
@@ -34,7 +34,7 @@ class List(FredExtCommand):
     response_class = ListResult
     tag: ClassVar[str]
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the extension element specific for List command.
 
         Returns:
@@ -82,7 +82,7 @@ class ListBy(FredExtCommand):
     def _get_item_id(self) -> str:
         """Get id or name of the item."""
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the extension element specific for ListBy command.
 
         Returns:
@@ -185,7 +185,7 @@ class GetResults(FredExtCommand):
 
     response_class = GetResultsResult
 
-    def _get_extension_payload(self, tr_id: str = None) -> Element:
+    def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the extension element specific for Get results command.
 
         Returns:
