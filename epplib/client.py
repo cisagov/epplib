@@ -44,7 +44,7 @@ class Client:
         greeting: The last Greeting received from the EPP server. None if no Greeting was received yet.
     """
 
-    def __init__(self, transport: Transport, schema: XMLSchema = None):
+    def __init__(self, transport: Transport, schema: Optional[XMLSchema] = None):
         """Init the Client.
 
         Args:
@@ -87,9 +87,9 @@ class Client:
         self.transport.send(message)
 
         response = self._receive(request.response_class)
-        if hasattr(response, 'cl_tr_id') and (response.cl_tr_id != tr_id):  # type: ignore[attr-defined]
+        if hasattr(response, 'cl_tr_id') and (response.cl_tr_id != tr_id):
             log_message = 'clTRID of the response ({}) differs from the clTRID of the request ({}).'
-            LOGGER.warning(log_message.format(response.cl_tr_id, tr_id))  # type: ignore[attr-defined]
+            LOGGER.warning(log_message.format(response.cl_tr_id, tr_id))
         return response
 
     def _receive(self, response_class: Type[Response]) -> Response:

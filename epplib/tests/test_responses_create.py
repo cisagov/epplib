@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -15,9 +15,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
-
+#
 from datetime import date, datetime, timedelta, timezone
-from typing import cast
 from unittest import TestCase
 
 from epplib.models.create import (CreateContactResultData, CreateDomainResultData, CreateKeysetResultData,
@@ -40,7 +39,7 @@ class TestCreateDomainResult(TestCase):
             )
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CreateDomainResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_minimal(self):
         xml_template = (BASE_DATA_PATH / 'responses/result_create_domain_template.xml').read_bytes()
@@ -54,7 +53,7 @@ class TestCreateDomainResult(TestCase):
             )
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CreateDomainResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -74,7 +73,7 @@ class TestCreateContactResult(TestCase):
             )
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CreateContactResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -94,7 +93,7 @@ class TestCreateNssetResult(TestCase):
             )
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CreateNssetResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -114,7 +113,7 @@ class TestCreateKeysetResult(TestCase):
             )
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(CreateKeysetResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()

@@ -33,7 +33,7 @@ class Request(ABC):
 
     response_class: ClassVar[Type[Response]]
 
-    def xml(self, tr_id: str = None, schema: XMLSchema = None) -> bytes:
+    def xml(self, tr_id: Optional[str] = None, schema: Optional[XMLSchema] = None) -> bytes:
         """Return the XML representation of the Request.
 
         Returns:
@@ -87,7 +87,7 @@ class Command(Request):
         """
         self.extensions.append(extension)
 
-    def _get_payload(self, tr_id: str = None) -> Element:
+    def _get_payload(self, tr_id: Optional[str] = None) -> Element:
         """Create subelements of the epp element specific for the given Command.
 
         Returns:

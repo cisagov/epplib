@@ -61,11 +61,11 @@ class DummyResponse(Response):
     schema: XMLSchema
 
     @classmethod
-    def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'DummyResponse':
+    def parse(cls, raw_response: bytes, schema: Optional[XMLSchema] = None) -> 'DummyResponse':
         return cls(raw_response=raw_response, schema=schema)
 
     @classmethod
-    def _extract_payload(cls, element: Element) -> Dict[str, Any]:
+    def _extract_payload(cls, element: Element) -> Dict[str, Any]:  # type: ignore[empty-body]
         pass  # pragma: no cover
 
 
@@ -74,7 +74,7 @@ class DummyRequest(Request):
     response_class = DummyResponse
     raw_request = b'This is the Request!'
 
-    def xml(self, tr_id: str = None, schema: XMLSchema = None) -> bytes:
+    def xml(self, tr_id: Optional[str] = None, schema: Optional[XMLSchema] = None) -> bytes:
         self.tr_id = tr_id
         self.schema = schema
         return self.raw_request
@@ -107,7 +107,7 @@ class TestClient(TestCase):
         client.connect()
         self.assertEqual(transport.mock_calls, [call.connect(), call.receive()])
         self.assertIsInstance(client.greeting, Greeting)
-        self.assertEqual(client.greeting.sv_id, 'EPP server (DSDng)')
+        self.assertEqual(cast(Greeting, client.greeting).sv_id, 'EPP server (DSDng)')
 
     def test_close(self):
         transport = Mock(spec=Transport)

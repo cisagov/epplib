@@ -35,7 +35,7 @@ class TestAddr(XMLTestCase):
             'sp': 'Province'
         }
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
-        addr = ContactAddr(**params)
+        addr = ContactAddr(**params)  # type: ignore[arg-type] # dataclass annotation bug
         expected = EM.addr(
             EM.street(params['street'][0]),
             EM.street(params['street'][1]),
@@ -54,7 +54,7 @@ class TestAddr(XMLTestCase):
             'cc': 'CZ',
         }
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
-        addr = ContactAddr(**params)
+        addr = ContactAddr(**params)  # type: ignore[arg-type] # dataclass annotation bug
         expected = EM.addr(
             EM.street(params['street'][0]),
             EM.city(params['city']),

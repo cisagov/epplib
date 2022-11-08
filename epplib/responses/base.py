@@ -57,7 +57,7 @@ class Response(ParseXMLMixin, ABC):
         pass  # pragma: no cover
 
     @classmethod
-    def parse(cls: Type[ResponseT], raw_response: bytes, schema: XMLSchema = None) -> ResponseT:
+    def parse(cls: Type[ResponseT], raw_response: bytes, schema: Optional[XMLSchema] = None) -> ResponseT:
         """Parse the xml response into the dataclass.
 
         Args:
@@ -130,7 +130,7 @@ class Greeting(Response):
     expiry: Optional[str]
 
     @classmethod
-    def parse(cls, raw_response: bytes, schema: XMLSchema = None) -> 'Greeting':
+    def parse(cls, raw_response: bytes, schema: Optional[XMLSchema] = None) -> 'Greeting':
         """Parse the xml response into the Greeting dataclass.
 
         Args:
@@ -267,7 +267,7 @@ class Result(Response, Generic[T]):
     msg_q: Optional[MsgQ] = None
 
     @classmethod
-    def parse(cls: Type[ResultT], raw_response: bytes, schema: XMLSchema = None) -> ResultT:
+    def parse(cls: Type[ResultT], raw_response: bytes, schema: Optional[XMLSchema] = None) -> ResultT:
         """Parse the xml response into the Result dataclass.
 
         Args:

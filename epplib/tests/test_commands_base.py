@@ -17,7 +17,7 @@
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from unittest import TestCase
 
 from lxml.etree import DocumentInvalid, Element, QName, fromstring
@@ -42,7 +42,7 @@ class DummyResponse(Response):
 class DummyRequest(Request):
     response_class = DummyResponse
 
-    def _get_payload(self, tr_id: str = None) -> Element:
+    def _get_payload(self, tr_id: Optional[str] = None) -> Element:
         return Element(QName(DUMMY_NAMESPACE, 'dummy'))
 
 

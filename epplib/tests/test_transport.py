@@ -48,7 +48,8 @@ class Params(OptionalParams):
 
 
 def server(
-    hostname: str, port: int, server_ready: synchronize.Event, pipe: Connection = None, message: bytes = None,
+    hostname: str, port: int, server_ready: synchronize.Event, pipe: Optional[Connection] = None,
+    message: Optional[bytes] = None,
 ) -> None:  # pragma: no cover
     with socket(AF_INET, SOCK_STREAM) as listening:
         listening.bind((hostname, port))

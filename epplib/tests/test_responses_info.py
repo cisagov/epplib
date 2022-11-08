@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -15,9 +15,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
-
+#
 from datetime import date, datetime, timedelta, timezone
-from typing import cast
 from unittest import TestCase
 
 from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, PostalInfo, Status
@@ -51,7 +50,7 @@ class TestInfoDomainResult(TestCase):
             )
         ]
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(InfoDomainResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_full(self):
         xml = (BASE_DATA_PATH / 'responses/result_info_domain.xml').read_bytes()
@@ -77,7 +76,7 @@ class TestInfoDomainResult(TestCase):
         ]
 
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(InfoDomainResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -114,7 +113,7 @@ class TestInfoContactResult(TestCase):
         ]
 
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(InfoContactResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_minimal(self):
         xml = (BASE_DATA_PATH / 'responses/result_info_contact_minimal.xml').read_bytes()
@@ -143,7 +142,7 @@ class TestInfoContactResult(TestCase):
         ]
 
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(InfoContactResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -177,7 +176,7 @@ class TestInfoKeysetResult(TestCase):
         ]
 
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(InfoKeysetResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_minimal(self):
         xml = (BASE_DATA_PATH / 'responses/result_info_keyset_minimal.xml').read_bytes()
@@ -200,7 +199,7 @@ class TestInfoKeysetResult(TestCase):
         ]
 
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(InfoKeysetResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
@@ -235,7 +234,7 @@ class TestInfoNssetResult(TestCase):
         ]
 
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(InfoNssetResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_full_minimal(self):
         xml = (BASE_DATA_PATH / 'responses/result_info_nsset_minimal.xml').read_bytes()
@@ -259,7 +258,7 @@ class TestInfoNssetResult(TestCase):
         ]
 
         self.assertEqual(result.code, 1000)
-        self.assertEqual(cast(InfoNssetResult, result).res_data, expected)
+        self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
         xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
