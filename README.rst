@@ -31,11 +31,10 @@ See the example below
     from epplib.transport import SocketTransport
 
     hostname = 'localhost'
-    port = 12345
     cert_file = 'path/to/cert.pem'
     key_file = 'path/to/key.pem'
 
-    transport = SocketTransport(hostname, port, cert_file=cert_file, key_file=key_file)
+    transport = SocketTransport(hostname, cert_file=cert_file, key_file=key_file)
 
     with Client(transport) as client:
         login = Login(cl_id='my_id', password='passwd', obj_uris=['http://www.nic.cz/xml/epp/contact-1.6'])
