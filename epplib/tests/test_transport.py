@@ -38,13 +38,12 @@ else:  # pragma: no cover
 BASE_DATA_PATH = Path(__file__).parent / 'data'
 OptionalParams = TypedDict(
     'OptionalParams',
-    {'cert_file': Optional[Path], 'key_file': Optional[Path], 'password': Optional[str], 'verify': bool},
+    {'port': int, 'cert_file': Optional[Path], 'key_file': Optional[Path], 'password': Optional[str], 'verify': bool},
     total=False)
 
 
 class Params(OptionalParams):
     hostname: str
-    port: int
 
 
 def server(
@@ -104,10 +103,9 @@ class TestSocketTransport(TestCase):
 
     @patch('epplib.transport.ssl.create_default_context')
     @patch('epplib.transport.socket.create_connection')
-    def test_connect_no_cert(self, create_connection_mock, create_context_mock):
+    def test_connect_minimal(self, create_connection_mock, create_context_mock):
         params: Params = {
             'hostname': 'localhost',
-            'port': 64000,
         }
         transport = SocketTransport(**params)
         transport.connect()
@@ -120,7 +118,7 @@ class TestSocketTransport(TestCase):
             create_connection_mock.return_value,
             server_hostname=self.params['hostname']
         )
-        create_connection_mock.assert_called_once_with((self.params['hostname'], self.params['port']))
+        create_connection_mock.assert_called_once_with((self.params['hostname'], 700))
         context.wrap_socket.return_value.close.assert_called_once_with()
 
     @patch('epplib.transport.ssl.create_default_context')

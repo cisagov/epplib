@@ -85,7 +85,7 @@ class SocketTransport(Transport):
     HEADER_SIZE = 4
     CHUNK_SIZE = 1024
 
-    def __init__(self, hostname: str, port: int, *, cert_file: Optional[PathType] = None,
+    def __init__(self, hostname: str, port: int = 700, *, cert_file: Optional[PathType] = None,
                  key_file: Optional[PathType] = None, password: Optional[str] = None, verify: bool = True):
         self.hostname = hostname
         self.port = port
