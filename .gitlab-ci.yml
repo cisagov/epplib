@@ -28,6 +28,9 @@ cache:
 .py310: &py310
     image: "$DOCKER_REGISTRY/python/tox:3.10"
 
+.py311: &py311
+    image: "$DOCKER_REGISTRY/python/tox:3.11"
+
 .test: &test
     stage: test
     before_script:
@@ -63,6 +66,10 @@ test:py39:
 test:py310:
     <<: *test
     <<: *py310
+
+test:py311:
+    <<: *test
+    <<: *py311
 
 build:
     stage: build
