@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2023  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -100,7 +100,8 @@ class MailingAddressExtension(ParseXMLMixin, ResponseExtension):
         'extra-addr': NAMESPACE.NIC_EXTRA_ADDR,
     }
 
-    tag = QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing')
+    # The whole mailing address is wrapped into an infData element.
+    tag = QName(NAMESPACE.NIC_EXTRA_ADDR, 'infData')
 
     addr: ExtraAddr
 
@@ -114,7 +115,7 @@ class MailingAddressExtension(ParseXMLMixin, ResponseExtension):
         Returns:
             Dataclass representing the extension.
         """
-        addr = ExtraAddr.extract(cls._find(element, 'extra-addr:addr'))
+        addr = ExtraAddr.extract(cls._find(element, './extra-addr:mailing/extra-addr:addr'))
         return cls(addr=addr)
 
 
