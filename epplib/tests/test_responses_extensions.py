@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2023  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -50,7 +50,7 @@ class TestMailingAddressExtension(TestCase):
 
     def test_extract(self):
         addr = ExtraAddr(street=['Dlouha 24'], city='Lysa nad Labem', pc='28922', cc='CZ')
-        element = self.EM.infData(addr.get_payload())
+        element = self.EM.infData(self.EM.mailing(addr.get_payload()))
         result = MailingAddressExtension.extract(element)
         expected = MailingAddressExtension(addr=addr)
         self.assertEqual(result, expected)
