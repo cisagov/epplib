@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2023  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -24,7 +24,8 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import Disclose, Dnskey, Ident, Ns, Period, PostalInfo, Unit
+from epplib.models import Disclose, Dnskey, Ident, Ns, Period, Unit
+from epplib.models.create import CreatePostalInfo
 from epplib.responses import CreateContactResult, CreateDomainResult, CreateKeysetResult, CreateNssetResult
 
 
@@ -100,7 +101,7 @@ class CreateContact(Command):
     response_class = CreateContactResult
 
     id: str
-    postal_info: PostalInfo
+    postal_info: CreatePostalInfo
     email: str
     voice: Optional[str] = None
     fax: Optional[str] = None

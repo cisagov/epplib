@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
-
+#
 """Common models used accross epplib."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -336,18 +336,18 @@ class PostalInfo(PayloadModelMixin, ExtractModelMixin):
 
     namespace = NAMESPACE.NIC_CONTACT
 
-    name: Optional[str]
-    addr: Optional[ContactAddr]
+    name: Optional[str] = None
+    addr: Optional[ContactAddr] = None
     org: Optional[str] = None
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
         postal_info = Element(QName(self.namespace, 'postalInfo'))
-        SubElement(postal_info, QName(self.namespace, 'name')).text = self.name
-
-        if self.org:
+        if self.name:
+            SubElement(postal_info, QName(self.namespace, 'name')).text = self.name
+        if self.org is not None:
             SubElement(postal_info, QName(self.namespace, 'org')).text = self.org
-        if self.addr:  # pragma: no branch
+        if self.addr:
             postal_info.append(self.addr.get_payload())
 
         return postal_info

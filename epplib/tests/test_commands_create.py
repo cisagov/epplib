@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2023  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -23,7 +23,8 @@ from lxml.etree import Element, QName, fromstring
 
 from epplib.commands import CreateContact, CreateDomain, CreateKeyset, CreateNsset
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, Period, PostalInfo, Unit
+from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, Period, Unit
+from epplib.models.create import CreatePostalInfo
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root, sub_dict
 
 
@@ -85,7 +86,7 @@ class TestCreateDomain(XMLTestCase):
 class TestCreateContact(XMLTestCase):
     params_required: Dict[str, Any] = {
         'id': 'CID-MYCONTACT',
-        'postal_info': PostalInfo(
+        'postal_info': CreatePostalInfo(
             'John Doe',
             ContactAddr(
                ['Street 123'],
@@ -99,7 +100,7 @@ class TestCreateContact(XMLTestCase):
 
     params_full: Dict[str, Any] = {
         'id': 'CID-MYCONTACT',
-        'postal_info': PostalInfo(
+        'postal_info': CreatePostalInfo(
             'John Doe',
             ContactAddr(
                ['Door 42', 'Street 123'],
