@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2023  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -117,6 +117,12 @@ class TestDisclose(XMLTestCase):
                 disclose = Disclose(flag=flag, fields={DiscloseField.VAT, DiscloseField.EMAIL})
                 expected = EM.disclose(EM.email, EM.vat, flag=result)
                 self.assertXMLEqual(disclose.get_payload(), expected)
+
+    def test_get_payload_order(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        disclose = Disclose(flag=True, fields=set(DiscloseField))
+        expected = EM.disclose(EM.addr, EM.voice, EM.fax, EM.email, EM.vat, EM.ident, EM.notifyEmail, flag='1')
+        self.assertXMLEqual(disclose.get_payload(), expected)
 
 
 class TestDnskey(XMLTestCase):

@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2023  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -32,6 +32,7 @@ from epplib.utils import ParseXMLMixin
 class DiscloseField(str, Enum):
     """Allowed values of subelements of disclose element."""
 
+    # Order matters! Elements are ordered by their position within disclose flag.
     ADDR = 'addr'
     VOICE = 'voice'
     FAX = 'fax'
@@ -166,7 +167,7 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
         """Get Element representing the model."""
         flag = '1' if self.flag else '0'
         disclose = Element(QName(self.namespace, 'disclose'), flag=flag)
-        for item in sorted(self.fields):
+        for item in sorted(self.fields, key=tuple(DiscloseField).index):
             SubElement(disclose, QName(self.namespace, item.value))
         return disclose
 
