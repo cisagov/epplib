@@ -5,6 +5,13 @@ ChangeLog
    :backlinks: none
    :local:
 
+1.0.0 (2022-12-14)
+-------------------
+
+* Add support for Python 3.11.
+* Set default port (#108).
+* Fix annotations.
+
 0.2.0 (2022-09-27)
 -------------------
 
