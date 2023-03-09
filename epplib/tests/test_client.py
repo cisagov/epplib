@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2023  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -152,6 +152,23 @@ class TestClient(TestCase):
 
         self.assertEqual(type(response), DummyResponse)
         self.assertEqual(cast(DummyResponse, response).raw_response, DummyTransport.raw_response)
+
+    @freeze_time('2021-05-04 12:21')
+    @patch('epplib.client.choices')
+    def test_send_custom_tr_id(self, mock_choices):
+        transport = Mock(wraps=DummyTransport())
+        mock_schema = Mock(spec=XMLSchema)
+        mock_schema.assertValid = Mock()  # Otherwise we get AttributeError: Attributes cannot start with 'assert'
+        client = Client(transport, mock_schema)
+
+        with client:
+            request = DummyRequest()
+            response = client.send(request, tr_id='Gazpacho!')
+
+        self.assertEqual(request.tr_id, 'Gazpacho!')
+        self.assertEqual(type(response), DummyResponse)
+        # Check choices were not called.
+        self.assertEqual(mock_choices.mock_calls, [])
 
     @patch('epplib.client.Client._genereate_tr_id')
     @patch('epplib.client.Client._receive')

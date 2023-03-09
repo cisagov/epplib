@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021-2022  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2023  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -75,13 +75,14 @@ class Client:
         """Close the connection gracefully."""
         self.transport.close()
 
-    def send(self, request: Request) -> Response:
+    def send(self, request: Request, *, tr_id: Optional[str] = None) -> Response:
         """Send an EPP command and receive a response.
 
         Args:
             request: The command to be sent to the server.
+            tr_id: Client transaction identifier. Generated if not provided.
         """
-        tr_id = self._genereate_tr_id()
+        tr_id = tr_id or self._genereate_tr_id()
         message = request.xml(tr_id=tr_id, schema=self.schema)
         self._log_raw_xml(message)
         self.transport.send(message)
