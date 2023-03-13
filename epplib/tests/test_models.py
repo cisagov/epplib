@@ -199,24 +199,21 @@ class TestPostalInfo(XMLTestCase):
 
     addr = ContactAddr(street=['Street 123'], city='City', pc='12300', cc='CZ')
 
-    def test_get_payload_minimal(self):
-        postal_info = PostalInfo('John', self.addr)
+    def test_get_payload(self):
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
-        expected = EM.postalInfo(
-            EM.name('John'),
-            self.addr.get_payload(),
+        data = (
+            # postal_info, expected
+            (PostalInfo(), EM.postalInfo()),
+            (PostalInfo('John'), EM.postalInfo(EM.name('John'))),
+            (PostalInfo(addr=self.addr), EM.postalInfo(self.addr.get_payload())),
+            (PostalInfo(org='JMC'), EM.postalInfo(EM.org('JMC'))),
+            (PostalInfo(org=''), EM.postalInfo(EM.org(''))),
+            (PostalInfo('John', self.addr, 'JMC'),
+             EM.postalInfo(EM.name('John'), EM.org('JMC'), self.addr.get_payload())),
         )
-        self.assertXMLEqual(postal_info.get_payload(), expected)
-
-    def test_get_payload_full(self):
-        postal_info = PostalInfo('John', self.addr, 'Company Inc.')
-        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
-        expected = EM.postalInfo(
-            EM.name('John'),
-            EM.org('Company Inc.'),
-            self.addr.get_payload(),
-        )
-        self.assertXMLEqual(postal_info.get_payload(), expected)
+        for postal_info, expected in data:
+            with self.subTest(postal_info=postal_info):
+                self.assertXMLEqual(postal_info.get_payload(), expected)
 
     def test_extract_full(self):
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)

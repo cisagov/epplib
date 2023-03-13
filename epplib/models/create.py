@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2021  CZ.NIC, z. s. p. o.
+# Copyright (C) 2021-2023  CZ.NIC, z. s. p. o.
 #
 # This file is part of FRED.
 #
@@ -15,17 +15,26 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with FRED.  If not, see <https://www.gnu.org/licenses/>.
-
+#
 """Module providing models for EPP create responses."""
-
-from dataclasses import dataclass
+from dataclasses import MISSING, dataclass
 from datetime import date, datetime
 from typing import ClassVar, Optional
 
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element
 
-from epplib.models import ExtractModelMixin
+from epplib.models import ContactAddr, ExtractModelMixin, PostalInfo
+
+
+@dataclass
+class CreatePostalInfo(PostalInfo):
+    """Dataclass to represent EPP postalInfo element in contact creation."""
+
+    # Name and addr is required in contact create.
+    # We need to explicitely set defaults to MISSING to override defaults from PostalInfo.
+    name: str = MISSING  # type: ignore[assignment]
+    addr: ContactAddr = MISSING  # type: ignore[assignment]
 
 
 @dataclass
