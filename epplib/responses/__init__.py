@@ -19,20 +19,22 @@
 """Module providing means to process responses to EPP commands."""
 
 from .base import Greeting, ParsingError, Response, Result
-from .check import CheckContactResult, CheckDomainResult, CheckKeysetResult, CheckNssetResult
-from .create import CreateContactResult, CreateDomainResult, CreateKeysetResult, CreateNssetResult
+from .check import CheckContactResult, CheckDomainResult, CheckHostResult, CheckKeysetResult, CheckNssetResult
+from .create import CreateContactResult, CreateDomainResult, CreateHostResult, CreateKeysetResult, CreateNssetResult
 from .credit_info import CreditInfoResult
-from .info import InfoContactResult, InfoDomainResult, InfoKeysetResult, InfoNssetResult
+from .info import InfoContactResult, InfoDomainResult, InfoHostResult, InfoKeysetResult, InfoNssetResult
 from .list import GetResultsResult, ListResult
 from .renew import RenewDomainResult
 
 __all__ = [
     'CheckContactResult',
     'CheckDomainResult',
+    'CheckHostResult',
     'CheckKeysetResult',
     'CheckNssetResult',
     'CreateContactResult',
     'CreateDomainResult',
+    'CreateHostResult',
     'CreateKeysetResult',
     'CreateNssetResult',
     'CreditInfoResult',
@@ -40,6 +42,7 @@ __all__ = [
     'Greeting',
     'InfoContactResult',
     'InfoDomainResult',
+    'InfoHostResult',
     'InfoKeysetResult',
     'InfoNssetResult',
     'ListResult',

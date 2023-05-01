@@ -28,8 +28,8 @@ from lxml.etree import Element, QName
 
 from epplib.constants import NAMESPACE
 from epplib.models import TestResult
-from epplib.models.info import (InfoContactResultData, InfoDomainResultData, InfoKeysetResultData, InfoNssetResultData,
-                                InfoResultData)
+from epplib.models.info import (InfoContactResultData, InfoDomainResultData, InfoHostResultData, InfoKeysetResultData,
+                                InfoNssetResultData, InfoResultData)
 from epplib.utils import ParseXMLMixin
 
 T = TypeVar('T', bound=InfoResultData)
@@ -376,6 +376,16 @@ class ContactUpdate(ObjectUpdate[InfoContactResultData]):
     _inf_data_cls = InfoContactResultData
 
     tag = QName(NAMESPACE.NIC_CONTACT, 'updateData')
+
+
+@dataclass
+class HostUpdate(ObjectUpdate[InfoHostResultData]):
+    """Host update poll message."""
+
+    _prefix = 'host'
+    _inf_data_cls = InfoHostResultData
+
+    tag = QName(NAMESPACE.NIC_HOST, 'updateData')
 
 
 @dataclass
