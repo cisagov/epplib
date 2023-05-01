@@ -18,14 +18,15 @@
 
 """Module providing models for EPP info responses."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field, InitVar
 from datetime import date, datetime
-from typing import Any, ClassVar, List, Mapping, Optional, Sequence
+from typing import Any, ClassVar, List, Mapping, Optional, Sequence, Union
 
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element
 
-from epplib.models import Disclose, Dnskey, ExtractModelMixin, Ident, Ns, PostalInfo, Status
+from epplib.models import (ContactAuthInfo, Disclose, Dnskey, DomainAuthInfo, DomainContact, ExtractModelMixin,
+                           Ident, Ip, Ns, PostalInfo, Status)
 
 
 @dataclass
@@ -41,7 +42,6 @@ class InfoResultData(ExtractModelMixin):
         up_id: Content of the epp/response/resData/infData/upID element.
         up_date: Content of the epp/response/resData/infData/upDate element.
         tr_date: Content of the epp/response/resData/infData/trDate element.
-        auth_info: Content of the epp/response/resData/infData/authInfo element.
     """
 
     _namespace: ClassVar[str]
@@ -54,7 +54,6 @@ class InfoResultData(ExtractModelMixin):
     up_id: Optional[str]
     up_date: Optional[datetime]
     tr_date: Optional[datetime]
-    auth_info: Optional[str]
 
     @classmethod
     def extract(cls, element: Element) -> 'InfoResultData':
@@ -72,7 +71,6 @@ class InfoResultData(ExtractModelMixin):
             'up_id': cls._find_text(element, f'./{cls._namespace}:upID'),
             'up_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:upDate')),
             'tr_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:trDate')),
-            'auth_info': cls._find_text(element, f'./{cls._namespace}:authInfo'),
         }
         return params
 
@@ -95,6 +93,8 @@ class InfoDomainResultData(InfoResultData):
         nsset: Content of the epp/response/resData/infData/nsset element.
         keyset: Content of the epp/response/resData/infData/keyset element.
         ex_date: Content of the epp/response/resData/infData/exDate element.
+        hosts: Content of the epp/response/resData/infData/ns/hostObj element.
+        contacts: Content of the epp/response/resData/infData/contact element.
     """
 
     _namespace = 'domain'
@@ -105,6 +105,13 @@ class InfoDomainResultData(InfoResultData):
     nsset: Optional[str]
     keyset: Optional[str]
     ex_date: Optional[date]
+    auth_info: Optional[Union[str, DomainAuthInfo]]
+    hosts: InitVar[Optional[List[str]]] = None
+    contacts: InitVar[Optional[List[str]]] = None
+
+    def __post_init__(self, hosts, contacts) -> None:
+        self.hosts = hosts or []
+        self.contacts = contacts or []
 
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
@@ -115,6 +122,43 @@ class InfoDomainResultData(InfoResultData):
             'nsset': cls._find_text(element, f'./{cls._namespace}:nsset'),
             'keyset': cls._find_text(element, f'./{cls._namespace}:keyset'),
             'ex_date': cls._optional(cls._parse_date, cls._find_text(element, f'./{cls._namespace}:exDate')),
+            'auth_info': cls._optional(DomainAuthInfo.extract, cls._find(element, f'./{cls._namespace}:authInfo')),
+        }
+        ns = cls._find(element, f'./{InfoDomainResultData._namespace}:ns')
+        contacts = cls._find_all(element, f'./{cls._namespace}:contact')
+        if ns is not None:
+            params['hosts'] = cls._find_all_text(ns, f'./{cls._namespace}:hostObj')
+        if contacts:
+            params['contacts'] = [DomainContact.extract(item) for item in contacts]
+        return {**super()._get_params(element), **params}
+
+
+@dataclass
+class InfoHostResultData(InfoResultData):
+    """Dataclass representing host info in the info host result.
+
+    Attributes:
+        cl_id: Content of the epp/response/resData/infData/clID element.
+        cr_id: Content of the epp/response/resData/infData/crID element.
+        cr_date: Content of the epp/response/resData/infData/crDate element.
+        up_id: Content of the epp/response/resData/infData/upID element.
+        up_date: Content of the epp/response/resData/infData/upDate element.
+        tr_date: Content of the epp/response/resData/infData/trDate element.
+        name: Content of the epp/response/resData/infData/name element.
+        addrs: Content of the epp/response/resData/infData/addr element.
+        statuses: Content of the epp/response/resData/infData/status element.
+    """
+
+    _namespace = 'host'
+
+    name: str
+    addrs: Optional[List[Ip]] = field(default_factory=list)
+
+    @classmethod
+    def _get_params(cls, element: Element) -> Mapping[str, Any]:
+        params: Mapping[str, Any] = {
+            'name': cls._find_text(element, f'./{cls._namespace}:name'),
+            'addrs': [Ip.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:addr')],
         }
         return {**super()._get_params(element), **params}
 
@@ -153,6 +197,7 @@ class InfoContactResultData(InfoResultData):
     vat: Optional[str]
     ident: Optional[Ident]
     notify_email: Optional[str]
+    auth_info: Optional[Union[str, ContactAuthInfo]]
 
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
@@ -166,6 +211,7 @@ class InfoContactResultData(InfoResultData):
             'vat': cls._find_text(element, f'./{cls._namespace}:vat'),
             'ident': cls._optional(Ident.extract, cls._find(element, f'./{cls._namespace}:ident')),
             'notify_email': cls._find_text(element, f'./{cls._namespace}:notifyEmail'),
+            'auth_info': cls._optional(ContactAuthInfo.extract, cls._find(element, f'./{cls._namespace}:authInfo')),
         }
         return {**super()._get_params(element), **params}
 
@@ -192,6 +238,7 @@ class InfoKeysetResultData(InfoResultData):
     id: str
     dnskeys: Sequence[Dnskey]
     techs: Sequence[str]
+    auth_info: Optional[str]
 
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
@@ -199,6 +246,7 @@ class InfoKeysetResultData(InfoResultData):
             'id': cls._find_text(element, f'./{cls._namespace}:id'),
             'dnskeys': [Dnskey.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:dnskey')],
             'techs': cls._find_all_text(element, f'./{cls._namespace}:tech'),
+            'auth_info': cls._find_text(element, f'./{cls._namespace}:authInfo'),
         }
         return {**super()._get_params(element), **params}
 
@@ -227,6 +275,7 @@ class InfoNssetResultData(InfoResultData):
     nss: Sequence[Ns]
     techs: Sequence[str]
     reportlevel: int
+    auth_info: Optional[str]
 
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
@@ -235,5 +284,6 @@ class InfoNssetResultData(InfoResultData):
             'nss': [Ns.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:ns')],
             'techs': cls._find_all_text(element, f'./{cls._namespace}:tech'),
             'reportlevel': int(cls._find_text(element, f'./{cls._namespace}:reportlevel')),
+            'auth_info': cls._find_text(element, f'./{cls._namespace}:authInfo'),
         }
         return {**super()._get_params(element), **params}

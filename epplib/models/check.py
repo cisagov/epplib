@@ -77,6 +77,31 @@ class CheckContactResultData(ExtractModelMixin):
 
 
 @dataclass
+class CheckHostResultData(ExtractModelMixin):
+    """Dataclass representing host availability in the check host result.
+
+    Attributes:
+        name: Content of the epp/response/resData/chkData/cd/name element.
+        avail: Avail attribute of the epp/response/resData/chkData/cd/name element.
+        reason: Content of the epp/response/resData/chkData/cd/reason element.
+    """
+
+    name: str
+    avail: Optional[bool]
+    reason: Optional[str] = None
+
+    @classmethod
+    def extract(cls, element: Element) -> 'CheckHostResultData':
+        """Extract params for own init from the element."""
+        params = (
+            cls._find_text(element, './host:name'),
+            cls._str_to_bool(cls._find_attrib(element, './host:name', 'avail')),
+            cls._find_text(element, './host:reason'),
+        )
+        return cls(*params)
+
+
+@dataclass
 class CheckNssetResultData(ExtractModelMixin):
     """Dataclass representing nsset availability in the check nsset result.
 
