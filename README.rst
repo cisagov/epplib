@@ -46,3 +46,27 @@ See the example below
         print(response_info.res_data[0].ex_date)
 
         client.send(Logout())
+
+When using this library with a registry other than Fred, the XML schema must be changed before importing.
+Fred EPP library is tested with Fred and isn't gauranteed to work with anything else.
+
+.. code-block:: python
+
+    # __init__.py
+
+    NAMESPACE = SimpleNamespace(
+        ...
+        NIC_DOMAIN="urn:ietf:params:xml:ns:domain-1.0",
+        ...
+    )
+
+    SCHEMA_LOCATION = SimpleNamespace(
+        ...
+        NIC_DOMAIN="urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd",
+        ...
+    )
+
+    from epplib import constants
+
+    constants.NAMESPACE = NAMESPACE
+    constants.SCHEMA_LOCATION = SCHEMA_LOCATION
