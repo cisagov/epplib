@@ -28,6 +28,7 @@ NAMESPACE = SimpleNamespace(
     NIC_DOMAIN='http://www.nic.cz/xml/epp/domain-1.4',
     NIC_ENUMVAL='http://www.nic.cz/xml/epp/enumval-1.2',
     NIC_EXTRA_ADDR='http://www.nic.cz/xml/epp/extra-addr-1.0',
+    NIC_HOST='urn:ietf:params:xml:ns:host-1.0',
     NIC_KEYSET='http://www.nic.cz/xml/epp/keyset-1.3',
     NIC_NSSET='http://www.nic.cz/xml/epp/nsset-1.2',
 )
@@ -38,6 +39,7 @@ SCHEMA_LOCATION = SimpleNamespace(
     NIC_DOMAIN='http://www.nic.cz/xml/epp/domain-1.4 domain-1.4.2.xsd',
     NIC_ENUMVAL='http://www.nic.cz/xml/epp/enumval-1.2 enumval-1.2.0.xsd',
     NIC_EXTRA_ADDR='http://www.nic.cz/xml/epp/extra-addr-1.0 extra-addr-1.0.0.xsd',
+    NIC_HOST='urn:ietf:params:xml:ns:host-1.0 host-1.0.xsd',
     NIC_KEYSET='http://www.nic.cz/xml/epp/keyset-1.3 keyset-1.3.2.xsd',
     NIC_NSSET='http://www.nic.cz/xml/epp/nsset-1.2 nsset-1.2.2.xsd',
 )
