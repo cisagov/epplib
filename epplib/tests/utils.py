@@ -55,13 +55,13 @@ class XMLTestCase(TestCase):
     """TestCase with aditional methods for testing xml trees."""
 
     def assertRequestValid(self, request_class: Type[Request], params: Mapping[str, Any],
-                           extension: Optional[CommandExtension] = None) -> None:
+                           extension: Optional[CommandExtension] = None, schema = None) -> None:
         """Assert that the generated XML complies with the schema."""
         request = request_class(**params)
         if extension is not None:
             cast(Command, request).add_extension(extension)
         xml = request.xml(tr_id='tr_id_123')
-        SCHEMA.assertValid(safe_parse(xml))
+        (schema or SCHEMA).assertValid(safe_parse(xml))
 
     def assertXMLEqual(self, doc_1: Element, doc_2: Element) -> None:
         try:

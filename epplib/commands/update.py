@@ -24,7 +24,8 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import Disclose, Dnskey, Ident, Ns, PostalInfo
+from epplib.models import (AuthInfo, Disclose, Dnskey, DomainContact, HostObjSet, HostStatus, Ident, Ip, Ns,
+                           PostalInfo, Status)
 from epplib.responses import Result
 
 
@@ -45,12 +46,12 @@ class UpdateDomain(Command):
     response_class = Result
 
     name: str
-    add: Sequence[str] = field(default_factory=list)
-    rem: Sequence[str] = field(default_factory=list)
+    add: Sequence[Union[str, Status, DomainContact, HostObjSet]] = field(default_factory=list)
+    rem: Sequence[Union[str, Status, DomainContact, HostObjSet]] = field(default_factory=list)
     nsset: Optional[str] = None
     keyset: Optional[str] = None
     registrant: Optional[str] = None
-    auth_info: Optional[str] = None
+    auth_info: Optional[Union[str, AuthInfo]] = None
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command element specific for UpdateDomain.
@@ -68,12 +69,18 @@ class UpdateDomain(Command):
         if self.add:
             add = SubElement(domain_update, QName(NAMESPACE.NIC_DOMAIN, 'add'))
             for item in self.add:
-                SubElement(add, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = item
+                if isinstance(item, str):
+                    SubElement(add, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = item
+                elif isinstance(item, (Status, DomainContact, HostObjSet)):
+                    add.append(item.get_payload())
 
         if self.rem:
             rem = SubElement(domain_update, QName(NAMESPACE.NIC_DOMAIN, 'rem'))
             for item in self.rem:
-                SubElement(rem, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = item
+                if isinstance(item, str):
+                    SubElement(rem, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = item
+                elif isinstance(item, (Status, DomainContact, HostObjSet)):
+                    rem.append(item.get_payload())
 
         if self.nsset is not None or self.keyset is not None or \
                 self.registrant is not None or self.auth_info is not None:
@@ -85,7 +92,10 @@ class UpdateDomain(Command):
             if self.registrant is not None:
                 SubElement(chg, QName(NAMESPACE.NIC_DOMAIN, 'registrant')).text = self.registrant
             if self.auth_info is not None:
-                SubElement(chg, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.auth_info
+                if isinstance(self.auth_info, str):
+                    SubElement(chg, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.auth_info
+                elif isinstance(self.auth_info, AuthInfo):
+                    chg.append(self.auth_info.get_payload())
 
         return update
 
@@ -114,7 +124,7 @@ class UpdateContact(Command):
     voice: Optional[str] = None
     fax: Optional[str] = None
     email: Optional[str] = None
-    auth_info: Optional[str] = None
+    auth_info: Optional[Union[str, AuthInfo]] = None
     disclose: Optional[Disclose] = None
     vat: Optional[str] = None
     ident: Optional[Ident] = None
@@ -156,7 +166,10 @@ class UpdateContact(Command):
         if self.email is not None:
             SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'email')).text = self.email
         if self.auth_info is not None:
-            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'authInfo')).text = self.auth_info
+            if isinstance(self.auth_info, str):
+                SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'authInfo')).text = self.auth_info
+            elif isinstance(self.auth_info, AuthInfo):
+                change.append(self.auth_info.get_payload())
         if self.disclose is not None:
             change.append(self.disclose.get_payload())
         if self.vat is not None:
@@ -167,6 +180,56 @@ class UpdateContact(Command):
             SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'notifyEmail')).text = self.notify_email
 
         return change
+
+
+@dataclass
+class UpdateHost(Command):
+    """EPP update host command.
+
+    Attributes:
+        name: Content of epp/command/update/update/name element.
+        add: Content of epp/command/update/update/add element.
+        rem: Content of epp/command/update/update/rem element.
+        chg: Content of epp/command/update/update/chg/name element.
+    """
+
+    response_class = Result
+
+    name: str
+    add: Sequence[Union[Ip, HostStatus]] = field(default_factory=list)
+    rem: Sequence[Union[Ip, HostStatus]] = field(default_factory=list)
+    chg: Optional[str] = None
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command element specific for UpdateHost.
+
+        Returns:
+            Element with a host to update.
+        """
+        update = Element(QName(NAMESPACE.EPP, 'update'))
+
+        host_update = SubElement(update, QName(NAMESPACE.NIC_HOST, 'update'))
+        host_update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_HOST)
+
+        SubElement(host_update, QName(NAMESPACE.NIC_HOST, 'name')).text = self.name
+
+        add = Element(QName(NAMESPACE.NIC_HOST, 'add'))
+        for item in self.add:
+            add.append(item.get_payload())
+        if len(add):
+            host_update.append(add)
+
+        rem = Element(QName(NAMESPACE.NIC_HOST, 'rem'))
+        for item in self.rem:
+            rem.append(item.get_payload())
+        if len(rem):
+            host_update.append(rem)
+
+        if self.chg is not None:
+            chg = SubElement(host_update, QName(NAMESPACE.NIC_HOST, 'chg'))
+            SubElement(chg, QName(NAMESPACE.NIC_HOST, 'name')).text = self.chg
+
+        return update
 
 
 @dataclass

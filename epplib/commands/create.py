@@ -18,15 +18,16 @@
 
 """Module providing EPP create commands."""
 from dataclasses import dataclass, field
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Union
 
 from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import Disclose, Dnskey, Ident, Ns, Period, Unit
+from epplib.models import AuthInfo, Disclose, Dnskey, Ident, Ip, Ns, Period, Unit
 from epplib.models.create import CreatePostalInfo
-from epplib.responses import CreateContactResult, CreateDomainResult, CreateKeysetResult, CreateNssetResult
+from epplib.responses import (CreateContactResult, CreateDomainResult, CreateHostResult, CreateKeysetResult,
+                              CreateNssetResult)
 
 
 @dataclass
@@ -52,7 +53,7 @@ class CreateDomain(Command):
     nsset: Optional[str] = None
     keyset: Optional[str] = None
     admins: Sequence[str] = field(default_factory=list)
-    auth_info: Optional[str] = None
+    auth_info: Optional[Union[str, AuthInfo]] = None
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command element specific for CreateDomain.
@@ -76,7 +77,10 @@ class CreateDomain(Command):
         for item in self.admins:
             SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = item
         if self.auth_info is not None:
-            SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.auth_info
+            if isinstance(self.auth_info, str):
+                SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.auth_info
+            elif isinstance(self.auth_info, AuthInfo):
+                domain_create.append(self.auth_info.get_payload())
 
         return create
 
@@ -105,7 +109,7 @@ class CreateContact(Command):
     email: str
     voice: Optional[str] = None
     fax: Optional[str] = None
-    auth_info: Optional[str] = None
+    auth_info: Optional[Union[str, AuthInfo]] = None
     disclose: Optional[Disclose] = None
     vat: Optional[str] = None
     ident: Optional[Ident] = None
@@ -129,8 +133,11 @@ class CreateContact(Command):
         if self.fax:
             SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'fax')).text = self.fax
         SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'email')).text = self.email
-        if self.auth_info:
-            SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'authInfo')).text = self.auth_info
+        if self.auth_info is not None:
+            if isinstance(self.auth_info, str):
+                SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'authInfo')).text = self.auth_info
+            elif isinstance(self.auth_info, AuthInfo):
+                contact_create.append(self.auth_info.get_payload())
         if self.disclose:
             contact_create.append(self.disclose.get_payload())
         if self.vat:
@@ -139,6 +146,38 @@ class CreateContact(Command):
             contact_create.append(self.ident.get_payload())
         if self.notify_email:
             SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'notifyEmail')).text = self.notify_email
+
+        return create
+
+
+@dataclass
+class CreateHost(Command):
+    """EPP Create Host command.
+
+    Attributes:
+        name: Content of command/create/create/name element.
+        addrs: Content of command/create/create/addr element.
+    """
+
+    response_class = CreateHostResult
+
+    name: str
+    addrs: Optional[Sequence[Ip]] = field(default_factory=list)
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command element specific for CreateHost.
+
+        Returns:
+            Element with a host to create.
+        """
+        create = Element(QName(NAMESPACE.EPP, 'create'))
+
+        host_create = SubElement(create, QName(NAMESPACE.NIC_HOST, 'create'))
+        host_create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_HOST)
+
+        SubElement(host_create, QName(NAMESPACE.NIC_HOST, 'name')).text = self.name
+        for addr in self.addrs:
+            host_create.append(addr.get_payload())
 
         return create
 

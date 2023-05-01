@@ -19,36 +19,40 @@
 """Module providing EPP commands."""
 
 from .base import Command, Hello, Login, Logout, Request
-from .check import CheckContact, CheckDomain, CheckKeyset, CheckNsset
-from .create import CreateContact, CreateDomain, CreateKeyset, CreateNsset
-from .delete import DeleteContact, DeleteDomain, DeleteKeyset, DeleteNsset
+from .check import CheckContact, CheckDomain, CheckHost, CheckKeyset, CheckNsset
+from .create import CreateContact, CreateDomain, CreateHost, CreateKeyset, CreateNsset
+from .delete import DeleteContact, DeleteDomain, DeleteHost, DeleteKeyset, DeleteNsset
 from .extensions import (CreditInfoRequest, SendAuthInfoContact, SendAuthInfoDomain, SendAuthInfoKeyset,
                          SendAuthInfoNsset, TestNsset)
-from .info import InfoContact, InfoDomain, InfoKeyset, InfoNsset
+from .info import InfoContact, InfoDomain, InfoHost, InfoKeyset, InfoNsset
 from .list import (ListContacts, ListDomains, ListDomainsByContact, ListDomainsByKeyset, ListDomainsByNsset,
                    ListKeysets, ListKeysetsByContact, ListNssets, ListNssetsByContact, ListNssetsByNs, ListResult)
 from .renew import RenewDomain
 from .transfer import TransferContact, TransferDomain, TransferKeyset, TransferNsset
-from .update import UpdateContact, UpdateDomain, UpdateKeyset, UpdateNsset
+from .update import UpdateContact, UpdateDomain, UpdateHost, UpdateKeyset, UpdateNsset
 
 __all__ = [
     'CheckContact',
     'CheckDomain',
+    'CheckHost',
     'CheckKeyset',
     'CheckNsset',
     'Command',
     'CreateContact',
     'CreateDomain',
+    'CreateHost',
     'CreateKeyset',
     'CreateNsset',
     'CreditInfoRequest',
     'DeleteContact',
     'DeleteDomain',
+    'DeleteHost',
     'DeleteKeyset',
     'DeleteNsset',
     'Hello',
     'InfoContact',
     'InfoDomain',
+    'InfoHost',
     'InfoKeyset',
     'InfoNsset',
     'ListContacts',
@@ -77,6 +81,7 @@ __all__ = [
     'TransferNsset',
     'UpdateContact',
     'UpdateDomain',
+    'UpdateHost',
     'UpdateKeyset',
     'UpdateNsset',
 ]

@@ -18,11 +18,13 @@
 
 """Module providing EPP transfer commands."""
 from dataclasses import dataclass
+from typing import Union
 
 from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
+from epplib.models import AuthInfo
 from epplib.responses import Result
 
 
@@ -43,7 +45,10 @@ class Transfer(Command):
         item_transfer = SubElement(root, QName(namespace, 'transfer'))
         item_transfer.set(QName(NAMESPACE.XSI, 'schemaLocation'), schema_location)
         SubElement(item_transfer, QName(namespace, tag)).text = item
-        SubElement(item_transfer, QName(namespace, 'authInfo')).text = self.auth_info
+        if isinstance(self.auth_info, str):
+            SubElement(item_transfer, QName(namespace, 'authInfo')).text = self.auth_info
+        elif isinstance(self.auth_info, AuthInfo):
+            item_transfer.append(self.auth_info.get_payload())
 
         return root
 
@@ -58,7 +63,7 @@ class TransferDomain(Transfer):
     """
 
     name: str
-    auth_info: str
+    auth_info: Union[str, AuthInfo]
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command element specific for TransferDomain.
@@ -79,7 +84,7 @@ class TransferContact(Transfer):
     """
 
     id: str
-    auth_info: str
+    auth_info: Union[str, AuthInfo]
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command element specific for TransferContact.

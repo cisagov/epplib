@@ -18,14 +18,14 @@
 
 """Module providing EPP info commands."""
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 
 from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.responses import InfoContactResult, InfoDomainResult, InfoKeysetResult, InfoNssetResult
-
+from epplib.models import AuthInfo
+from epplib.responses import InfoContactResult, InfoDomainResult, InfoHostResult, InfoKeysetResult, InfoNssetResult
 
 class Info(Command):
     """Base class for EPP Info commands."""
@@ -45,8 +45,10 @@ class Info(Command):
         SubElement(domain_info, QName(namespace, tag)).text = item
 
         if auth_info is not None:
-            SubElement(domain_info, QName(namespace, "authInfo")).text = auth_info
-
+            if isinstance(auth_info, str):
+                SubElement(domain_info, QName(namespace, 'authInfo')).text = auth_info
+            elif isinstance(auth_info, AuthInfo):
+                domain_info.append(auth_info.get_payload())
         return info
 
 
@@ -60,7 +62,7 @@ class InfoDomain(Info):
 
     response_class = InfoDomainResult
     name: str
-    auth_info: Optional[str] = None
+    auth_info: Optional[Union[str, AuthInfo]] = None
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command element specific for InfoDomain.
@@ -82,7 +84,7 @@ class InfoContact(Info):
 
     response_class = InfoContactResult
     id: str
-    auth_info: Optional[str] = None
+    auth_info: Optional[Union[str, AuthInfo]] = None
 
     def _get_command_payload(self) -> Element:
         """Create subelements of the command element specific for InfoContact.
@@ -91,6 +93,26 @@ class InfoContact(Info):
             Element with a contact to query.
         """
         return self._get_info_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id, self.auth_info)
+
+
+@dataclass
+class InfoHost(Info):
+    """EPP Info Domain command.
+
+    Attributes:
+        name: Content of the epp/command/info/info/name element.
+    """
+
+    response_class = InfoHostResult
+    name: str
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command element specific for InfoHost.
+
+        Returns:
+            Element with a host to query.
+        """
+        return self._get_info_payload(NAMESPACE.NIC_HOST, SCHEMA_LOCATION.NIC_HOST, 'name', self.name)
 
 
 @dataclass

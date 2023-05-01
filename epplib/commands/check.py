@@ -24,7 +24,8 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.responses import CheckContactResult, CheckDomainResult, CheckKeysetResult, CheckNssetResult
+from epplib.responses import (CheckContactResult, CheckDomainResult, CheckHostResult, CheckKeysetResult,
+                              CheckNssetResult)
 
 
 class Check(Command):
@@ -85,6 +86,26 @@ class CheckContact(Check):
             Element with a list of contacts to check.
         """
         return self._get_check_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.ids)
+
+
+@dataclass
+class CheckHost(Check):
+    """EPP Domain Check command.
+
+    Attributes:
+        names: Content of the epp/command/check/check/name elements.
+    """
+
+    response_class = CheckHostResult
+    names: List[str]
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command element specific for CheckHost.
+
+        Returns:
+            Element with a list of hosts to check.
+        """
+        return self._get_check_payload(NAMESPACE.NIC_HOST, SCHEMA_LOCATION.NIC_HOST, 'name', self.names)
 
 
 @dataclass
