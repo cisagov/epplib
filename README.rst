@@ -48,7 +48,7 @@ See the example below
         client.send(Logout())
 
 When using this library with a registry other than Fred, the XML schema must be changed before importing.
-Fred EPP library is tested with Fred and isn't gauranteed to work with anything else.
+Fred EPP library is tested with Fred and isn't guaranteed to work with anything else.
 
 .. code-block:: python
 
