@@ -41,6 +41,7 @@ class UpdateDomain(Command):
         keyset: Content of epp/command/update/update/chg/keyset
         registrant: Content of epp/command/update/update/chg/registrant
         auth_info: Content of epp/command/update/update/chg/authInfo
+                   This is a string with FRED XML schema but AuthInfo object with IETF.
     """
 
     response_class = Result
@@ -111,6 +112,7 @@ class UpdateContact(Command):
         fax: Content of epp/command/update/update/chg/fax element.
         email: Content of epp/command/update/update/chg/email element.
         auth_info: Content of epp/command/update/update/chg/authInfo element.
+                   This is a string with FRED XML schema but AuthInfo object with IETF.
         disclose: Content of epp/command/update/update/chg/disclose element.
         vat: Content of epp/command/update/update/chg/vat element.
         ident: Content of epp/command/update/update/chg/ident element.

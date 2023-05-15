@@ -42,6 +42,7 @@ class CreateDomain(Command):
         keyset: Content of the epp/command/create/create/keyset element.
         admins: Content of the epp/command/create/create/admin elements.
         auth_info: Content of the epp/command/create/create/authInfo element.
+                   This is a string with FRED XML schema but AuthInfo object with IETF.
     """
 
     response_class = CreateDomainResult
@@ -96,6 +97,7 @@ class CreateContact(Command):
         voice: Content of command/create/create/voice element.
         fax: Content of command/create/create/fax element.
         auth_info: Content of command/create/create/authInfo element.
+                   This is a string with FRED XML schema but AuthInfo object with IETF.
         disclose: Content of command/create/create/disclose element.
         vat: Content of command/create/create/vat element.
         ident: Content of command/create/create/ident element.
