@@ -20,7 +20,8 @@
 
 from dataclasses import dataclass
 
-from epplib.models.info import InfoContactResultData, InfoDomainResultData, InfoKeysetResultData, InfoNssetResultData
+from epplib.models.info import (InfoContactResultData, InfoDomainResultData, InfoHostResultData, InfoKeysetResultData,
+                                InfoNssetResultData)
 from epplib.responses.base import Result
 
 
@@ -54,6 +55,22 @@ class InfoContactResult(Result[InfoContactResultData]):
 
     _res_data_path = './contact:infData'
     _res_data_class = InfoContactResultData
+
+
+@dataclass
+class InfoHostResult(Result[InfoHostResultData]):
+    """Represents EPP Result which responds to the Info host command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        message: Content of the epp/response/result/msg element.
+        data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    _res_data_path = './host:infData'
+    _res_data_class = InfoHostResultData
 
 
 @dataclass

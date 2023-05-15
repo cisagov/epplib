@@ -85,6 +85,25 @@ class DeleteContact(Delete):
 
 
 @dataclass
+class DeleteHost(Delete):
+    """EPP Host Delete command.
+
+    Attributes:
+        name: Content of the epp/command/delete/delete/name element.
+    """
+
+    name: str
+
+    def _get_command_payload(self) -> Element:
+        """Create subelements of the command element specific for DeleteHost.
+
+        Returns:
+            Element with a list of domains to delete.
+        """
+        return self._get_delete_payload(NAMESPACE.NIC_HOST, SCHEMA_LOCATION.NIC_HOST, 'name', self.name)
+
+
+@dataclass
 class DeleteKeyset(Delete):
     """EPP Delete keyset command.
 

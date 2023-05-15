@@ -63,6 +63,30 @@ class CreateDomainResultData(ExtractModelMixin):
 
 
 @dataclass
+class CreateHostResultData(ExtractModelMixin):
+    """Dataclass representing result of host creation.
+
+    Attributes:
+        name: Content of the epp/response/resData/creData/name element.
+        cr_date: Content of the epp/response/resData/creData/crDate element.
+    """
+
+    name: str
+    cr_date: datetime
+
+    _namespace_prefix: ClassVar[Optional[str]] = 'host'
+
+    @classmethod
+    def extract(cls, element: Element) -> 'CreateHostResultData':
+        """Extract params for own init from the element."""
+        params = (
+            cls._find_text(element, './{}:name'.format(cls._namespace_prefix)),
+            parse_datetime(cls._find_text(element, './{}:crDate'.format(cls._namespace_prefix))),
+        )
+        return cls(*params)
+
+
+@dataclass
 class CreateNonDomainResultData(ExtractModelMixin):
     """Dataclass representing result of creation of object other than domain.
 

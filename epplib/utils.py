@@ -57,6 +57,7 @@ class ParseXMLMixin:
         'fred': NAMESPACE.FRED,
         'contact': NAMESPACE.NIC_CONTACT,
         'domain': NAMESPACE.NIC_DOMAIN,
+        'host': NAMESPACE.NIC_HOST,
         'keyset': NAMESPACE.NIC_KEYSET,
         'nsset': NAMESPACE.NIC_NSSET,
     }

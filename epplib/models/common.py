@@ -20,7 +20,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum, unique
-from typing import ClassVar, List, Mapping, Optional, Sequence, Set, cast
+from typing import ClassVar, List, Mapping, Optional, Sequence, Set, Union, cast
 
 from lxml.etree import Element, QName, SubElement
 
@@ -129,6 +129,31 @@ class Addr(PayloadModelMixin, ExtractModelMixin):
 
 
 @dataclass
+class AuthInfo(PayloadModelMixin, ExtractModelMixin):
+    """Dataclass to represent EPP authInfo element.
+
+    Attributes:
+        pw: Content of the authInfo/pw element.
+    """
+
+    pw: Optional[str]
+
+    def get_payload(self) -> Element:
+        """Get Element representing the model."""
+        auth_info = Element(QName(self.namespace, 'authInfo'))
+        SubElement(auth_info, QName(self.namespace, 'pw')).text = self.pw
+        return auth_info
+
+    @classmethod
+    def extract(cls, element: Element) -> Union[str, 'AuthInfo']:
+        """Extract the model from the element."""
+        pw = cls._find_text(element, './{*}pw')
+        if pw is None:
+            return element.text
+        return cls(pw=pw)
+
+
+@dataclass
 class ContactAddr(Addr):
     """Dataclass to represent EPP contact:addr element.
 
@@ -150,6 +175,22 @@ class ContactAddr(Addr):
 
 
 @dataclass
+class ContactAuthInfo(AuthInfo):
+    """Dataclass to represent EPP contact:authInfo element.
+
+    Attributes:
+        pw: Content of the authInfo/pw element.
+    """
+
+    namespace = NAMESPACE.NIC_CONTACT
+
+    @classmethod
+    def extract(cls, element: Element) -> 'ContactAuthInfo':
+        """Extract the model from the element."""
+        return cast('ContactAuthInfo', super().extract(element))
+
+
+@dataclass
 class Disclose(PayloadModelMixin, ExtractModelMixin):
     """Dataclass to represent EPP disclose element.
 
@@ -162,13 +203,18 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
 
     flag: Optional[bool]
     fields: Set[DiscloseField]
+    types: Optional[Mapping[DiscloseField, str]] = None
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
         flag = '1' if self.flag else '0'
         disclose = Element(QName(self.namespace, 'disclose'), flag=flag)
         for item in sorted(self.fields, key=tuple(DiscloseField).index):
-            SubElement(disclose, QName(self.namespace, item.value))
+            if self.types and item in self.types:
+                type = self.types[item]
+                SubElement(disclose, QName(self.namespace, item.value), type=type)
+            else:
+                SubElement(disclose, QName(self.namespace, item.value))
         return disclose
 
     @classmethod
@@ -178,6 +224,49 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
             flag=cls._str_to_bool(cls._find_attrib(element, '.', 'flag')),
             fields=set(DiscloseField(item) for item in cls._find_children(element, './')),
         )
+
+
+@dataclass
+class DomainAuthInfo(AuthInfo):
+    """Dataclass to represent EPP domain:authInfo element.
+
+    Attributes:
+        pw: Content of the authInfo/pw element.
+    """
+
+    namespace = NAMESPACE.NIC_DOMAIN
+
+    @classmethod
+    def extract(cls, element: Element) -> 'DomainAuthInfo':
+        """Extract the model from the element."""
+        return cast('DomainAuthInfo', super().extract(element))
+
+
+@dataclass
+class DomainContact(PayloadModelMixin, ExtractModelMixin):
+    """Dataclass to represent EPP domain:contact element.
+
+    Attributes:
+        contact: Content of the contact element.
+        type: Content of the type attribute of the contact element.
+    """
+
+    namespace = NAMESPACE.NIC_DOMAIN
+
+    contact: str
+    type: str
+
+    def get_payload(self) -> Element:
+        """Get Element representing the model."""
+        domain_contact = Element(QName(self.namespace, 'contact'))
+        domain_contact.text = self.contact
+        domain_contact.set('type', self.type)
+        return domain_contact
+
+    @classmethod
+    def extract(cls, element: Element) -> 'DomainContact':
+        """Extract the model from the element."""
+        return cls(contact=element.text, type=element.get('type'))
 
 
 @dataclass
@@ -242,6 +331,33 @@ class Dnskey(PayloadModelMixin, ExtractModelMixin):
 
         return cls(flags=flags, protocol=protocol, alg=alg, pub_key=pub_key)
 
+@dataclass
+class HostObjSet(PayloadModelMixin, ExtractModelMixin):
+    """Dataclass to represent EPP domain:ns element.
+
+    Attributes:
+        hosts: Content of the ns/hostObj tag.
+    """
+
+    namespace = NAMESPACE.NIC_DOMAIN
+
+    hosts: List[str] = field(default_factory=list)
+
+    def get_payload(self) -> Element:
+        """Get Element representing the the model."""
+        ns = Element(QName(self.namespace, 'ns'))
+        for host in self.hosts:
+            SubElement(ns, QName(self.namespace, 'hostObj')).text = host
+        return ns
+
+    @classmethod
+    def extract(cls, element: Element) -> 'Dnskey':
+        """Extract the model from the element."""
+        ns = cls._find(element, f'./{cls.namespace}:ns')
+        if ns is not None:
+            return cls(hosts=cls._find_all_text(ns, f'./{cls._namespace}:hostObj'))
+        else:
+            return []
 
 @dataclass
 class Ident(PayloadModelMixin, ExtractModelMixin):
@@ -269,6 +385,35 @@ class Ident(PayloadModelMixin, ExtractModelMixin):
         type = IdentType(cls._find_attrib(element, '.', 'type'))
         value = cls._find_text(element, '.')
         return cls(type=type, value=value)
+
+
+@dataclass
+class Ip(PayloadModelMixin, ExtractModelMixin):
+    """Dataclass to represent EPP addr element.
+
+    Attributes:
+        addr: Content of the addr element.
+        ip: Content of the ip attribute of the addr element.
+    """
+    namespace = NAMESPACE.NIC_HOST
+
+    addr: str
+    ip: Optional[str] = None
+
+    def get_payload(self) -> Element:
+        """Get Element representing the the model."""
+        addr = Element(QName(self.namespace, 'addr'))
+        addr.text = self.addr
+        if self.ip is not None:
+            addr.set('ip', self.ip)
+        return addr
+
+    @classmethod
+    def extract(cls, element: Element) -> 'Ip':
+        """Extract the model from the element."""
+        addr = cls._find_text(element, '.')
+        ip = cls._find_attrib(element, '.', 'ip')
+        return cls(addr=addr, ip=ip)
 
 
 @dataclass
@@ -332,6 +477,7 @@ class PostalInfo(PayloadModelMixin, ExtractModelMixin):
         name: Content of the postalInfo/name element.
         addr: Content of the postalInfo/addr element.
         org: Content of the postalInfo/org element.
+        type: Content of the postalInfo type attribute.
     """
 
     namespace = NAMESPACE.NIC_CONTACT
@@ -339,12 +485,16 @@ class PostalInfo(PayloadModelMixin, ExtractModelMixin):
     name: Optional[str] = None
     addr: Optional[ContactAddr] = None
     org: Optional[str] = None
+    type: Optional[str] = None
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
         postal_info = Element(QName(self.namespace, 'postalInfo'))
+
         if self.name:
             SubElement(postal_info, QName(self.namespace, 'name')).text = self.name
+        if self.type is not None:
+            postal_info.set('type', self.type)
         if self.org is not None:
             SubElement(postal_info, QName(self.namespace, 'org')).text = self.org
         if self.addr:
@@ -386,8 +536,10 @@ class Statement(ExtractModelMixin):
 
 
 @dataclass
-class Status(ExtractModelMixin):
+class Status(PayloadModelMixin, ExtractModelMixin):
     """Represents a status of the queried object in the InfoResult."""
+
+    namespace = NAMESPACE.NIC_DOMAIN
 
     state: str
     description: str
@@ -397,10 +549,40 @@ class Status(ExtractModelMixin):
         if self.lang is None:
             self.lang = 'en'
 
+    def get_payload(self) -> Element:
+        """Get Element representing the model."""
+        status = Element(QName(self.namespace, 'status'))
+        status.set('s', self.state)
+        return status
+
     @classmethod
     def extract(cls, element: Element) -> 'Status':
         """Extract the model from the element."""
         return cls(element.get('s'), element.text, element.get('lang'))
+
+
+@dataclass
+class HostStatus(PayloadModelMixin, ExtractModelMixin):
+    """Dataclass to represent EPP host:status element.
+
+    Attributes:
+        s: Content of the s attribute of the status element.
+    """
+
+    namespace = NAMESPACE.NIC_HOST
+
+    s: str
+
+    def get_payload(self) -> Element:
+        """Get Element representing the model."""
+        status = Element(QName(self.namespace, 'status'))
+        status.set('s', self.s)
+        return status
+
+    @classmethod
+    def extract(cls, element: Element) -> 'Status':
+        """Extract the model from the element."""
+        return cls(s=element.get('s'))
 
 
 @dataclass

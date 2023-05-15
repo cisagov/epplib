@@ -21,8 +21,8 @@
 from dataclasses import dataclass
 from typing import ClassVar, Optional
 
-from epplib.models.create import (CreateContactResultData, CreateDomainResultData, CreateKeysetResultData,
-                                  CreateNssetResultData)
+from epplib.models.create import (CreateContactResultData, CreateDomainResultData, CreateHostResultData,
+                                  CreateKeysetResultData, CreateNssetResultData)
 from epplib.responses.base import Result, T
 
 
@@ -73,6 +73,23 @@ class CreateContactResult(CreateNonDomainResult[CreateContactResultData]):
     _namespace_prefix: ClassVar[Optional[str]] = 'contact'
     _res_data_path = './{}:creData'.format(_namespace_prefix)
     _res_data_class = CreateContactResultData
+
+
+@dataclass
+class CreateHostResult(CreateNonDomainResult[CreateHostResultData]):
+    """Represents EPP Result which responds to the create host command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        msg: Content of the epp/response/result/msg element.
+        res_data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    _namespace_prefix: ClassVar[Optional[str]] = 'host'
+    _res_data_path = './{}:creData'.format(_namespace_prefix)
+    _res_data_class = CreateHostResultData
 
 
 @dataclass

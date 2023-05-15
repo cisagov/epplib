@@ -20,8 +20,8 @@
 
 from dataclasses import dataclass
 
-from epplib.models.check import (CheckContactResultData, CheckDomainResultData, CheckKeysetResultData,
-                                 CheckNssetResultData)
+from epplib.models.check import (CheckContactResultData, CheckDomainResultData, CheckHostResultData,
+                                 CheckKeysetResultData, CheckNssetResultData)
 from epplib.responses.base import Result
 
 
@@ -55,6 +55,22 @@ class CheckContactResult(Result[CheckContactResultData]):
 
     _res_data_path = './contact:chkData/contact:cd'
     _res_data_class = CheckContactResultData
+
+
+@dataclass
+class CheckHostResult(Result[CheckHostResultData]):
+    """Represents EPP Result which responds to the Check host command.
+
+    Attributes:
+        code: Code attribute of the epp/response/result element.
+        msg: Content of the epp/response/result/msg element.
+        res_data: Content of the epp/response/result/resData element.
+        cl_tr_id: Content of the epp/response/trID/clTRID element.
+        sv_tr_id: Content of the epp/response/trID/svTRID element.
+    """
+
+    _res_data_path = './host:chkData/host:cd'
+    _res_data_class = CheckHostResultData
 
 
 @dataclass
