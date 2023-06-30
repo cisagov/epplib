@@ -18,14 +18,14 @@
 
 """Module providing EPP command extensions."""
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import ClassVar,Optional, Sequence
 from datetime import date
-from typing import ClassVar, Optional
 
 from lxml.etree import Element, QName, SubElement
-
+from lxml import etree
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import ExtraAddr
+from epplib.models import ExtraAddr, DSData, SecDNSKeyData
 
 
 class CommandExtension(ABC):
@@ -49,12 +49,32 @@ class CreateContactMailingAddressExtension(CommandExtension):
     def get_payload(self) -> Element:
         """Create EPP Elements specific to CreateContactMailingAddressExtension."""
         create = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, 'create'))
+        # print("create is "+str(etree))
         create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_EXTRA_ADDR)
         mailing = SubElement(create, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
         mailing.append(self.addr.get_payload())
         return create
 
+@dataclass
+class CreateDomainSecDNSExtension(CommandExtension):
+    maxSigLife: Optional[int] =None
+    dsData: Optional[DSData] = None
+    keyData: Optional[SecDNSKeyData] =None
+    def get_payload(self) -> Element:
+ 
+        create =Element(QName(NAMESPACE.SEC_DNS, "create"), nsmap={"secDNS":NAMESPACE.SEC_DNS})
+    
+        print( etree.tostring(create))
 
+        if not self.maxSigLife is None:
+            SubElement(create,QName(NAMESPACE.SEC_DNS, "maxSigLife")).text = str(self.maxSigLife)
+        if  not self.dsData is None:
+            create.append(self.dsData.get_payload())
+        if not self.keyData is None:
+            create.append(self.keyData.get_payload())
+        return create
+
+    
 @dataclass
 class UpdateContactMailingAddressExtension(CommandExtension):
     """Mailing address extension for Update contact command.

@@ -315,7 +315,13 @@ class Result(Response, Generic[T]):
         data = []
         if element is not None:
             for child in element:
+                print(child)
+                print("child tag\n")
+                print(child.tag)
+                print("after\n")
                 extension_class = EXTENSIONS.get(child.tag, None)
+                print("extension is ")
+                print(extension_class)
                 if extension_class is None:
                     LOGGER.warning('Could not find class to extract extension {}.'.format(child.tag))
                 else:

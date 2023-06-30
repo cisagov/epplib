@@ -22,6 +22,7 @@ from types import SimpleNamespace
 
 NAMESPACE = SimpleNamespace(
     EPP='urn:ietf:params:xml:ns:epp-1.0',
+    SEC_DNS='urn:ietf:params:xml:ns:secDNS-1.1',
     XSI='http://www.w3.org/2001/XMLSchema-instance',
     FRED='http://www.nic.cz/xml/epp/fred-1.5',
     NIC_CONTACT='http://www.nic.cz/xml/epp/contact-1.6',
@@ -35,6 +36,7 @@ NAMESPACE = SimpleNamespace(
 SCHEMA_LOCATION = SimpleNamespace(
     XSI='urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
     FRED='http://www.nic.cz/xml/epp/fred-1.5 fred-1.5.0.xsd',
+    SEC_DNS='urn:ietf:params:xml:ns:secDNS-1.1 secDNS-1.1.xsd',
     NIC_CONTACT='http://www.nic.cz/xml/epp/contact-1.6 contact-1.6.2.xsd',
     NIC_DOMAIN='http://www.nic.cz/xml/epp/domain-1.4 domain-1.4.2.xsd',
     NIC_ENUMVAL='http://www.nic.cz/xml/epp/enumval-1.2 enumval-1.2.0.xsd',

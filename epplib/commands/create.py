@@ -85,6 +85,8 @@ class CreateDomain(Command):
 
         return create
 
+    def add_secDNS_extension(self, maxSigLife)-> None:
+        self.add_extension()
 
 @dataclass
 class CreateContact(Command):
