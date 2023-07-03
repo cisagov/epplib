@@ -27,6 +27,7 @@ from lxml.etree import Element, QName
 
 from epplib.constants import NAMESPACE
 from epplib.models import ExtraAddr
+from epplib.models.common import DSData, SecDNSKeyData
 from epplib.utils import ParseXMLMixin
 
 
@@ -117,6 +118,45 @@ class MailingAddressExtension(ParseXMLMixin, ResponseExtension):
         """
         addr = ExtraAddr.extract(cls._find(element, './extra-addr:mailing/extra-addr:addr'))
         return cls(addr=addr)
+
+@dataclass
+class SecDNSExtension(ParseXMLMixin, ResponseExtension):
+    """Dataclass to represent
+
+    Attributes:
+       
+    """
+
+    _NAMESPACES: ClassVar[Mapping[str, str]] = {
+        **ParseXMLMixin._NAMESPACES,
+        'secDNS': NAMESPACE.SEC_DNS,
+    }
+
+    # The whole sec dns address is wrapped into an infData element.
+    tag = QName(NAMESPACE.SEC_DNS, 'infData')
+
+    maxSigLife: Optional[int] =None
+    dsData: Optional[DSData] = None
+    keyData: Optional[SecDNSKeyData] =None
+
+    @classmethod
+    def extract(cls, element: Element) -> 'SecDNSExtension':
+        """Extract the extension content from the element.
+
+        Args:
+            element: XML element containing the extension data.
+
+        Returns:
+            Dataclass representing the extension.
+        """
+        print("DS DATA FROM FIND")
+        print(  cls._find(element, './secDNS:dsData'))
+        print("************after find")
+        maxSigLife = cls._optional( int,cls._find_text(element, './secDNS:maxSigLife'))
+        dsData = cls._optional(DSData.extract, cls._find(element, './secDNS:dsData'))
+        keyData=cls._optional(SecDNSKeyData.extract, cls._find(element, './secDNS:keyData'))
+        return cls(maxSigLife=maxSigLife, dsData=dsData,keyData=keyData)
+
 
 
 EXTENSIONS: Dict[QName, Type[ResponseExtension]] = {

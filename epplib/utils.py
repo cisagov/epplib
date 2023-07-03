@@ -55,13 +55,13 @@ class ParseXMLMixin:
     _NAMESPACES: ClassVar[Mapping[str, str]] = {
         'epp': NAMESPACE.EPP,
         'fred': NAMESPACE.FRED,
-        'secdns':NAMESPACE.SEC_DNS,
+        'secDNS':NAMESPACE.SEC_DNS,
         'contact': NAMESPACE.NIC_CONTACT,
         'domain': NAMESPACE.NIC_DOMAIN,
         'host': NAMESPACE.NIC_HOST,
         'keyset': NAMESPACE.NIC_KEYSET,
         'nsset': NAMESPACE.NIC_NSSET
-    }#add secdns here
+    }
 
     duration_regex: ClassVar[Pattern] = re.compile(
         (

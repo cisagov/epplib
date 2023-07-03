@@ -27,7 +27,7 @@ from lxml.etree import Element, QName, SubElement
 from epplib.constants import NAMESPACE
 from epplib.utils import ParseXMLMixin
 
-
+from lxml import etree
 @unique
 class DiscloseField(str, Enum):
     """Allowed values of subelements of disclose element."""
@@ -379,7 +379,7 @@ class DSData(PayloadModelMixin, ExtractModelMixin):
       validation. 
     """
 
-    _alias: ClassVar[str]
+    _alias= "secDNS"
 
     keyTag: int
     alg: int
@@ -395,21 +395,23 @@ class DSData(PayloadModelMixin, ExtractModelMixin):
         SubElement(ds_data, QName(NAMESPACE.SEC_DNS, "alg")).text =str(self.alg)
         SubElement(ds_data, QName(NAMESPACE.SEC_DNS, "digestType")).text = str(self.digestType)
         SubElement(ds_data, QName(NAMESPACE.SEC_DNS, "digest")).text = self.digest
-    
+
+        print(self.keyData)
         if not self.keyData is None:
             ds_data.append(self.keyData.get_payload())
 
         return ds_data
 
     @classmethod
-    def extract(cls, element: Element) -> 'Addr':
+    def extract(cls, element: Element) -> 'DSData':
         """Extract the model from the element."""
+      
         return cls(
-            keyTag=int(cls._find_all_text(element, f'./{cls._alias}:keyTag')),
+            keyTag=int(cls._find_text(element, f'./{cls._alias}:keyTag')),
             alg=int(cls._find_text(element, f'./{cls._alias}:alg')),
             digestType=int(cls._find_text(element, f'./{cls._alias}:digestType')),
             digest=cls._find_text(element, f'./{cls._alias}:digest'),
-            keyData=cls._optional(SecDNSKeyData.extract, cls._find(element, './{cls._alias}:keyData'))
+            keyData=cls._optional(SecDNSKeyData.extract, cls._find(element, './secDNS:keyData'))
             )
     
 @dataclass
