@@ -49,7 +49,6 @@ class CreateContactMailingAddressExtension(CommandExtension):
     def get_payload(self) -> Element:
         """Create EPP Elements specific to CreateContactMailingAddressExtension."""
         create = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, 'create'))
-        # print("create is "+str(etree))
         create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_EXTRA_ADDR)
         mailing = SubElement(create, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
         mailing.append(self.addr.get_payload())
@@ -57,23 +56,65 @@ class CreateContactMailingAddressExtension(CommandExtension):
 
 @dataclass
 class CreateDomainSecDNSExtension(CommandExtension):
+    #SEEE CreateHost for making lists of data elements
     maxSigLife: Optional[int] =None
-    dsData: Optional[DSData] = None
-    keyData: Optional[SecDNSKeyData] =None
+    dsData: Optional[DSData] = None ## should be a list
+    keyData: Optional[SecDNSKeyData] =None #should be a list
     def get_payload(self) -> Element:
  
         create =Element(QName(NAMESPACE.SEC_DNS, "create"), nsmap={"secDNS":NAMESPACE.SEC_DNS})
     
-        print( etree.tostring(create))
-
         if not self.maxSigLife is None:
             SubElement(create,QName(NAMESPACE.SEC_DNS, "maxSigLife")).text = str(self.maxSigLife)
+
+        #can't have both dsdata and keydata, one or the the other
         if  not self.dsData is None:
             create.append(self.dsData.get_payload())
-        if not self.keyData is None:
+        elif not self.keyData is None:
             create.append(self.keyData.get_payload())
         return create
+@dataclass
+class UpdateDomainSecDNSExtension(CommandExtension):
+    maxSigLife: Optional[int] =None
+    dsData: Optional[DSData] = None
+    keyData: Optional[SecDNSKeyData] =None
+    remDsData:Optional[DSData] = None #should be a list to add
+    remKeyData:Optional[SecDNSKeyData] =None #should be a list to remove
+    remAllDsKeyData: Optional[bool]=False
 
+    def _make_remove_element(self, element: Element)->Element:
+        return SubElement(element,QName(NAMESPACE.SEC_DNS, "rem"))
+    def get_payload(self) -> Element:
+ 
+        update =Element(QName(NAMESPACE.SEC_DNS, "update"), nsmap={"secDNS":NAMESPACE.SEC_DNS})
+    
+       
+        #remove elmements need to preceed the add elements, don't move this order
+        if self.remAllDsKeyData:
+            remAll=self._make_remove_element(update)
+            SubElement(remAll,QName(NAMESPACE.SEC_DNS, "all")).text = "true"
+
+        elif not self.remDsData is None: #change when made a list?
+            remDsElement=self._make_remove_element(update)
+            remDsElement.append(self.remDsData.get_payload())## change to list accessing
+        
+        elif  not self.remKeyData is None: #change when made a list?
+            remKeyElement=self._make_remove_element(update)
+            remKeyElement.append(self.remDsData.get_payload())## change to list accessing
+        
+        if  not self.dsData is None: 
+            addElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "add"))
+            addElement.append(self.dsData.get_payload())
+        elif  not self.keyData is None: 
+            addElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "add"))
+            addElement.append(self.keyData.get_payload())  
+       
+        if not self.maxSigLife is None: 
+            ##add a change element first
+            changeElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "chg"))
+            SubElement(changeElement,QName(NAMESPACE.SEC_DNS, "maxSigLife")).text = str(self.maxSigLife)
+
+        return update
     
 @dataclass
 class UpdateContactMailingAddressExtension(CommandExtension):

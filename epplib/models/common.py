@@ -396,7 +396,6 @@ class DSData(PayloadModelMixin, ExtractModelMixin):
         SubElement(ds_data, QName(NAMESPACE.SEC_DNS, "digestType")).text = str(self.digestType)
         SubElement(ds_data, QName(NAMESPACE.SEC_DNS, "digest")).text = self.digest
 
-        print(self.keyData)
         if not self.keyData is None:
             ds_data.append(self.keyData.get_payload())
 

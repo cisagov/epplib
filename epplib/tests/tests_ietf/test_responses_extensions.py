@@ -28,7 +28,6 @@ class TestSecDnsExtension(TestCase):
     EM = ElementMaker(namespace=NAMESPACE.SEC_DNS,nsmap={"secDNS":NAMESPACE.SEC_DNS})
 
     def test_extract_with_DsData(self):
-        #make test with just max sig see what happens
         element = self.EM.infData(self.EM.maxSigLife(str(self.paramsWithDsData['maxSigLife'])),
             self.EM.dsData(
                 self.EM.keyTag(str(self.dsDataDict['keyTag'])),
@@ -59,7 +58,6 @@ class TestSecDnsExtension(TestCase):
 
 
     def test_extract_with_keyData(self):
-        #make test with just max sig see what happens
         element = self.EM.infData(
                 self.EM.keyData(
                     self.EM.flags(str(self.keyDataDict['flags'])),

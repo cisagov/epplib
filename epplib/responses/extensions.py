@@ -149,9 +149,6 @@ class SecDNSExtension(ParseXMLMixin, ResponseExtension):
         Returns:
             Dataclass representing the extension.
         """
-        print("DS DATA FROM FIND")
-        print(  cls._find(element, './secDNS:dsData'))
-        print("************after find")
         maxSigLife = cls._optional( int,cls._find_text(element, './secDNS:maxSigLife'))
         dsData = cls._optional(DSData.extract, cls._find(element, './secDNS:dsData'))
         keyData=cls._optional(SecDNSKeyData.extract, cls._find(element, './secDNS:keyData'))
@@ -162,4 +159,5 @@ class SecDNSExtension(ParseXMLMixin, ResponseExtension):
 EXTENSIONS: Dict[QName, Type[ResponseExtension]] = {
     EnumInfoExtension.tag: EnumInfoExtension,
     MailingAddressExtension.tag: MailingAddressExtension,
+    SecDNSExtension.tag: SecDNSExtension
 }
