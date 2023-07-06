@@ -367,7 +367,7 @@ class SecDNSKeyData(PayloadModelMixin, ExtractModelMixin):
       
 @dataclass
 class DSData(PayloadModelMixin, ExtractModelMixin):
-    """Dataclass to represent EPP dsData.
+    """Dataclass to represent EPP secdns extension dsData element.
 
     Attributes:
         keyTag: Content of the dsData/keyTag (an unsignedShort)
@@ -384,7 +384,7 @@ class DSData(PayloadModelMixin, ExtractModelMixin):
     keyTag: int
     alg: int
     digestType: int #typically 0 or 1 but can also be 2-255
-    digest: Optional[str]
+    digest: str
     keyData: Optional[SecDNSKeyData] =None
 
     def get_payload(self) -> Element:

@@ -15,6 +15,7 @@ keyDataDict={'flags':257,
                     'protocol':3,
                     'alg':1,
                     'pubKey':'AQPJ////4Q=='}
+
 dsDataDict={
             'keyTag':12345,
             'alg':3,
@@ -22,14 +23,26 @@ dsDataDict={
             'digest':'49FD46E6C4B45C55D4AC',
             'keyData':SecDNSKeyData(**keyDataDict)
             }
+dsDataIncomplete={'keyTag':1234,
+            'alg':2,
+            'digestType':0,
+            'digest':'49FD46E6C4B45C55D4AC'}
+
 paramsWithDsData:Mapping[str, Any] = {
         'maxSigLife': 3215,
-        'dsData':DSData(**dsDataDict)
+        'dsData':[DSData(**dsDataDict)]
     }
+
 paramsWithKeyData:Mapping[str, Any] = {
         'maxSigLife': 3215,
-        'keyData':SecDNSKeyData(**keyDataDict)
+        'keyData':[SecDNSKeyData(**keyDataDict)]
     }
+
+paramsWithMultiDsData:Mapping[str, Any] = {
+        'maxSigLife': 3215,
+        'dsData':[DSData(**dsDataDict),DSData(**dsDataIncomplete)]
+    }
+
 command_params: Dict[str, Any] = {
         'name': 'thisdomain.cz',
         'registrant': 'CID-MYOWN',
@@ -44,11 +57,11 @@ command_params: Dict[str, Any] = {
 class TestCreateDomainSecDNS(XMLTestCase):
 
     def test_data_with_dsData(self):
-        extension = CreateDomainSecDNSExtension(**paramsWithDsData)
+        extension = CreateDomainSecDNSExtension(**paramsWithMultiDsData)
         EM = ElementMaker(namespace=NAMESPACE.SEC_DNS,nsmap={"secDNS":NAMESPACE.SEC_DNS})
         
         expected = EM.create(
-            EM.maxSigLife(str(paramsWithDsData['maxSigLife'])),
+            EM.maxSigLife(str(paramsWithMultiDsData['maxSigLife'])),
             EM.dsData(
                 EM.keyTag(str(dsDataDict['keyTag'])),
                 EM.alg(str(dsDataDict['alg'])),
@@ -60,6 +73,12 @@ class TestCreateDomainSecDNS(XMLTestCase):
                             EM.alg(str(keyDataDict['alg'])),
                             EM.pubKey(str(keyDataDict['pubKey']))
                            )
+            ),
+            EM.dsData(
+                EM.keyTag(str(dsDataIncomplete['keyTag'])),
+                EM.alg(str(dsDataIncomplete['alg'])),
+                EM.digestType(str(dsDataIncomplete['digestType'])),
+                EM.digest(dsDataIncomplete['digest'])
             )
         )
 
@@ -70,7 +89,7 @@ class TestCreateDomainSecDNS(XMLTestCase):
         
         EM = ElementMaker(namespace=NAMESPACE.SEC_DNS,nsmap={"secDNS":NAMESPACE.SEC_DNS})
         expected = EM.create(
-            EM.maxSigLife(str(paramsWithDsData['maxSigLife'])),
+            EM.maxSigLife(str(paramsWithKeyData['maxSigLife'])),
             EM.keyData(
                     EM.flags(str(keyDataDict['flags'])),
                     EM.protocol(str(keyDataDict['protocol'])),
@@ -84,7 +103,7 @@ class TestCreateDomainSecDNS(XMLTestCase):
         self.assertXMLEqual(extension.get_payload(), expected)
         
     def test_valid(self):
-        extension = CreateDomainSecDNSExtension(**paramsWithDsData)
+        extension = CreateDomainSecDNSExtension(**paramsWithMultiDsData)
         self.assertRequestValid(CreateDomain, command_params, extension=extension,schema=SCHEMA)
 
 
@@ -104,10 +123,10 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
             'keyData':SecDNSKeyData(**addKeyData)
             }
     updateParams={"maxSigLife":1222,
-                  "remDsData":paramsWithDsData['dsData'],
-                  "dsData":DSData(**addDsData)}
+                  "remDsData":paramsWithMultiDsData['dsData'],
+                  "dsData":[DSData(**addDsData), paramsWithMultiDsData['dsData'][1]]}
     updateParamsKeyData={"remKeyData":paramsWithKeyData['keyData'],
-                  "keyData":SecDNSKeyData(**addKeyData)}
+                  "keyData":[SecDNSKeyData(**addKeyData)]}
     
     def setUp(self) -> None:
         """Setup params."""
@@ -131,19 +150,34 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
                             EM.alg(str(keyDataDict['alg'])),
                             EM.pubKey(str(keyDataDict['pubKey']))
                            )
-            )),
-            EM.add(EM.dsData(
-                EM.keyTag(str(self.addDsData['keyTag'])),
-                EM.alg(str(self.addDsData['alg'])),
-                EM.digestType(str(self.addDsData['digestType'])),
-                EM.digest(self.addDsData['digest']),
-                EM.keyData(
-                        EM.flags(str(self.addKeyData['flags'])),
-                        EM.protocol(str(self.addKeyData['protocol'])),
-                        EM.alg(str(self.addKeyData['alg'])),
-                        EM.pubKey(str(self.addKeyData['pubKey']))
-                        )
-            )),  
+            ),
+             EM.dsData(
+                    EM.keyTag(str(dsDataIncomplete['keyTag'])),
+                    EM.alg(str(dsDataIncomplete['alg'])),
+                    EM.digestType(str(dsDataIncomplete['digestType'])),
+                    EM.digest(dsDataIncomplete['digest'])
+                )
+                ),
+            EM.add(
+                EM.dsData(
+                    EM.keyTag(str(self.addDsData['keyTag'])),
+                    EM.alg(str(self.addDsData['alg'])),
+                    EM.digestType(str(self.addDsData['digestType'])),
+                    EM.digest(self.addDsData['digest']),
+                    EM.keyData(
+                            EM.flags(str(self.addKeyData['flags'])),
+                            EM.protocol(str(self.addKeyData['protocol'])),
+                            EM.alg(str(self.addKeyData['alg'])),
+                            EM.pubKey(str(self.addKeyData['pubKey']))
+                            )
+                ),
+                EM.dsData(
+                    EM.keyTag(str(dsDataIncomplete['keyTag'])),
+                    EM.alg(str(dsDataIncomplete['alg'])),
+                    EM.digestType(str(dsDataIncomplete['digestType'])),
+                    EM.digest(dsDataIncomplete['digest'])
+                )
+            ),
             EM.chg( EM.maxSigLife(str(self.updateParams['maxSigLife'])))
         )
 
