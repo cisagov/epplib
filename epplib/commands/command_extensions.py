@@ -100,7 +100,7 @@ class UpdateDomainSecDNSExtension(CommandExtension):
         
         elif  not self.remKeyData is None: #change when made a list?
             remKeyElement=self._make_remove_element(update)
-            remKeyElement.append(self.remDsData.get_payload())## change to list accessing
+            remKeyElement.append(self.remKeyData.get_payload())## change to list accessing
         
         if  not self.dsData is None: 
             addElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "add"))

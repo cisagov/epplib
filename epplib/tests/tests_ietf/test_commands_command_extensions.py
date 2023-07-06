@@ -30,7 +30,11 @@ paramsWithKeyData:Mapping[str, Any] = {
         'maxSigLife': 3215,
         'keyData':SecDNSKeyData(**keyDataDict)
     }
-
+command_params: Dict[str, Any] = {
+        'name': 'thisdomain.cz',
+        'registrant': 'CID-MYOWN',
+        'auth_info': DomainAuthInfo(pw='2fooBAR123fooBaz'),
+    }
 
 @patch('epplib.commands.create.NAMESPACE', NAMESPACE)
 @patch('epplib.commands.create.SCHEMA_LOCATION', SCHEMA_LOCATION)
@@ -38,30 +42,6 @@ paramsWithKeyData:Mapping[str, Any] = {
 @patch('epplib.constants', NAMESPACE)
 @patch('epplib.constants.SCHEMA_LOCATION', SCHEMA_LOCATION)
 class TestCreateDomainSecDNS(XMLTestCase):
-    command_params: Dict[str, Any] = {
-        'name': 'thisdomain.cz',
-        'registrant': 'CID-MYOWN',
-        'auth_info': DomainAuthInfo(pw='2fooBAR123fooBaz'),
-    }
-    # keyDataDict={'flags':257,
-    #                 'protocol':3,
-    #                 'alg':1,
-    #                 'pubKey':'AQPJ////4Q=='}
-    # dsDataDict={
-    #         'keyTag':12345,
-    #         'alg':3,
-    #         'digestType':1,
-    #         'digest':'49FD46E6C4B45C55D4AC',
-    #         'keyData':SecDNSKeyData(**keyDataDict)
-    #         }
-    # paramsWithDsData:Mapping[str, Any] = {
-    #     'maxSigLife': 3215,
-    #     'dsData':DSData(**dsDataDict)
-    # }
-    # paramsWithKeyData:Mapping[str, Any] = {
-    #     'maxSigLife': 3215,
-    #     'keyData':SecDNSKeyData(**keyDataDict)
-    # }
 
     def test_data_with_dsData(self):
         extension = CreateDomainSecDNSExtension(**paramsWithDsData)
@@ -105,21 +85,7 @@ class TestCreateDomainSecDNS(XMLTestCase):
         
     def test_valid(self):
         extension = CreateDomainSecDNSExtension(**paramsWithDsData)
-        request = CreateDomain(**self.command_params)
-        cast(commands, request).add_extension(extension)
-        xml = request.xml(tr_id='tr_id_123')
-        parser = etree.XMLParser(no_network=True, resolve_entities=False)
-        parsed = etree.fromstring(xml, parser=parser)  
-
-        if parsed.getroottree().docinfo.doctype:
-            print("error")
-        print("~~~~~*******")
-        print()
-        r=CreateDomain(**self.command_params)
-        cast(CreateDomain,request).add_extension(extension)
-        xml=request.xml(tr_id="123")
-        print(xml)
-        self.assertRequestValid(CreateDomain, self.command_params, extension=extension,schema=SCHEMA)
+        self.assertRequestValid(CreateDomain, command_params, extension=extension,schema=SCHEMA)
 
 
 @patch('epplib.commands.update.NAMESPACE', NAMESPACE)
@@ -129,12 +95,12 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
     addKeyData={'flags':250,
                     'protocol':2,
                     'alg':0,
-                    'pubKey':'AQPJ//213245//='}
+                    'pubKey':'vPup3limpJ7VChFaNJky+A=='}
     addDsData={
             'keyTag':1234,
             'alg':1,
             'digestType':3,
-            'digest':'49FD46E6C4BSDFLASDHK',
+            'digest':'ec0bdd990b39feead889f0ba613db4ad',
             'keyData':SecDNSKeyData(**addKeyData)
             }
     updateParams={"maxSigLife":1222,
@@ -147,9 +113,7 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
         """Setup params."""
         self.params = {'name': 'mydoma.in', 'auth_info': DomainAuthInfo(pw='2fooBAR123fooBaz')}
 
-    def test_valid(self):
-        self.assertRequestValid(UpdateDomain, self.params, schema=SCHEMA)
-
+   
     def test_data_with_dsData(self):
         extension = UpdateDomainSecDNSExtension(**self.updateParams)
         EM = ElementMaker(namespace=NAMESPACE.SEC_DNS,nsmap={"secDNS":NAMESPACE.SEC_DNS})
@@ -183,12 +147,6 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
             EM.chg( EM.maxSigLife(str(self.updateParams['maxSigLife'])))
         )
 
-        # print("****EXPECTED****")
-        # print(etree.tostring(expected, pretty_print=False))
-        # print("********")
-        # print("\n\n\n\n****actual****")
-        # print(etree.tostring(extension.get_payload(), pretty_print=False))
-        # print("********")
         self.assertXMLEqual(extension.get_payload(), expected)
     
     def test_data_with_removeAll(self):
@@ -216,18 +174,23 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
                     EM.pubKey(str(keyDataDict['pubKey']))
                     )
             ),
-            EM.add(      
-                EM.flags(str(self.addKeyData['flags'])),
-                EM.protocol(str(self.addKeyData['protocol'])),
-                EM.alg(str(self.addKeyData['alg'])),
-                EM.pubKey(str(self.addKeyData['pubKey']))
+            EM.add(
+                EM.keyData(      
+                    EM.flags(str(self.addKeyData['flags'])),
+                    EM.protocol(str(self.addKeyData['protocol'])),
+                    EM.alg(str(self.addKeyData['alg'])),
+                    EM.pubKey(str(self.addKeyData['pubKey']))
+                )
             )
             
         )
-        print("****EXPECTED****")
-        print(etree.tostring(expected, pretty_print=False))
-        print("********")
-        print("\n\n\n\n****actual****")
-        print(etree.tostring(extension.get_payload(), pretty_print=False))
-        print("********")
+
         self.assertXMLEqual(extension.get_payload(), expected)
+    
+    def test_valid_no_extension (self):
+        self.assertRequestValid(UpdateDomain, self.params, schema=SCHEMA)
+
+    def test_valid(self):
+        extension = UpdateDomainSecDNSExtension(**self.updateParams)
+        self.assertRequestValid(UpdateDomain, self.params, extension=extension,schema=SCHEMA)
+
