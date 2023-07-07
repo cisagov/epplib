@@ -60,7 +60,7 @@ class ParseXMLMixin:
         'domain': NAMESPACE.NIC_DOMAIN,
         'host': NAMESPACE.NIC_HOST,
         'keyset': NAMESPACE.NIC_KEYSET,
-        'nsset': NAMESPACE.NIC_NSSET
+        'nsset': NAMESPACE.NIC_NSSET,
     }
     duration_regex: ClassVar[Pattern] = re.compile(
         (
