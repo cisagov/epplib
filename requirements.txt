@@ -1,0 +1,5 @@
+freezegun==1.2.2
+lxml==4.9.3
+python-dateutil==2.8.2
+six==1.16.0
+testfixtures==7.1.0
