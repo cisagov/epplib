@@ -27,7 +27,6 @@ from lxml.etree import Element, QName, SubElement
 from epplib.constants import NAMESPACE
 from epplib.utils import ParseXMLMixin
 
-from lxml import etree
 @unique
 class DiscloseField(str, Enum):
     """Allowed values of subelements of disclose element."""

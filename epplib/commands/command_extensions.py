@@ -23,7 +23,6 @@ from typing import ClassVar,Optional, Sequence
 from datetime import date
 
 from lxml.etree import Element, QName, SubElement
-from lxml import etree
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.models import ExtraAddr, DSData, SecDNSKeyData
 
@@ -86,11 +85,21 @@ class CreateDomainSecDNSExtension(CommandExtension):
         return create
 @dataclass
 class UpdateDomainSecDNSExtension(CommandExtension):
+    """Sec DNS Extension for Update Domain command.
+    Attributes:
+        maxSigLife: unsigned short, content of extension/update/secDNS/maxSigLife.
+        dsData: list of DSData each will be the content of extension/update/secDNS/add/dsdata
+        keyData: list of SecDNSKeyData each will be the content of extension/update/secDNS/add/keyData
+        remDsData:  list of DSData each will be the content of extension/update/secDNS/rem/dsdata
+        remKeyData: list of SecDNSKeyData each will be the content of extension/update/secDNS/rem/keyData
+        remAllDsKeyData: boolean False does nothing, content of extension/update/secDNS/rem/all.
+    """
+
     maxSigLife: Optional[int] =None
     dsData: Optional[DSData] = None
     keyData: Optional[SecDNSKeyData] =None
-    remDsData:Optional[DSData] = None #should be a list to add
-    remKeyData:Optional[SecDNSKeyData] =None #should be a list to remove
+    remDsData:Optional[DSData] = None 
+    remKeyData:Optional[SecDNSKeyData] =None 
     remAllDsKeyData: Optional[bool]=False
 
     def _make_remove_element(self, element: Element)->Element:
@@ -121,6 +130,7 @@ class UpdateDomainSecDNSExtension(CommandExtension):
 
             for dsDataObj in self.dsData:
                 addElement.append(dsDataObj.get_payload())
+                
         elif  not self.keyData is None: 
             addElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "add"))
 
@@ -128,7 +138,6 @@ class UpdateDomainSecDNSExtension(CommandExtension):
                 addElement.append(keyDataObj.get_payload())  
        
         if not self.maxSigLife is None: 
-            
             changeElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "chg"))
             SubElement(changeElement,QName(NAMESPACE.SEC_DNS, "maxSigLife")).text = str(self.maxSigLife)
 

@@ -62,7 +62,6 @@ class ParseXMLMixin:
         'keyset': NAMESPACE.NIC_KEYSET,
         'nsset': NAMESPACE.NIC_NSSET
     }
-
     duration_regex: ClassVar[Pattern] = re.compile(
         (
             r'^(?P<sign>-)?P(?P<years>\d+Y)?(?P<months>\d+M)?(?P<days>\d+D)?'
