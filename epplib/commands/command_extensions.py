@@ -109,9 +109,6 @@ class UpdateDomainSecDNSExtension(CommandExtension):
             remDsElement=self._make_remove_element(update)
             
             for remDsDataObj in self.remDsData:  
-                print("*****SET REMOVE")
-                print(remDsDataObj)
-                print("*****")
                 remDsElement.append(remDsDataObj.get_payload())
         
         elif  not self.remKeyData is None: #change when made a list?

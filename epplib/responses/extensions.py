@@ -21,7 +21,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date
-from typing import ClassVar, Dict, Mapping, Optional, Type
+from typing import ClassVar, Dict, Mapping, Optional, Sequence, Type
 
 from lxml.etree import Element, QName
 
@@ -121,10 +121,12 @@ class MailingAddressExtension(ParseXMLMixin, ResponseExtension):
 
 @dataclass
 class SecDNSExtension(ParseXMLMixin, ResponseExtension):
-    """Dataclass to represent
+    """Dataclass to represent secDNS as returned by InfoResponse
 
     Attributes:
-       
+        maxSigLife: Content of extension/infdata/secDNS/maxSigLife.
+        dsData:  Content of extension/infdata/secDNS/dsData.
+        keyData:  Content of extension/infdata/secDNS/keyData.
     """
 
     _NAMESPACES: ClassVar[Mapping[str, str]] = {
@@ -136,8 +138,8 @@ class SecDNSExtension(ParseXMLMixin, ResponseExtension):
     tag = QName(NAMESPACE.SEC_DNS, 'infData')
 
     maxSigLife: Optional[int] =None
-    dsData: Optional[DSData] = None
-    keyData: Optional[SecDNSKeyData] =None
+    dsData: Optional[Sequence[DSData]] = None 
+    keyData: Optional[Sequence[SecDNSKeyData]] = None
 
     @classmethod
     def extract(cls, element: Element) -> 'SecDNSExtension':
@@ -150,8 +152,13 @@ class SecDNSExtension(ParseXMLMixin, ResponseExtension):
             Dataclass representing the extension.
         """
         maxSigLife = cls._optional( int,cls._find_text(element, './secDNS:maxSigLife'))
-        dsData = cls._optional(DSData.extract, cls._find(element, './secDNS:dsData'))
-        keyData=cls._optional(SecDNSKeyData.extract, cls._find(element, './secDNS:keyData'))
+        
+        allDsData= cls._find_all(element, './secDNS:dsData')
+        allKeyData=cls._find_all(element, './secDNS:keyData')
+
+        dsData = [ cls._optional(DSData.extract, dsElement) for dsElement in allDsData] if len(allDsData) > 0 else None
+        keyData=[ cls._optional(SecDNSKeyData.extract, keyElement) for keyElement in allKeyData] if len(allKeyData) > 0 else None
+        
         return cls(maxSigLife=maxSigLife, dsData=dsData,keyData=keyData)
 
 
