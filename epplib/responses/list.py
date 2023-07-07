@@ -36,7 +36,7 @@ class ListResult(Result[ListResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './fred:infoResponse'
+    _res_data_path = "./fred:infoResponse"
     _res_data_class = ListResultData
 
 
@@ -52,5 +52,5 @@ class GetResultsResult(Result[GetResultsResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './fred:resultsList/fred:item'
+    _res_data_path = "./fred:resultsList/fred:item"
     _res_data_class = GetResultsResultData

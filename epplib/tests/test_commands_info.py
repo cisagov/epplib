@@ -25,10 +25,9 @@ from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
 
 class TestInfoDomain(XMLTestCase):
-
     def setUp(self) -> None:
         """Setup params."""
-        self.params = {'name': 'mydoma.in', 'auth_info': 'pswd'}
+        self.params = {"name": "mydoma.in", "auth_info": "pswd"}
 
     def test_valid(self):
         self.assertRequestValid(InfoDomain, self.params)
@@ -42,9 +41,13 @@ class TestInfoDomain(XMLTestCase):
             EM.command(
                 EM.info(
                     domain.info(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        domain.name(self.params['name']),
-                        domain.authInfo(self.params['auth_info']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
+                        domain.name(self.params["name"]),
+                        domain.authInfo(self.params["auth_info"]),
                     )
                 )
             )
@@ -59,8 +62,12 @@ class TestInfoDomain(XMLTestCase):
             EM.command(
                 EM.info(
                     domain.info(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        domain.name(self.params['name']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
+                        domain.name(self.params["name"]),
                     )
                 )
             )
@@ -69,10 +76,9 @@ class TestInfoDomain(XMLTestCase):
 
 
 class TestInfoContact(XMLTestCase):
-
     def setUp(self) -> None:
         """Setup params."""
-        self.params = {'id': 'CID-MYCONTACT', 'auth_info': 'pswd'}
+        self.params = {"id": "CID-MYCONTACT", "auth_info": "pswd"}
 
     def test_valid(self):
         self.assertRequestValid(InfoContact, self.params)
@@ -86,9 +92,13 @@ class TestInfoContact(XMLTestCase):
             EM.command(
                 EM.info(
                     contact.info(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
-                        contact.id(self.params['id']),
-                        contact.authInfo(self.params['auth_info']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_CONTACT
+                        },
+                        contact.id(self.params["id"]),
+                        contact.authInfo(self.params["auth_info"]),
                     )
                 )
             )
@@ -103,8 +113,12 @@ class TestInfoContact(XMLTestCase):
             EM.command(
                 EM.info(
                     contact.info(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
-                        contact.id(self.params['id']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_CONTACT
+                        },
+                        contact.id(self.params["id"]),
                     )
                 )
             )
@@ -113,10 +127,9 @@ class TestInfoContact(XMLTestCase):
 
 
 class TestInfoKeyset(XMLTestCase):
-
     def setUp(self) -> None:
         """Setup params."""
-        self.params = {'id': 'KID-MYKEYSET', 'auth_info': 'pswd'}
+        self.params = {"id": "KID-MYKEYSET", "auth_info": "pswd"}
 
     def test_valid(self):
         self.assertRequestValid(InfoKeyset, self.params)
@@ -130,9 +143,13 @@ class TestInfoKeyset(XMLTestCase):
             EM.command(
                 EM.info(
                     keyset.info(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
-                        keyset.id(self.params['id']),
-                        keyset.authInfo(self.params['auth_info']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_KEYSET
+                        },
+                        keyset.id(self.params["id"]),
+                        keyset.authInfo(self.params["auth_info"]),
                     )
                 )
             )
@@ -147,8 +164,12 @@ class TestInfoKeyset(XMLTestCase):
             EM.command(
                 EM.info(
                     keyset.info(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
-                        keyset.id(self.params['id']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_KEYSET
+                        },
+                        keyset.id(self.params["id"]),
                     )
                 )
             )
@@ -157,10 +178,9 @@ class TestInfoKeyset(XMLTestCase):
 
 
 class TestInfoNsset(XMLTestCase):
-
     def setUp(self) -> None:
         """Setup params."""
-        self.params = {'id': 'NID-MYNSSET', 'auth_info': 'pswd'}
+        self.params = {"id": "NID-MYNSSET", "auth_info": "pswd"}
 
     def test_valid(self):
         self.assertRequestValid(InfoNsset, self.params)
@@ -174,9 +194,13 @@ class TestInfoNsset(XMLTestCase):
             EM.command(
                 EM.info(
                     nsset.info(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
-                        nsset.id(self.params['id']),
-                        nsset.authInfo(self.params['auth_info']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_NSSET
+                        },
+                        nsset.id(self.params["id"]),
+                        nsset.authInfo(self.params["auth_info"]),
                     )
                 )
             )
@@ -191,8 +215,12 @@ class TestInfoNsset(XMLTestCase):
             EM.command(
                 EM.info(
                     nsset.info(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
-                        nsset.id(self.params['id']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_NSSET
+                        },
+                        nsset.id(self.params["id"]),
                     )
                 )
             )

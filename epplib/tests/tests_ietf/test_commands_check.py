@@ -25,10 +25,10 @@ from epplib.tests.tests_ietf.constants import NAMESPACE, SCHEMA_LOCATION, SCHEMA
 
 
 class TestCheckHost(XMLTestCase):
-    hosts = ['ns1.domain.cz', 'ns1.other.com']
+    hosts = ["ns1.domain.cz", "ns1.other.com"]
 
     def test_valid(self):
-        self.assertRequestValid(CheckHost, {'names': self.hosts}, schema=SCHEMA)
+        self.assertRequestValid(CheckHost, {"names": self.hosts}, schema=SCHEMA)
 
     def test_data(self):
         root = fromstring(CheckHost(self.hosts).xml())
@@ -37,7 +37,11 @@ class TestCheckHost(XMLTestCase):
             EM.command(
                 EM.check(
                     host.check(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_HOST},
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_HOST
+                        },
                         *[host.name(item) for item in self.hosts]
                     )
                 )

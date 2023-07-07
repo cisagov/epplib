@@ -36,9 +36,9 @@ class ListResultData(ExtractModelMixin):
     count: int
 
     @classmethod
-    def extract(cls, element: Element) -> 'ListResultData':
+    def extract(cls, element: Element) -> "ListResultData":
         """Extract params for own init from the element."""
-        count = int(cls._find_text(element, './fred:count'))
+        count = int(cls._find_text(element, "./fred:count"))
         return cls(count=count)
 
 
@@ -46,7 +46,7 @@ class GetResultsResultData(ExtractModelMixin, str):
     """Class representing the list command result."""
 
     @classmethod
-    def extract(cls, element: Element) -> 'GetResultsResultData':
+    def extract(cls, element: Element) -> "GetResultsResultData":
         """Extract params for own init from the element."""
-        value = cls._find_text(element, '.')
+        value = cls._find_text(element, ".")
         return cls(value)

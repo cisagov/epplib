@@ -39,10 +39,10 @@ class CreditInfoResultData(ExtractModelMixin):
     credit: Decimal
 
     @classmethod
-    def extract(cls, element: Element) -> 'CreditInfoResultData':
+    def extract(cls, element: Element) -> "CreditInfoResultData":
         """Extract params for own init from the element."""
         params = (
-            cls._find_text(element, './fred:zone'),
-            Decimal(cls._find_text(element, './fred:credit')),
+            cls._find_text(element, "./fred:zone"),
+            Decimal(cls._find_text(element, "./fred:credit")),
         )
         return cls(*params)

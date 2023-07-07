@@ -24,34 +24,32 @@ from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
 
 class TestListResult(TestCase):
-
     def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_list.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_list.xml").read_bytes()
         result = ListResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 1000)
         self.assertEqual(result.res_data, [ListResultData(4)])
 
     def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_error.xml").read_bytes()
         result = ListResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
 
 
 class TestGetResultsResult(TestCase):
-
     def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_get_results.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_get_results.xml").read_bytes()
         result = GetResultsResult.parse(xml, SCHEMA)
         expected = [
-            '1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa',
-            'mydomain.cz',
-            'thisdomain.cz',
-            'trdomain.cz',
+            "1.1.1.7.4.5.2.2.2.0.2.4.e164.arpa",
+            "mydomain.cz",
+            "thisdomain.cz",
+            "trdomain.cz",
         ]
         self.assertEqual(result.code, 1000)
         self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_error.xml").read_bytes()
         result = GetResultsResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)

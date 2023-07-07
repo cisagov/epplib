@@ -30,18 +30,18 @@ from epplib.commands.command_extensions import CommandExtension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.utils import safe_parse
 
-T = TypeVar('T')
-U = TypeVar('U')
+T = TypeVar("T")
+U = TypeVar("U")
 
-BASE_DATA_PATH = Path(__file__).parent / 'data'
-SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / 'schemas/all-2.4.3.xsd'))
+BASE_DATA_PATH = Path(__file__).parent / "data"
+SCHEMA = XMLSchema(file=str(BASE_DATA_PATH / "schemas/all-2.4.3.xsd"))
 
 EM = ElementMaker(namespace=NAMESPACE.EPP)
 
 
 def make_epp_root(*elements: Element, **kwargs: Any) -> Element:
     """Create root element of EPP so we do not have to repeat boilerplate code."""
-    attrib = {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.XSI}
+    attrib = {QName(NAMESPACE.XSI, "schemaLocation"): SCHEMA_LOCATION.XSI}
     attrib.update(kwargs)
     return EM.epp(*elements, attrib)
 
@@ -54,21 +54,28 @@ def sub_dict(source: Mapping[T, U], keys: Sequence[T]) -> Mapping[T, U]:
 class XMLTestCase(TestCase):
     """TestCase with aditional methods for testing xml trees."""
 
-    def assertRequestValid(self, request_class: Type[Request], params: Mapping[str, Any],
-                           extension: Optional[CommandExtension] = None, schema = None) -> None:
+    def assertRequestValid(
+        self,
+        request_class: Type[Request],
+        params: Mapping[str, Any],
+        extension: Optional[CommandExtension] = None,
+        schema=None,
+    ) -> None:
         """Assert that the generated XML complies with the schema."""
         request = request_class(**params)
         if extension is not None:
             cast(Command, request).add_extension(extension)
-        xml = request.xml(tr_id='tr_id_123')
+        xml = request.xml(tr_id="tr_id_123")
         (schema or SCHEMA).assertValid(safe_parse(xml))
 
     def assertXMLEqual(self, doc_1: Element, doc_2: Element) -> None:
         try:
             self._assertXMLEqual(doc_1, doc_2)
-        except AssertionError as error:  # pragma: no cover - Only called when the test fails.
+        except (
+            AssertionError
+        ) as error:  # pragma: no cover - Only called when the test fails.
             message = self._xml_diff(doc_1, doc_2)
-            raise AssertionError('XML documents are different:\n' + message) from error
+            raise AssertionError("XML documents are different:\n" + message) from error
 
     def _assertXMLEqual(self, doc_1: Element, doc_2: Element) -> None:
         """Recursive version of assertXMLEqual where we do not catch the exceptions so we can do it at the top level."""
@@ -81,16 +88,20 @@ class XMLTestCase(TestCase):
             self.assertIsNotNone(child_2)
             self._assertXMLEqual(child_1, child_2)
 
-    def _xml_diff(self, doc_1: Element, doc_2: Element) -> str:  # pragma: no cover - Only called when the test fails.
+    def _xml_diff(
+        self, doc_1: Element, doc_2: Element
+    ) -> str:  # pragma: no cover - Only called when the test fails.
         """Compare str representation of XML documents and return the diff."""
         rep_1 = self._prepare_for_diff(doc_1)
         rep_2 = self._prepare_for_diff(doc_2)
 
         diff = unified_diff(rep_1, rep_2)
-        return ''.join(diff)
+        return "".join(diff)
 
-    def _prepare_for_diff(self, doc: Element) -> List[str]:  # pragma: no cover - Only called when the test fails.
+    def _prepare_for_diff(
+        self, doc: Element
+    ) -> List[str]:  # pragma: no cover - Only called when the test fails.
         """Convert Element to unified_diff input format."""
-        string = cast(str, tostring(doc, pretty_print=True, encoding='unicode'))
+        string = cast(str, tostring(doc, pretty_print=True, encoding="unicode"))
         lines = string.splitlines(keepends=True)
         return lines

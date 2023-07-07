@@ -33,14 +33,16 @@ class Request(ABC):
 
     response_class: ClassVar[Type[Response]]
 
-    def xml(self, tr_id: Optional[str] = None, schema: Optional[XMLSchema] = None) -> bytes:
+    def xml(
+        self, tr_id: Optional[str] = None, schema: Optional[XMLSchema] = None
+    ) -> bytes:
         """Return the XML representation of the Request.
 
         Returns:
             The XML representation of the Request.
         """
-        root = Element(QName(NAMESPACE.EPP, 'epp'))
-        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.XSI)
+        root = Element(QName(NAMESPACE.EPP, "epp"))
+        root.set(QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.XSI)
         root.append(self._get_payload(tr_id=tr_id))
 
         document = ElementTree(root)
@@ -48,7 +50,7 @@ class Request(ABC):
         if schema is not None:
             schema.assertValid(document)
 
-        return cast(bytes, tostring(document, encoding='utf-8', xml_declaration=True))
+        return cast(bytes, tostring(document, encoding="utf-8", xml_declaration=True))
 
     @abstractmethod
     def _get_payload(self, tr_id: Optional[str]) -> Element:
@@ -70,7 +72,7 @@ class Hello(Request):
         Returns:
             Element with the payload of the Hello command.
         """
-        return Element(QName(NAMESPACE.EPP, 'hello'))
+        return Element(QName(NAMESPACE.EPP, "hello"))
 
 
 class Command(Request):
@@ -93,17 +95,17 @@ class Command(Request):
         Returns:
             Element with the Command payload.
         """
-        command_element = Element(QName(NAMESPACE.EPP, 'command'))
+        command_element = Element(QName(NAMESPACE.EPP, "command"))
         command_element.append(self._get_command_payload())
 
         extension_payload = self._get_extension_payload()
         if extension_payload:
-            extension_tag = Element(QName(NAMESPACE.EPP, 'extension'))
+            extension_tag = Element(QName(NAMESPACE.EPP, "extension"))
             extension_tag.extend(extension_payload)
             command_element.append(extension_tag)
 
         if tr_id is not None:
-            SubElement(command_element, QName(NAMESPACE.EPP, 'clTRID')).text = tr_id
+            SubElement(command_element, QName(NAMESPACE.EPP, "clTRID")).text = tr_id
         return command_element
 
     @abstractmethod
@@ -143,8 +145,8 @@ class Login(Command):
     password: str
     obj_uris: List[str]
     new_pw: Optional[str] = None
-    version: str = '1.0'
-    lang: str = 'en'
+    version: str = "1.0"
+    lang: str = "en"
     ext_uris: List[str] = field(default_factory=list)
 
     def _get_command_payload(self) -> Element:
@@ -153,25 +155,25 @@ class Login(Command):
         Returns:
             Element with the Login specific payload.
         """
-        root = Element(QName(NAMESPACE.EPP, 'login'))
+        root = Element(QName(NAMESPACE.EPP, "login"))
 
-        SubElement(root, QName(NAMESPACE.EPP, 'clID')).text = self.cl_id
-        SubElement(root, QName(NAMESPACE.EPP, 'pw')).text = self.password
+        SubElement(root, QName(NAMESPACE.EPP, "clID")).text = self.cl_id
+        SubElement(root, QName(NAMESPACE.EPP, "pw")).text = self.password
         if self.new_pw is not None:
-            SubElement(root, QName(NAMESPACE.EPP, 'newPW')).text = self.new_pw
+            SubElement(root, QName(NAMESPACE.EPP, "newPW")).text = self.new_pw
 
-        options = SubElement(root, QName(NAMESPACE.EPP, 'options'))
-        SubElement(options, QName(NAMESPACE.EPP, 'version')).text = self.version
-        SubElement(options, QName(NAMESPACE.EPP, 'lang')).text = self.lang
+        options = SubElement(root, QName(NAMESPACE.EPP, "options"))
+        SubElement(options, QName(NAMESPACE.EPP, "version")).text = self.version
+        SubElement(options, QName(NAMESPACE.EPP, "lang")).text = self.lang
 
-        svcs = SubElement(root, QName(NAMESPACE.EPP, 'svcs'))
+        svcs = SubElement(root, QName(NAMESPACE.EPP, "svcs"))
         for uri in self.obj_uris:
-            SubElement(svcs, QName(NAMESPACE.EPP, 'objURI')).text = uri
+            SubElement(svcs, QName(NAMESPACE.EPP, "objURI")).text = uri
 
         if len(self.ext_uris) > 0:
-            svc_extension = SubElement(svcs, QName(NAMESPACE.EPP, 'svcExtension'))
+            svc_extension = SubElement(svcs, QName(NAMESPACE.EPP, "svcExtension"))
             for uri in self.ext_uris:
-                SubElement(svc_extension, QName(NAMESPACE.EPP, 'extURI')).text = uri
+                SubElement(svc_extension, QName(NAMESPACE.EPP, "extURI")).text = uri
 
         return root
 
@@ -188,4 +190,4 @@ class Logout(Command):
         Returns:
             Element with the Logout specific payload.
         """
-        return Element(QName(NAMESPACE.EPP, 'logout'))
+        return Element(QName(NAMESPACE.EPP, "logout"))

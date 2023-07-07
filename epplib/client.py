@@ -55,12 +55,16 @@ class Client:
         self.schema = schema
         self.greeting: Optional[Greeting] = None
 
-    def __enter__(self) -> 'Client':
+    def __enter__(self) -> "Client":
         self.connect()
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException],
-                 exc_tb: Optional[TracebackType]) -> None:
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         self.close()
 
     def connect(self) -> None:
@@ -88,8 +92,8 @@ class Client:
         self.transport.send(message)
 
         response = self._receive(request.response_class)
-        if hasattr(response, 'cl_tr_id') and (response.cl_tr_id != tr_id):
-            log_message = 'clTRID of the response ({}) differs from the clTRID of the request ({}).'
+        if hasattr(response, "cl_tr_id") and (response.cl_tr_id != tr_id):
+            log_message = "clTRID of the response ({}) differs from the clTRID of the request ({})."
             LOGGER.warning(log_message.format(response.cl_tr_id, tr_id))
         return response
 
@@ -109,9 +113,11 @@ class Client:
         return response_parsed
 
     def _genereate_tr_id(self) -> str:
-        random = ''.join(choices(ascii_lowercase + digits, k=6))  # nosec - Not a security feature.
+        random = "".join(
+            choices(ascii_lowercase + digits, k=6)
+        )  # nosec - Not a security feature.
         timestamp = datetime.now().isoformat()
-        return '{}#{}'.format(random, timestamp)
+        return "{}#{}".format(random, timestamp)
 
     def _log_raw_xml(self, xml: bytes) -> None:
         """Log raw xml, try converting it to UTF-8."""

@@ -41,12 +41,12 @@ class CheckDomainResultData(ExtractModelMixin):
     reason: Optional[str] = None
 
     @classmethod
-    def extract(cls, element: Element) -> 'CheckDomainResultData':
+    def extract(cls, element: Element) -> "CheckDomainResultData":
         """Extract params for own init from the element."""
         params = (
-            cls._find_text(element, './domain:name'),
-            cls._str_to_bool(cls._find_attrib(element, './domain:name', 'avail')),
-            cls._find_text(element, './domain:reason'),
+            cls._find_text(element, "./domain:name"),
+            cls._str_to_bool(cls._find_attrib(element, "./domain:name", "avail")),
+            cls._find_text(element, "./domain:reason"),
         )
         return cls(*params)
 
@@ -66,12 +66,12 @@ class CheckContactResultData(ExtractModelMixin):
     reason: Optional[str] = None
 
     @classmethod
-    def extract(cls, element: Element) -> 'CheckContactResultData':
+    def extract(cls, element: Element) -> "CheckContactResultData":
         """Extract params for own init from the element."""
         params = (
-            cls._find_text(element, './contact:id'),
-            cls._str_to_bool(cls._find_attrib(element, './contact:id', 'avail')),
-            cls._find_text(element, './contact:reason'),
+            cls._find_text(element, "./contact:id"),
+            cls._str_to_bool(cls._find_attrib(element, "./contact:id", "avail")),
+            cls._find_text(element, "./contact:reason"),
         )
         return cls(*params)
 
@@ -91,12 +91,12 @@ class CheckHostResultData(ExtractModelMixin):
     reason: Optional[str] = None
 
     @classmethod
-    def extract(cls, element: Element) -> 'CheckHostResultData':
+    def extract(cls, element: Element) -> "CheckHostResultData":
         """Extract params for own init from the element."""
         params = (
-            cls._find_text(element, './host:name'),
-            cls._str_to_bool(cls._find_attrib(element, './host:name', 'avail')),
-            cls._find_text(element, './host:reason'),
+            cls._find_text(element, "./host:name"),
+            cls._str_to_bool(cls._find_attrib(element, "./host:name", "avail")),
+            cls._find_text(element, "./host:reason"),
         )
         return cls(*params)
 
@@ -116,12 +116,12 @@ class CheckNssetResultData(ExtractModelMixin):
     reason: Optional[str] = None
 
     @classmethod
-    def extract(cls, element: Element) -> 'CheckNssetResultData':
+    def extract(cls, element: Element) -> "CheckNssetResultData":
         """Extract params for own init from the element."""
         params = (
-            cls._find_text(element, './nsset:id'),
-            cls._str_to_bool(cls._find_attrib(element, './nsset:id', 'avail')),
-            cls._find_text(element, './nsset:reason'),
+            cls._find_text(element, "./nsset:id"),
+            cls._str_to_bool(cls._find_attrib(element, "./nsset:id", "avail")),
+            cls._find_text(element, "./nsset:reason"),
         )
         return cls(*params)
 
@@ -141,11 +141,11 @@ class CheckKeysetResultData(ExtractModelMixin):
     reason: Optional[str] = None
 
     @classmethod
-    def extract(cls, element: Element) -> 'CheckKeysetResultData':
+    def extract(cls, element: Element) -> "CheckKeysetResultData":
         """Extract params for own init from the element."""
         params = (
-            cls._find_text(element, './keyset:id'),
-            cls._str_to_bool(cls._find_attrib(element, './keyset:id', 'avail')),
-            cls._find_text(element, './keyset:reason'),
+            cls._find_text(element, "./keyset:id"),
+            cls._str_to_bool(cls._find_attrib(element, "./keyset:id", "avail")),
+            cls._find_text(element, "./keyset:reason"),
         )
         return cls(*params)

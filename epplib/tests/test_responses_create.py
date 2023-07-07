@@ -19,56 +19,69 @@
 from datetime import date, datetime, timedelta, timezone
 from unittest import TestCase
 
-from epplib.models.create import (CreateContactResultData, CreateDomainResultData, CreateKeysetResultData,
-                                  CreateNssetResultData)
-from epplib.responses import CreateContactResult, CreateDomainResult, CreateKeysetResult, CreateNssetResult
+from epplib.models.create import (
+    CreateContactResultData,
+    CreateDomainResultData,
+    CreateKeysetResultData,
+    CreateNssetResultData,
+)
+from epplib.responses import (
+    CreateContactResult,
+    CreateDomainResult,
+    CreateKeysetResult,
+    CreateNssetResult,
+)
 from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
 
 class TestCreateDomainResult(TestCase):
-
     def test_parse_full(self):
-        xml_template = (BASE_DATA_PATH / 'responses/result_create_domain_template.xml').read_bytes()
-        xml = xml_template.replace(b'{exDate}', b'<domain:exDate>2018-08-09</domain:exDate>')
+        xml_template = (
+            BASE_DATA_PATH / "responses/result_create_domain_template.xml"
+        ).read_bytes()
+        xml = xml_template.replace(
+            b"{exDate}", b"<domain:exDate>2018-08-09</domain:exDate>"
+        )
         result = CreateDomainResult.parse(xml, SCHEMA)
         expected = [
             CreateDomainResultData(
-                'thisdomain.cz',
+                "thisdomain.cz",
                 datetime(2017, 8, 9, 12, 31, 49, tzinfo=timezone(timedelta(hours=2))),
-                date(2018, 8, 9)
+                date(2018, 8, 9),
             )
         ]
         self.assertEqual(result.code, 1000)
         self.assertEqual(result.res_data, expected)
 
     def test_parse_minimal(self):
-        xml_template = (BASE_DATA_PATH / 'responses/result_create_domain_template.xml').read_bytes()
-        xml = xml_template.replace(b'{exDate}', b'')
+        xml_template = (
+            BASE_DATA_PATH / "responses/result_create_domain_template.xml"
+        ).read_bytes()
+        xml = xml_template.replace(b"{exDate}", b"")
         result = CreateDomainResult.parse(xml, SCHEMA)
         expected = [
             CreateDomainResultData(
-                'thisdomain.cz',
+                "thisdomain.cz",
                 datetime(2017, 8, 9, 12, 31, 49, tzinfo=timezone(timedelta(hours=2))),
-                None
+                None,
             )
         ]
         self.assertEqual(result.code, 1000)
         self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_error.xml").read_bytes()
         result = CreateDomainResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
 
 
 class TestCreateContactResult(TestCase):
-
     def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_create_contact.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_create_contact.xml").read_bytes()
         result = CreateContactResult.parse(xml, SCHEMA)
         expected = [
             CreateContactResultData(
-                'CID-MYCONTACT',
+                "CID-MYCONTACT",
                 datetime(2017, 7, 28, 12, 11, 43, tzinfo=timezone(timedelta(hours=2))),
             )
         ]
@@ -76,19 +89,18 @@ class TestCreateContactResult(TestCase):
         self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_error.xml").read_bytes()
         result = CreateContactResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
 
 
 class TestCreateNssetResult(TestCase):
-
     def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_create_nsset.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_create_nsset.xml").read_bytes()
         result = CreateNssetResult.parse(xml, SCHEMA)
         expected = [
             CreateNssetResultData(
-                'NID-ANSSET',
+                "NID-ANSSET",
                 datetime(2017, 8, 9, 15, 53, 15, tzinfo=timezone(timedelta(hours=2))),
             )
         ]
@@ -96,19 +108,18 @@ class TestCreateNssetResult(TestCase):
         self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_error.xml").read_bytes()
         result = CreateNssetResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)
 
 
 class TestCreateKeysetResult(TestCase):
-
     def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_create_keyset.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_create_keyset.xml").read_bytes()
         result = CreateKeysetResult.parse(xml, SCHEMA)
         expected = [
             CreateKeysetResultData(
-                'KID-AKEYSET',
+                "KID-AKEYSET",
                 datetime(2017, 8, 9, 15, 53, 15, tzinfo=timezone(timedelta(hours=2))),
             )
         ]
@@ -116,6 +127,6 @@ class TestCreateKeysetResult(TestCase):
         self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_error.xml").read_bytes()
         result = CreateKeysetResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)

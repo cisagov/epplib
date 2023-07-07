@@ -28,12 +28,18 @@ from lxml.etree import Element, QName
 
 from epplib.constants import NAMESPACE
 from epplib.models import TestResult
-from epplib.models.info import (InfoContactResultData, InfoDomainResultData, InfoHostResultData, InfoKeysetResultData,
-                                InfoNssetResultData, InfoResultData)
+from epplib.models.info import (
+    InfoContactResultData,
+    InfoDomainResultData,
+    InfoHostResultData,
+    InfoKeysetResultData,
+    InfoNssetResultData,
+    InfoResultData,
+)
 from epplib.utils import ParseXMLMixin
 
-T = TypeVar('T', bound=InfoResultData)
-ObjectUpdateT = TypeVar('ObjectUpdateT', bound='ObjectUpdate')
+T = TypeVar("T", bound=InfoResultData)
+ObjectUpdateT = TypeVar("ObjectUpdateT", bound="ObjectUpdate")
 
 
 class PollMessage(ABC):
@@ -43,7 +49,7 @@ class PollMessage(ABC):
 
     @classmethod
     @abstractmethod
-    def extract(cls, element: Element) -> 'PollMessage':
+    def extract(cls, element: Element) -> "PollMessage":
         """Extract the Message from the element."""
 
 
@@ -59,7 +65,7 @@ class LowCredit(ParseXMLMixin, PollMessage):
         credit: Content of the epp/response/msgQ/msg/lowCreditData/credit/credit element.
     """
 
-    tag = QName(NAMESPACE.FRED, 'lowCreditData')
+    tag = QName(NAMESPACE.FRED, "lowCreditData")
 
     zone: str
     limit_zone: str
@@ -68,14 +74,20 @@ class LowCredit(ParseXMLMixin, PollMessage):
     credit: Decimal
 
     @classmethod
-    def extract(cls, element: Element) -> 'LowCredit':
+    def extract(cls, element: Element) -> "LowCredit":
         """Extract the Message from the element."""
-        zone = cls._find_text(element, './fred:zone')
-        credit_zone = cls._find_text(element, './fred:credit/fred:zone')
-        credit = Decimal(cls._find_text(element, './fred:credit/fred:credit'))
-        limit_zone = cls._find_text(element, './fred:limit/fred:zone')
-        limit = Decimal(cls._find_text(element, './fred:limit/fred:credit'))
-        return cls(zone=zone, credit_zone=credit_zone, credit=credit, limit_zone=limit_zone, limit=limit)
+        zone = cls._find_text(element, "./fred:zone")
+        credit_zone = cls._find_text(element, "./fred:credit/fred:zone")
+        credit = Decimal(cls._find_text(element, "./fred:credit/fred:credit"))
+        limit_zone = cls._find_text(element, "./fred:limit/fred:zone")
+        limit = Decimal(cls._find_text(element, "./fred:limit/fred:credit"))
+        return cls(
+            zone=zone,
+            credit_zone=credit_zone,
+            credit=credit,
+            limit_zone=limit_zone,
+            limit=limit,
+        )
 
 
 @dataclass
@@ -90,7 +102,7 @@ class RequestUsage(ParseXMLMixin, PollMessage):
         price: Content of the epp/response/msgQ/msg/requestFeeInfoData/price element.
     """
 
-    tag = QName(NAMESPACE.FRED, 'requestFeeInfoData')
+    tag = QName(NAMESPACE.FRED, "requestFeeInfoData")
 
     period_from: datetime
     period_to: datetime
@@ -99,13 +111,13 @@ class RequestUsage(ParseXMLMixin, PollMessage):
     price: Decimal
 
     @classmethod
-    def extract(cls, element: Element) -> 'RequestUsage':
+    def extract(cls, element: Element) -> "RequestUsage":
         """Extract the Message from the element."""
-        period_from = parse_datetime(cls._find_text(element, './fred:periodFrom'))
-        period_to = parse_datetime(cls._find_text(element, './fred:periodTo'))
-        total_free_count = int(cls._find_text(element, './fred:totalFreeCount'))
-        used_count = int(cls._find_text(element, './fred:usedCount'))
-        price = Decimal(cls._find_text(element, './fred:price'))
+        period_from = parse_datetime(cls._find_text(element, "./fred:periodFrom"))
+        period_to = parse_datetime(cls._find_text(element, "./fred:periodTo"))
+        total_free_count = int(cls._find_text(element, "./fred:totalFreeCount"))
+        used_count = int(cls._find_text(element, "./fred:usedCount"))
+        price = Decimal(cls._find_text(element, "./fred:price"))
         return cls(
             period_from=period_from,
             period_to=period_to,
@@ -128,10 +140,10 @@ class DomainExpiration(ParseXMLMixin, PollMessage):
     ex_date: date
 
     @classmethod
-    def extract(cls, element: Element) -> 'DomainExpiration':
+    def extract(cls, element: Element) -> "DomainExpiration":
         """Extract the Message from the element."""
-        name = cls._find_text(element, './domain:name')
-        ex_date = cls._parse_date(cls._find_text(element, './domain:exDate'))
+        name = cls._find_text(element, "./domain:name")
+        ex_date = cls._parse_date(cls._find_text(element, "./domain:exDate"))
         return cls(name=name, ex_date=ex_date)
 
 
@@ -139,28 +151,28 @@ class DomainExpiration(ParseXMLMixin, PollMessage):
 class ImpendingExpData(DomainExpiration):
     """Impending Exp Data poll message."""
 
-    tag = 'impendingExpData'
+    tag = "impendingExpData"
 
 
 @dataclass
 class ExpData(DomainExpiration):
     """Exp Data poll message."""
 
-    tag = 'expData'
+    tag = "expData"
 
 
 @dataclass
 class DnsOutageData(DomainExpiration):
     """Dns Outage Data poll message."""
 
-    tag = 'dnsOutageData'
+    tag = "dnsOutageData"
 
 
 @dataclass
 class DelData(DomainExpiration):
     """Del Data poll message."""
 
-    tag = 'delData'
+    tag = "delData"
 
 
 @dataclass
@@ -174,17 +186,17 @@ class DomainValidation(ParseXMLMixin, PollMessage):
 
     _NAMESPACES = {
         **ParseXMLMixin._NAMESPACES,
-        'enumval': NAMESPACE.NIC_ENUMVAL,
+        "enumval": NAMESPACE.NIC_ENUMVAL,
     }
 
     name: str
     val_ex_date: date
 
     @classmethod
-    def extract(cls, element: Element) -> 'DomainValidation':
+    def extract(cls, element: Element) -> "DomainValidation":
         """Extract the Message from the element."""
-        name = cls._find_text(element, './enumval:name')
-        val_ex_date = cls._parse_date(cls._find_text(element, './enumval:valExDate'))
+        name = cls._find_text(element, "./enumval:name")
+        val_ex_date = cls._parse_date(cls._find_text(element, "./enumval:valExDate"))
         return cls(name=name, val_ex_date=val_ex_date)
 
 
@@ -192,14 +204,14 @@ class DomainValidation(ParseXMLMixin, PollMessage):
 class ImpendingValExpData(DomainValidation):
     """Impending Val Exp Data poll message."""
 
-    tag = QName(NAMESPACE.NIC_ENUMVAL, 'impendingValExpData')
+    tag = QName(NAMESPACE.NIC_ENUMVAL, "impendingValExpData")
 
 
 @dataclass
 class ValExpData(DomainValidation):
     """Val Exp Data poll message."""
 
-    tag = QName(NAMESPACE.NIC_ENUMVAL, 'valExpData')
+    tag = QName(NAMESPACE.NIC_ENUMVAL, "valExpData")
 
 
 class ObjectTransfer(ParseXMLMixin, PollMessage):
@@ -219,8 +231,10 @@ class ObjectTransfer(ParseXMLMixin, PollMessage):
     def _extract(cls, element: Element) -> Mapping[str, Any]:
         """Extract the Message from the element."""
         return {
-            'tr_date': cls._parse_date(cls._find_text(element, f'./{cls._prefix}:trDate')),
-            'cl_id': cls._find_text(element, f'./{cls._prefix}:clID'),
+            "tr_date": cls._parse_date(
+                cls._find_text(element, f"./{cls._prefix}:trDate")
+            ),
+            "cl_id": cls._find_text(element, f"./{cls._prefix}:clID"),
         }
 
 
@@ -234,19 +248,19 @@ class DomainTransfer(ObjectTransfer):
         cl_id: Content of the epp/response/msgQ/msg/trnData/clID element.
     """
 
-    _prefix = 'domain'
-    tag = QName(NAMESPACE.NIC_DOMAIN, 'trnData')
+    _prefix = "domain"
+    tag = QName(NAMESPACE.NIC_DOMAIN, "trnData")
     name: str
     tr_date: date
     cl_id: str
 
     @classmethod
-    def extract(cls, element: Element) -> 'DomainTransfer':
+    def extract(cls, element: Element) -> "DomainTransfer":
         """Extract the Message from the element."""
         data = cls._extract(element)
         data = {
             **data,
-            'name': cls._find_text(element, f'./{cls._prefix}:name'),
+            "name": cls._find_text(element, f"./{cls._prefix}:name"),
         }
         return cls(**data)
 
@@ -261,19 +275,19 @@ class ContactTransfer(ObjectTransfer):
         cl_id: Content of the epp/response/msgQ/msg/trnData/clID element.
     """
 
-    _prefix = 'contact'
-    tag = QName(NAMESPACE.NIC_CONTACT, 'trnData')
+    _prefix = "contact"
+    tag = QName(NAMESPACE.NIC_CONTACT, "trnData")
     id: str
     tr_date: date
     cl_id: str
 
     @classmethod
-    def extract(cls, element: Element) -> 'ContactTransfer':
+    def extract(cls, element: Element) -> "ContactTransfer":
         """Extract the Message from the element."""
         data = cls._extract(element)
         data = {
             **data,
-            'id': cls._find_text(element, f'./{cls._prefix}:id'),
+            "id": cls._find_text(element, f"./{cls._prefix}:id"),
         }
         return cls(**data)
 
@@ -288,19 +302,19 @@ class KeysetTransfer(ObjectTransfer):
         cl_id: Content of the epp/response/msgQ/msg/trnData/clID element.
     """
 
-    _prefix = 'keyset'
-    tag = QName(NAMESPACE.NIC_KEYSET, 'trnData')
+    _prefix = "keyset"
+    tag = QName(NAMESPACE.NIC_KEYSET, "trnData")
     id: str
     tr_date: date
     cl_id: str
 
     @classmethod
-    def extract(cls, element: Element) -> 'KeysetTransfer':
+    def extract(cls, element: Element) -> "KeysetTransfer":
         """Extract the Message from the element."""
         data = cls._extract(element)
         data = {
             **data,
-            'id': cls._find_text(element, f'./{cls._prefix}:id'),
+            "id": cls._find_text(element, f"./{cls._prefix}:id"),
         }
         return cls(**data)
 
@@ -315,19 +329,19 @@ class NssetTransfer(ObjectTransfer):
         cl_id: Content of the epp/response/msgQ/msg/trnData/clID element.
     """
 
-    _prefix = 'nsset'
-    tag = QName(NAMESPACE.NIC_NSSET, 'trnData')
+    _prefix = "nsset"
+    tag = QName(NAMESPACE.NIC_NSSET, "trnData")
     id: str
     tr_date: date
     cl_id: str
 
     @classmethod
-    def extract(cls, element: Element) -> 'NssetTransfer':
+    def extract(cls, element: Element) -> "NssetTransfer":
         """Extract the Message from the element."""
         data = cls._extract(element)
         data = {
             **data,
-            'id': cls._find_text(element, f'./{cls._prefix}:id'),
+            "id": cls._find_text(element, f"./{cls._prefix}:id"),
         }
         return cls(**data)
 
@@ -352,60 +366,66 @@ class ObjectUpdate(ParseXMLMixin, PollMessage, Generic[T]):
     @classmethod
     def extract(cls: Type[ObjectUpdateT], element: Element) -> ObjectUpdateT:
         """Extract the Message from the element."""
-        op_trid = cls._find_text(element, f'./{cls._prefix}:opTRID')
-        old_data = cls._inf_data_cls.extract(cls._find(element, f'./{cls._prefix}:oldData/{cls._prefix}:infData'))
-        new_data = cls._inf_data_cls.extract(cls._find(element, f'./{cls._prefix}:newData/{cls._prefix}:infData'))
-        return cls(op_trid=op_trid, old_data=cast(T, old_data), new_data=cast(T, new_data))
+        op_trid = cls._find_text(element, f"./{cls._prefix}:opTRID")
+        old_data = cls._inf_data_cls.extract(
+            cls._find(element, f"./{cls._prefix}:oldData/{cls._prefix}:infData")
+        )
+        new_data = cls._inf_data_cls.extract(
+            cls._find(element, f"./{cls._prefix}:newData/{cls._prefix}:infData")
+        )
+        return cls(
+            op_trid=op_trid, old_data=cast(T, old_data), new_data=cast(T, new_data)
+        )
 
 
 @dataclass
 class DomainUpdate(ObjectUpdate[InfoDomainResultData]):
     """Domain update poll message."""
 
-    _prefix = 'domain'
+    _prefix = "domain"
     _inf_data_cls = InfoDomainResultData
 
-    tag = QName(NAMESPACE.NIC_DOMAIN, 'updateData')
+    tag = QName(NAMESPACE.NIC_DOMAIN, "updateData")
 
 
 @dataclass
 class ContactUpdate(ObjectUpdate[InfoContactResultData]):
     """Contact update poll message."""
 
-    _prefix = 'contact'
+    _prefix = "contact"
     _inf_data_cls = InfoContactResultData
 
-    tag = QName(NAMESPACE.NIC_CONTACT, 'updateData')
+    tag = QName(NAMESPACE.NIC_CONTACT, "updateData")
 
 
 @dataclass
 class HostUpdate(ObjectUpdate[InfoHostResultData]):
     """Host update poll message."""
 
-    _prefix = 'host'
+    _prefix = "host"
     _inf_data_cls = InfoHostResultData
 
-    tag = QName(NAMESPACE.NIC_HOST, 'updateData')
+    tag = QName(NAMESPACE.NIC_HOST, "updateData")
 
 
 @dataclass
 class KeysetUpdate(ObjectUpdate[InfoKeysetResultData]):
     """Keyset update poll message."""
 
-    _prefix = 'keyset'
+    _prefix = "keyset"
     _inf_data_cls = InfoKeysetResultData
 
-    tag = QName(NAMESPACE.NIC_KEYSET, 'updateData')
+    tag = QName(NAMESPACE.NIC_KEYSET, "updateData")
 
 
 @dataclass
 class NssetUpdate(ObjectUpdate[InfoNssetResultData]):
     """Nsset update poll message."""
 
-    _prefix = 'nsset'
+    _prefix = "nsset"
     _inf_data_cls = InfoNssetResultData
 
-    tag = QName(NAMESPACE.NIC_NSSET, 'updateData')
+    tag = QName(NAMESPACE.NIC_NSSET, "updateData")
 
 
 @dataclass
@@ -421,48 +441,48 @@ class IdleObjectDeletion(ParseXMLMixin, PollMessage):
     id: str
 
     @classmethod
-    def extract(cls, element: Element) -> 'IdleObjectDeletion':
+    def extract(cls, element: Element) -> "IdleObjectDeletion":
         """Extract the Message from the element."""
-        return cls(id=cls._find_text(element, f'./{cls._prefix}:id'))
+        return cls(id=cls._find_text(element, f"./{cls._prefix}:id"))
 
 
 @dataclass
 class IdleContactDeletion(IdleObjectDeletion):
     """Idle contact deletion poll message."""
 
-    _prefix = 'contact'
-    tag = QName(NAMESPACE.NIC_CONTACT, 'idleDelData')
+    _prefix = "contact"
+    tag = QName(NAMESPACE.NIC_CONTACT, "idleDelData")
 
     @classmethod
-    def extract(cls, element: Element) -> 'IdleContactDeletion':
+    def extract(cls, element: Element) -> "IdleContactDeletion":
         """Extract the Message from the element."""
-        return cast('IdleContactDeletion', super().extract(element))
+        return cast("IdleContactDeletion", super().extract(element))
 
 
 @dataclass
 class IdleKeysetDeletion(IdleObjectDeletion):
     """Idle keyset deletion poll message."""
 
-    _prefix = 'keyset'
-    tag = QName(NAMESPACE.NIC_KEYSET, 'idleDelData')
+    _prefix = "keyset"
+    tag = QName(NAMESPACE.NIC_KEYSET, "idleDelData")
 
     @classmethod
-    def extract(cls, element: Element) -> 'IdleKeysetDeletion':
+    def extract(cls, element: Element) -> "IdleKeysetDeletion":
         """Extract the Message from the element."""
-        return cast('IdleKeysetDeletion', super().extract(element))
+        return cast("IdleKeysetDeletion", super().extract(element))
 
 
 @dataclass
 class IdleNssetDeletion(IdleObjectDeletion):
     """Idle nsset deletion poll message."""
 
-    _prefix = 'nsset'
-    tag = QName(NAMESPACE.NIC_NSSET, 'idleDelData')
+    _prefix = "nsset"
+    tag = QName(NAMESPACE.NIC_NSSET, "idleDelData")
 
     @classmethod
-    def extract(cls, element: Element) -> 'IdleNssetDeletion':
+    def extract(cls, element: Element) -> "IdleNssetDeletion":
         """Extract the Message from the element."""
-        return cast('IdleNssetDeletion', super().extract(element))
+        return cast("IdleNssetDeletion", super().extract(element))
 
 
 @dataclass
@@ -474,16 +494,16 @@ class DomainDeletion(ParseXMLMixin, PollMessage):
         ex_date: Content of the epp/response/msgQ/msg/delData/exDate element.
     """
 
-    tag = QName(NAMESPACE.NIC_DOMAIN, 'delData')
+    tag = QName(NAMESPACE.NIC_DOMAIN, "delData")
 
     name: str
     ex_date: date
 
     @classmethod
-    def extract(cls, element: Element) -> 'DomainDeletion':
+    def extract(cls, element: Element) -> "DomainDeletion":
         """Extract the Message from the element."""
-        name = cls._find_text(element, './domain:name')
-        ex_date = cls._parse_date(cls._find_text(element, 'domain:exDate'))
+        name = cls._find_text(element, "./domain:name")
+        ex_date = cls._parse_date(cls._find_text(element, "domain:exDate"))
         return cls(name=name, ex_date=ex_date)
 
 
@@ -497,22 +517,25 @@ class TechnicalCheckResult(ParseXMLMixin, PollMessage):
         results: Content of the epp/response/msgQ/msg/testData/results element.
     """
 
-    tag = QName(NAMESPACE.NIC_NSSET, 'testData')
+    tag = QName(NAMESPACE.NIC_NSSET, "testData")
 
     id: str
     names: Sequence[str]
     results: Sequence[TestResult]
 
     @classmethod
-    def extract(cls, element: Element) -> 'TechnicalCheckResult':
+    def extract(cls, element: Element) -> "TechnicalCheckResult":
         """Extract the Message from the element."""
-        id = cls._find_text(element, './nsset:id')
-        names = cls._find_all_text(element, './nsset:name')
-        results = [TestResult.extract(item) for item in cls._find_all(element, './nsset:result')]
+        id = cls._find_text(element, "./nsset:id")
+        names = cls._find_all_text(element, "./nsset:name")
+        results = [
+            TestResult.extract(item)
+            for item in cls._find_all(element, "./nsset:result")
+        ]
         return cls(id=id, names=names, results=results)
 
 
-POLL_MESSAGE_TYPES: Mapping[QName, Type['PollMessage']] = {
+POLL_MESSAGE_TYPES: Mapping[QName, Type["PollMessage"]] = {
     LowCredit.tag: LowCredit,
     RequestUsage.tag: RequestUsage,
     ImpendingExpData.tag: ImpendingExpData,

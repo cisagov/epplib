@@ -48,9 +48,11 @@ class CreateContactMailingAddressExtension(CommandExtension):
 
     def get_payload(self) -> Element:
         """Create EPP Elements specific to CreateContactMailingAddressExtension."""
-        create = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, 'create'))
-        create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_EXTRA_ADDR)
-        mailing = SubElement(create, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
+        create = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, "create"))
+        create.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_EXTRA_ADDR
+        )
+        mailing = SubElement(create, QName(NAMESPACE.NIC_EXTRA_ADDR, "mailing"))
         mailing.append(self.addr.get_payload())
         return create
 
@@ -68,15 +70,17 @@ class UpdateContactMailingAddressExtension(CommandExtension):
 
     def get_payload(self) -> Element:
         """Create EPP Elements specific to CreateContactMailingAddressExtension."""
-        update = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, 'update'))
-        update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_EXTRA_ADDR)
+        update = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, "update"))
+        update.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_EXTRA_ADDR
+        )
 
         if self.addr is None:
-            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, 'rem'))
-            SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
+            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, "rem"))
+            SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, "mailing"))
         else:
-            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, 'set'))
-            mailing = SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
+            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, "set"))
+            mailing = SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, "mailing"))
             mailing.append(self.addr.get_payload())
         return update
 
@@ -98,12 +102,16 @@ class EnumExtension(CommandExtension):
     def get_payload(self) -> Element:
         """Create EPP Elements specific to DomainEnumExtension."""
         root = Element(QName(NAMESPACE.NIC_ENUMVAL, self.tag))
-        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_ENUMVAL)
+        root.set(QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_ENUMVAL)
         if self.val_ex_date is not None:
-            expiration_date = SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, 'valExDate'))
+            expiration_date = SubElement(
+                root, QName(NAMESPACE.NIC_ENUMVAL, "valExDate")
+            )
             expiration_date.text = str(self.val_ex_date)
         if self.publish is not None:
-            SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, 'publish')).text = str(self.publish).lower()
+            SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, "publish")).text = str(
+                self.publish
+            ).lower()
         return root
 
 
@@ -116,7 +124,7 @@ class CreateDomainEnumExtension(EnumExtension):
         publish: Content of extension/create/publish element.
     """
 
-    tag = 'create'
+    tag = "create"
 
 
 @dataclass
@@ -128,7 +136,7 @@ class RenewDomainEnumExtension(EnumExtension):
         publish: Content of extension/create/publish element.
     """
 
-    tag = 'renew'
+    tag = "renew"
 
 
 @dataclass
@@ -140,16 +148,20 @@ class UpdateDomainEnumExtension(EnumExtension):
         publish: Content of extension/create/publish element
     """
 
-    tag = 'update'
+    tag = "update"
 
     def get_payload(self) -> Element:
         """Create EPP Elements specific to UpdateDomainEnumExtension."""
         root = Element(QName(NAMESPACE.NIC_ENUMVAL, self.tag))
-        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_ENUMVAL)
-        change = SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, 'chg'))
+        root.set(QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_ENUMVAL)
+        change = SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, "chg"))
         if self.val_ex_date is not None:
-            expiration_date = SubElement(change, QName(NAMESPACE.NIC_ENUMVAL, 'valExDate'))
+            expiration_date = SubElement(
+                change, QName(NAMESPACE.NIC_ENUMVAL, "valExDate")
+            )
             expiration_date.text = str(self.val_ex_date)
         if self.publish is not None:
-            SubElement(change, QName(NAMESPACE.NIC_ENUMVAL, 'publish')).text = str(self.publish).lower()
+            SubElement(change, QName(NAMESPACE.NIC_ENUMVAL, "publish")).text = str(
+                self.publish
+            ).lower()
         return root

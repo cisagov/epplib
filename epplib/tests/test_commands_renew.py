@@ -29,11 +29,11 @@ from epplib.tests.utils import EM, XMLTestCase, make_epp_root, sub_dict
 
 class TestRenewDomain(XMLTestCase):
     params_full: Mapping[str, Any] = {
-        'name': 'mydomain.cz',
-        'cur_exp_date': date(2018, 7, 11),
-        'period': Period(2, Unit.YEAR),
+        "name": "mydomain.cz",
+        "cur_exp_date": date(2018, 7, 11),
+        "period": Period(2, Unit.YEAR),
     }
-    params_required = sub_dict(params_full, ['name', 'cur_exp_date'])
+    params_required = sub_dict(params_full, ["name", "cur_exp_date"])
 
     def test_valid(self):
         self.assertRequestValid(RenewDomain, self.params_required)
@@ -46,10 +46,14 @@ class TestRenewDomain(XMLTestCase):
             EM.command(
                 EM.renew(
                     domain.renew(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        domain.name('mydomain.cz'),
-                        domain.curExpDate('2018-07-11'),
-                        domain.period('2', unit='y'),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
+                        domain.name("mydomain.cz"),
+                        domain.curExpDate("2018-07-11"),
+                        domain.period("2", unit="y"),
                     )
                 )
             )
@@ -63,9 +67,13 @@ class TestRenewDomain(XMLTestCase):
             EM.command(
                 EM.renew(
                     domain.renew(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        domain.name('mydomain.cz'),
-                        domain.curExpDate('2018-07-11'),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
+                        domain.name("mydomain.cz"),
+                        domain.curExpDate("2018-07-11"),
                     )
                 )
             )

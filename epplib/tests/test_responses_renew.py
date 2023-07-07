@@ -25,24 +25,25 @@ from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
 
 class TestRenewDomainResult(TestCase):
-
     def test_parse(self):
-        template = (BASE_DATA_PATH / 'responses/result_renew_domain_template.xml').read_bytes()
+        template = (
+            BASE_DATA_PATH / "responses/result_renew_domain_template.xml"
+        ).read_bytes()
         data = (
-            (b'<domain:exDate>2020-07-11</domain:exDate>', date(2020, 7, 11)),
-            (b'', None),
+            (b"<domain:exDate>2020-07-11</domain:exDate>", date(2020, 7, 11)),
+            (b"", None),
         )
         for tag, ex_date in data:
             with self.subTest(tag=tag):
-                xml = template.replace(b'{ex_date}', tag)
+                xml = template.replace(b"{ex_date}", tag)
                 result = RenewDomainResult.parse(xml, SCHEMA)
                 expected = [
-                    RenewDomainResultData('mydomain.cz', ex_date),
+                    RenewDomainResultData("mydomain.cz", ex_date),
                 ]
                 self.assertEqual(result.code, 1000)
                 self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_error.xml").read_bytes()
         result = RenewDomainResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)

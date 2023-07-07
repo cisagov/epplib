@@ -22,15 +22,21 @@ from typing import Any, Dict, Mapping, Optional
 from lxml.builder import ElementMaker
 from lxml.etree import Element, QName, fromstring
 
-from epplib.commands import (CreditInfoRequest, SendAuthInfoContact, SendAuthInfoDomain, SendAuthInfoKeyset,
-                             SendAuthInfoNsset, TestNsset)
+from epplib.commands import (
+    CreditInfoRequest,
+    SendAuthInfoContact,
+    SendAuthInfoDomain,
+    SendAuthInfoKeyset,
+    SendAuthInfoNsset,
+    TestNsset,
+)
 from epplib.commands.extensions import Extension
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.responses import Response
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root, sub_dict
 
-EXTENSION_NAMESPACE = 'extension:name:space'
-tr_id = 'abc123'
+EXTENSION_NAMESPACE = "extension:name:space"
+tr_id = "abc123"
 
 
 class DummyResponse(Response):
@@ -44,36 +50,34 @@ class DummyExtension(Extension):
     response_class = DummyResponse
 
     def _get_extension_payload(self, tr_id: Optional[str] = None) -> Element:
-        root = Element(QName(EXTENSION_NAMESPACE, 'dummy'))
+        root = Element(QName(EXTENSION_NAMESPACE, "dummy"))
         if tr_id is not None:
             root.text = tr_id
         return root
 
 
 class TestExtension(XMLTestCase):
-
     def test_extension(self):
         root = fromstring(DummyExtension().xml())
         expected = make_epp_root(
             EM.extension(
-                EM(str(QName(EXTENSION_NAMESPACE, 'dummy'))),
+                EM(str(QName(EXTENSION_NAMESPACE, "dummy"))),
             )
         )
         self.assertXMLEqual(root, expected)
 
     def test_extension_tr_id(self):
-        tr_id = 'abc123'
+        tr_id = "abc123"
         root = fromstring(DummyExtension().xml(tr_id))
         expected = make_epp_root(
             EM.extension(
-                EM(str(QName(EXTENSION_NAMESPACE, 'dummy')), tr_id),
+                EM(str(QName(EXTENSION_NAMESPACE, "dummy")), tr_id),
             )
         )
         self.assertXMLEqual(root, expected)
 
 
 class TestCreditInfo(XMLTestCase):
-
     def test_valid(self):
         self.assertRequestValid(CreditInfoRequest, {})
 
@@ -83,9 +87,9 @@ class TestCreditInfo(XMLTestCase):
         expected = make_epp_root(
             EM.extension(
                 fred.extcommand(
-                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    {QName(NAMESPACE.XSI, "schemaLocation"): SCHEMA_LOCATION.FRED},
                     fred.creditInfo(),
-                    fred.clTRID(tr_id)
+                    fred.clTRID(tr_id),
                 ),
             )
         )
@@ -93,11 +97,10 @@ class TestCreditInfo(XMLTestCase):
 
 
 class TestSendAuthInfoContact(XMLTestCase):
-
-    contact = 'CID-MYCONTACT'
+    contact = "CID-MYCONTACT"
 
     def test_valid(self):
-        self.assertRequestValid(SendAuthInfoContact, {'id': self.contact})
+        self.assertRequestValid(SendAuthInfoContact, {"id": self.contact})
 
     def test_data(self):
         root = fromstring(SendAuthInfoContact(id=self.contact).xml(tr_id))
@@ -106,10 +109,14 @@ class TestSendAuthInfoContact(XMLTestCase):
         expected = make_epp_root(
             EM.extension(
                 fred.extcommand(
-                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    {QName(NAMESPACE.XSI, "schemaLocation"): SCHEMA_LOCATION.FRED},
                     fred.sendAuthInfo(
                         contact.sendAuthInfo(
-                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
+                            {
+                                QName(
+                                    NAMESPACE.XSI, "schemaLocation"
+                                ): SCHEMA_LOCATION.NIC_CONTACT
+                            },
                             contact.id(self.contact),
                         ),
                     ),
@@ -121,11 +128,10 @@ class TestSendAuthInfoContact(XMLTestCase):
 
 
 class TestSendAuthInfoDomain(XMLTestCase):
-
-    domain = 'mydomain.cz'
+    domain = "mydomain.cz"
 
     def test_valid(self):
-        self.assertRequestValid(SendAuthInfoDomain, {'name': self.domain})
+        self.assertRequestValid(SendAuthInfoDomain, {"name": self.domain})
 
     def test_data(self):
         root = fromstring(SendAuthInfoDomain(name=self.domain).xml(tr_id))
@@ -134,10 +140,14 @@ class TestSendAuthInfoDomain(XMLTestCase):
         expected = make_epp_root(
             EM.extension(
                 fred.extcommand(
-                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    {QName(NAMESPACE.XSI, "schemaLocation"): SCHEMA_LOCATION.FRED},
                     fred.sendAuthInfo(
                         domain.sendAuthInfo(
-                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
+                            {
+                                QName(
+                                    NAMESPACE.XSI, "schemaLocation"
+                                ): SCHEMA_LOCATION.NIC_DOMAIN
+                            },
                             domain.name(self.domain),
                         ),
                     ),
@@ -149,11 +159,10 @@ class TestSendAuthInfoDomain(XMLTestCase):
 
 
 class TestSendAuthInfoKeyset(XMLTestCase):
-
-    keyset = 'KID-MYKEYSET'
+    keyset = "KID-MYKEYSET"
 
     def test_valid(self):
-        self.assertRequestValid(SendAuthInfoKeyset, {'id': self.keyset})
+        self.assertRequestValid(SendAuthInfoKeyset, {"id": self.keyset})
 
     def test_data(self):
         root = fromstring(SendAuthInfoKeyset(id=self.keyset).xml(tr_id))
@@ -162,10 +171,14 @@ class TestSendAuthInfoKeyset(XMLTestCase):
         expected = make_epp_root(
             EM.extension(
                 fred.extcommand(
-                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    {QName(NAMESPACE.XSI, "schemaLocation"): SCHEMA_LOCATION.FRED},
                     fred.sendAuthInfo(
                         keyset.sendAuthInfo(
-                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
+                            {
+                                QName(
+                                    NAMESPACE.XSI, "schemaLocation"
+                                ): SCHEMA_LOCATION.NIC_KEYSET
+                            },
                             keyset.id(self.keyset),
                         ),
                     ),
@@ -177,11 +190,10 @@ class TestSendAuthInfoKeyset(XMLTestCase):
 
 
 class TestSendAuthInfoNsset(XMLTestCase):
-
-    nsset = 'NID-MYNSSET'
+    nsset = "NID-MYNSSET"
 
     def test_valid(self):
-        self.assertRequestValid(SendAuthInfoNsset, {'id': self.nsset})
+        self.assertRequestValid(SendAuthInfoNsset, {"id": self.nsset})
 
     def test_data(self):
         root = fromstring(SendAuthInfoNsset(id=self.nsset).xml(tr_id))
@@ -190,10 +202,14 @@ class TestSendAuthInfoNsset(XMLTestCase):
         expected = make_epp_root(
             EM.extension(
                 fred.extcommand(
-                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    {QName(NAMESPACE.XSI, "schemaLocation"): SCHEMA_LOCATION.FRED},
                     fred.sendAuthInfo(
                         nsset.sendAuthInfo(
-                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
+                            {
+                                QName(
+                                    NAMESPACE.XSI, "schemaLocation"
+                                ): SCHEMA_LOCATION.NIC_NSSET
+                            },
                             nsset.id(self.nsset),
                         ),
                     ),
@@ -205,13 +221,12 @@ class TestSendAuthInfoNsset(XMLTestCase):
 
 
 class TestTestNsset(XMLTestCase):
-
     params: Mapping[str, Any] = {
-        'id': 'NID-MYNSSET',
-        'level': 5,
-        'names': ['mydomain.cz', 'somedomain.cz']
+        "id": "NID-MYNSSET",
+        "level": 5,
+        "names": ["mydomain.cz", "somedomain.cz"],
     }
-    required = ['id']
+    required = ["id"]
 
     def test_valid(self):
         self.assertRequestValid(TestNsset, self.params)
@@ -224,11 +239,15 @@ class TestTestNsset(XMLTestCase):
         expected = make_epp_root(
             EM.extension(
                 fred.extcommand(
-                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    {QName(NAMESPACE.XSI, "schemaLocation"): SCHEMA_LOCATION.FRED},
                     fred.test(
                         nsset.test(
-                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
-                            nsset.id(self.params['id']),
+                            {
+                                QName(
+                                    NAMESPACE.XSI, "schemaLocation"
+                                ): SCHEMA_LOCATION.NIC_NSSET
+                            },
+                            nsset.id(self.params["id"]),
                         ),
                     ),
                     fred.clTRID(tr_id),
@@ -244,14 +263,18 @@ class TestTestNsset(XMLTestCase):
         expected = make_epp_root(
             EM.extension(
                 fred.extcommand(
-                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    {QName(NAMESPACE.XSI, "schemaLocation"): SCHEMA_LOCATION.FRED},
                     fred.test(
                         nsset.test(
-                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
-                            nsset.id(self.params['id']),
-                            nsset.level(str(self.params['level'])),
-                            nsset.name(self.params['names'][0]),
-                            nsset.name(self.params['names'][1]),
+                            {
+                                QName(
+                                    NAMESPACE.XSI, "schemaLocation"
+                                ): SCHEMA_LOCATION.NIC_NSSET
+                            },
+                            nsset.id(self.params["id"]),
+                            nsset.level(str(self.params["level"])),
+                            nsset.name(self.params["names"][0]),
+                            nsset.name(self.params["names"][1]),
                         ),
                     ),
                     fred.clTRID(tr_id),

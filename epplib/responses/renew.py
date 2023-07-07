@@ -36,5 +36,5 @@ class RenewDomainResult(Result[RenewDomainResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './domain:renData'
+    _res_data_path = "./domain:renData"
     _res_data_class = RenewDomainResultData

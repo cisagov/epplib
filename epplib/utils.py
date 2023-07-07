@@ -28,7 +28,7 @@ from lxml.etree import Element, QName, XMLParser, fromstring
 
 from epplib.constants import NAMESPACE
 
-U = TypeVar('U')
+U = TypeVar("U")
 
 
 def safe_parse(raw_xml: bytes) -> Element:
@@ -41,10 +41,12 @@ def safe_parse(raw_xml: bytes) -> Element:
         ValueError: If the XML document contains doctype.
     """
     parser = XMLParser(no_network=True, resolve_entities=False)
-    parsed = fromstring(raw_xml, parser=parser)  # nosec - It should be safe with resolve_entities=False.
+    parsed = fromstring(
+        raw_xml, parser=parser
+    )  # nosec - It should be safe with resolve_entities=False.
 
     if parsed.getroottree().docinfo.doctype:
-        raise ValueError('Doctype is not allowed.')
+        raise ValueError("Doctype is not allowed.")
 
     return parsed
 
@@ -53,24 +55,24 @@ class ParseXMLMixin:
     """Mixin to simplify XML parsing."""
 
     _NAMESPACES: ClassVar[Mapping[str, str]] = {
-        'epp': NAMESPACE.EPP,
-        'fred': NAMESPACE.FRED,
-        'contact': NAMESPACE.NIC_CONTACT,
-        'domain': NAMESPACE.NIC_DOMAIN,
-        'host': NAMESPACE.NIC_HOST,
-        'keyset': NAMESPACE.NIC_KEYSET,
-        'nsset': NAMESPACE.NIC_NSSET,
+        "epp": NAMESPACE.EPP,
+        "fred": NAMESPACE.FRED,
+        "contact": NAMESPACE.NIC_CONTACT,
+        "domain": NAMESPACE.NIC_DOMAIN,
+        "host": NAMESPACE.NIC_HOST,
+        "keyset": NAMESPACE.NIC_KEYSET,
+        "nsset": NAMESPACE.NIC_NSSET,
     }
 
     duration_regex: ClassVar[Pattern] = re.compile(
         (
-            r'^(?P<sign>-)?P(?P<years>\d+Y)?(?P<months>\d+M)?(?P<days>\d+D)?'
-            r'(T'
-            r'(?P<hours>\d+H)?(?P<minutes>\d+M)?'
-            r'((?P<seconds>\d+)(?P<microseconds>\.\d+)?S)?'
-            r')?$'
+            r"^(?P<sign>-)?P(?P<years>\d+Y)?(?P<months>\d+M)?(?P<days>\d+D)?"
+            r"(T"
+            r"(?P<hours>\d+H)?(?P<minutes>\d+M)?"
+            r"((?P<seconds>\d+)(?P<microseconds>\.\d+)?S)?"
+            r")?$"
         ),
-        re.ASCII
+        re.ASCII,
     )
 
     @classmethod
@@ -87,7 +89,10 @@ class ParseXMLMixin:
 
     @classmethod
     def _find_all_text(cls, element: Element, path: str) -> List[str]:
-        return [(elem.text or '') for elem in element.findall(path, namespaces=cls._NAMESPACES)]
+        return [
+            (elem.text or "")
+            for elem in element.findall(path, namespaces=cls._NAMESPACES)
+        ]
 
     @classmethod
     def _find_attrib(cls, element: Element, path: str, attrib: str) -> Optional[str]:
@@ -107,7 +112,7 @@ class ParseXMLMixin:
 
     @classmethod
     def _find_children(cls, element: Element, path: str) -> List[str]:
-        nodes = element.findall(path + '/*', namespaces=cls._NAMESPACES)
+        nodes = element.findall(path + "/*", namespaces=cls._NAMESPACES)
         return [QName(item.tag).localname for item in nodes]
 
     @staticmethod
@@ -139,14 +144,16 @@ class ParseXMLMixin:
         match = cls.duration_regex.fullmatch(value)
         if match:
             groups = match.groupdict()
-            sign = -1 if groups.pop('sign') else 1
+            sign = -1 if groups.pop("sign") else 1
 
-            seconds = groups.pop('seconds', None)
-            microseconds = groups.pop('microseconds', None)
+            seconds = groups.pop("seconds", None)
+            microseconds = groups.pop("microseconds", None)
 
             params = {k: int(v[:-1]) for k, v in groups.items() if v is not None}
-            params['seconds'] = int(seconds) if seconds is not None else 0
-            params['microseconds'] = int(10**6 * float(microseconds)) if microseconds is not None else 0
+            params["seconds"] = int(seconds) if seconds is not None else 0
+            params["microseconds"] = (
+                int(10**6 * float(microseconds)) if microseconds is not None else 0
+            )
             return sign * relativedelta(**params)  # type: ignore
         else:
             raise ValueError('Can not parse string "{}" as duration.'.format(value))
@@ -156,9 +163,11 @@ class ParseXMLMixin:
         """Convert str '0' or '1' to the corresponding bool value."""
         if value is None:
             return None
-        elif value.lower() in ('1', 'true'):
+        elif value.lower() in ("1", "true"):
             return True
-        elif value.lower() in ('0', 'false'):
+        elif value.lower() in ("0", "false"):
             return False
         else:
-            raise ValueError('Value "{}" is not in the list of known boolean values.'.format(value))
+            raise ValueError(
+                'Value "{}" is not in the list of known boolean values.'.format(value)
+            )

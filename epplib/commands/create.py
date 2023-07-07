@@ -26,8 +26,13 @@ from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.models import AuthInfo, Disclose, Dnskey, Ident, Ip, Ns, Period, Unit
 from epplib.models.create import CreatePostalInfo
-from epplib.responses import (CreateContactResult, CreateDomainResult, CreateHostResult, CreateKeysetResult,
-                              CreateNssetResult)
+from epplib.responses import (
+    CreateContactResult,
+    CreateDomainResult,
+    CreateHostResult,
+    CreateKeysetResult,
+    CreateNssetResult,
+)
 
 
 @dataclass
@@ -62,24 +67,34 @@ class CreateDomain(Command):
         Returns:
             Element with a domain to create.
         """
-        create = Element(QName(NAMESPACE.EPP, 'create'))
+        create = Element(QName(NAMESPACE.EPP, "create"))
 
-        domain_create = SubElement(create, QName(NAMESPACE.NIC_DOMAIN, 'create'))
-        domain_create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_DOMAIN)
+        domain_create = SubElement(create, QName(NAMESPACE.NIC_DOMAIN, "create"))
+        domain_create.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_DOMAIN
+        )
 
-        SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'name')).text = self.name
+        SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, "name")).text = self.name
         if self.period is not None:
             domain_create.append(self.period.get_payload())
         if self.nsset is not None:
-            SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'nsset')).text = self.nsset
+            SubElement(
+                domain_create, QName(NAMESPACE.NIC_DOMAIN, "nsset")
+            ).text = self.nsset
         if self.keyset is not None:
-            SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'keyset')).text = self.keyset
-        SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'registrant')).text = self.registrant
+            SubElement(
+                domain_create, QName(NAMESPACE.NIC_DOMAIN, "keyset")
+            ).text = self.keyset
+        SubElement(
+            domain_create, QName(NAMESPACE.NIC_DOMAIN, "registrant")
+        ).text = self.registrant
         for item in self.admins:
-            SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = item
+            SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, "admin")).text = item
         if self.auth_info is not None:
             if isinstance(self.auth_info, str):
-                SubElement(domain_create, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.auth_info
+                SubElement(
+                    domain_create, QName(NAMESPACE.NIC_DOMAIN, "authInfo")
+                ).text = self.auth_info
             elif isinstance(self.auth_info, AuthInfo):
                 domain_create.append(self.auth_info.get_payload())
 
@@ -123,31 +138,45 @@ class CreateContact(Command):
         Returns:
             Element with a contact to create.
         """
-        create = Element(QName(NAMESPACE.EPP, 'create'))
+        create = Element(QName(NAMESPACE.EPP, "create"))
 
-        contact_create = SubElement(create, QName(NAMESPACE.NIC_CONTACT, 'create'))
-        contact_create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_CONTACT)
+        contact_create = SubElement(create, QName(NAMESPACE.NIC_CONTACT, "create"))
+        contact_create.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_CONTACT
+        )
 
-        SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'id')).text = self.id
+        SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, "id")).text = self.id
         contact_create.append(self.postal_info.get_payload())
         if self.voice:
-            SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'voice')).text = self.voice
+            SubElement(
+                contact_create, QName(NAMESPACE.NIC_CONTACT, "voice")
+            ).text = self.voice
         if self.fax:
-            SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'fax')).text = self.fax
-        SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'email')).text = self.email
+            SubElement(
+                contact_create, QName(NAMESPACE.NIC_CONTACT, "fax")
+            ).text = self.fax
+        SubElement(
+            contact_create, QName(NAMESPACE.NIC_CONTACT, "email")
+        ).text = self.email
         if self.auth_info is not None:
             if isinstance(self.auth_info, str):
-                SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'authInfo')).text = self.auth_info
+                SubElement(
+                    contact_create, QName(NAMESPACE.NIC_CONTACT, "authInfo")
+                ).text = self.auth_info
             elif isinstance(self.auth_info, AuthInfo):
                 contact_create.append(self.auth_info.get_payload())
         if self.disclose:
             contact_create.append(self.disclose.get_payload())
         if self.vat:
-            SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'vat')).text = self.vat
+            SubElement(
+                contact_create, QName(NAMESPACE.NIC_CONTACT, "vat")
+            ).text = self.vat
         if self.ident:
             contact_create.append(self.ident.get_payload())
         if self.notify_email:
-            SubElement(contact_create, QName(NAMESPACE.NIC_CONTACT, 'notifyEmail')).text = self.notify_email
+            SubElement(
+                contact_create, QName(NAMESPACE.NIC_CONTACT, "notifyEmail")
+            ).text = self.notify_email
 
         return create
 
@@ -172,12 +201,14 @@ class CreateHost(Command):
         Returns:
             Element with a host to create.
         """
-        create = Element(QName(NAMESPACE.EPP, 'create'))
+        create = Element(QName(NAMESPACE.EPP, "create"))
 
-        host_create = SubElement(create, QName(NAMESPACE.NIC_HOST, 'create'))
-        host_create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_HOST)
+        host_create = SubElement(create, QName(NAMESPACE.NIC_HOST, "create"))
+        host_create.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_HOST
+        )
 
-        SubElement(host_create, QName(NAMESPACE.NIC_HOST, 'name')).text = self.name
+        SubElement(host_create, QName(NAMESPACE.NIC_HOST, "name")).text = self.name
         for addr in self.addrs:
             host_create.append(addr.get_payload())
 
@@ -210,18 +241,24 @@ class CreateNsset(Command):
         Returns:
             Element with a contact to create.
         """
-        create = Element(QName(NAMESPACE.EPP, 'create'))
-        nsset_create = SubElement(create, QName(NAMESPACE.NIC_NSSET, 'create'))
-        nsset_create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_NSSET)
-        SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'id')).text = self.id
+        create = Element(QName(NAMESPACE.EPP, "create"))
+        nsset_create = SubElement(create, QName(NAMESPACE.NIC_NSSET, "create"))
+        nsset_create.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_NSSET
+        )
+        SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, "id")).text = self.id
         for ns in self.nss:
             nsset_create.append(ns.get_payload())
         for item in self.tech:
-            SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'tech')).text = item
+            SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, "tech")).text = item
         if self.auth_info is not None:
-            SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'authInfo')).text = self.auth_info
+            SubElement(
+                nsset_create, QName(NAMESPACE.NIC_NSSET, "authInfo")
+            ).text = self.auth_info
         if self.reportlevel is not None:
-            SubElement(nsset_create, QName(NAMESPACE.NIC_NSSET, 'reportlevel')).text = str(self.reportlevel)
+            SubElement(
+                nsset_create, QName(NAMESPACE.NIC_NSSET, "reportlevel")
+            ).text = str(self.reportlevel)
         return create
 
 
@@ -249,14 +286,18 @@ class CreateKeyset(Command):
         Returns:
             Element with a contact to create.
         """
-        create = Element(QName(NAMESPACE.EPP, 'create'))
-        keyset_create = SubElement(create, QName(NAMESPACE.NIC_KEYSET, 'create'))
-        keyset_create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_KEYSET)
-        SubElement(keyset_create, QName(NAMESPACE.NIC_KEYSET, 'id')).text = self.id
+        create = Element(QName(NAMESPACE.EPP, "create"))
+        keyset_create = SubElement(create, QName(NAMESPACE.NIC_KEYSET, "create"))
+        keyset_create.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_KEYSET
+        )
+        SubElement(keyset_create, QName(NAMESPACE.NIC_KEYSET, "id")).text = self.id
         for dns_key in self.dnskeys:
             keyset_create.append(dns_key.get_payload())
         for item in self.tech:
-            SubElement(keyset_create, QName(NAMESPACE.NIC_KEYSET, 'tech')).text = item
+            SubElement(keyset_create, QName(NAMESPACE.NIC_KEYSET, "tech")).text = item
         if self.auth_info is not None:
-            SubElement(keyset_create, QName(NAMESPACE.NIC_KEYSET, 'authInfo')).text = self.auth_info
+            SubElement(
+                keyset_create, QName(NAMESPACE.NIC_KEYSET, "authInfo")
+            ).text = self.auth_info
         return create

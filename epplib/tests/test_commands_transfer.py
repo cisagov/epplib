@@ -19,13 +19,18 @@
 from lxml.builder import ElementMaker
 from lxml.etree import QName, fromstring
 
-from epplib.commands import TransferContact, TransferDomain, TransferKeyset, TransferNsset
+from epplib.commands import (
+    TransferContact,
+    TransferDomain,
+    TransferKeyset,
+    TransferNsset,
+)
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
 
 class TestTransferDomain(XMLTestCase):
-    params = {'name': 'trdomain.cz', 'auth_info': 'trpwd'}
+    params = {"name": "trdomain.cz", "auth_info": "trpwd"}
 
     def test_valid(self):
         self.assertRequestValid(TransferDomain, self.params)
@@ -37,11 +42,15 @@ class TestTransferDomain(XMLTestCase):
             EM.command(
                 EM.transfer(
                     domain.transfer(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        domain.name(self.params['name']),
-                        domain.authInfo(self.params['auth_info']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
+                        domain.name(self.params["name"]),
+                        domain.authInfo(self.params["auth_info"]),
                     ),
-                    op='request',
+                    op="request",
                 )
             )
         )
@@ -49,7 +58,7 @@ class TestTransferDomain(XMLTestCase):
 
 
 class TestTransferContact(XMLTestCase):
-    params = {'id': 'CID-TRCONT', 'auth_info': 'trpwd'}
+    params = {"id": "CID-TRCONT", "auth_info": "trpwd"}
 
     def test_valid(self):
         self.assertRequestValid(TransferContact, self.params)
@@ -61,11 +70,15 @@ class TestTransferContact(XMLTestCase):
             EM.command(
                 EM.transfer(
                     contact.transfer(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
-                        contact.id(self.params['id']),
-                        contact.authInfo(self.params['auth_info']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_CONTACT
+                        },
+                        contact.id(self.params["id"]),
+                        contact.authInfo(self.params["auth_info"]),
                     ),
-                    op='request',
+                    op="request",
                 )
             )
         )
@@ -73,7 +86,7 @@ class TestTransferContact(XMLTestCase):
 
 
 class TestTransferKeyset(XMLTestCase):
-    params = {'id': 'KID-TRKEYSET', 'auth_info': 'trpwd'}
+    params = {"id": "KID-TRKEYSET", "auth_info": "trpwd"}
 
     def test_valid(self):
         self.assertRequestValid(TransferKeyset, self.params)
@@ -85,11 +98,15 @@ class TestTransferKeyset(XMLTestCase):
             EM.command(
                 EM.transfer(
                     keyset.transfer(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
-                        keyset.id(self.params['id']),
-                        keyset.authInfo(self.params['auth_info']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_KEYSET
+                        },
+                        keyset.id(self.params["id"]),
+                        keyset.authInfo(self.params["auth_info"]),
                     ),
-                    op='request',
+                    op="request",
                 )
             )
         )
@@ -97,7 +114,7 @@ class TestTransferKeyset(XMLTestCase):
 
 
 class TestTransferNsset(XMLTestCase):
-    params = {'id': 'NID-TRNSSET', 'auth_info': 'trpwd'}
+    params = {"id": "NID-TRNSSET", "auth_info": "trpwd"}
 
     def test_valid(self):
         self.assertRequestValid(TransferNsset, self.params)
@@ -109,11 +126,15 @@ class TestTransferNsset(XMLTestCase):
             EM.command(
                 EM.transfer(
                     nsset.transfer(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
-                        nsset.id(self.params['id']),
-                        nsset.authInfo(self.params['auth_info']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_NSSET
+                        },
+                        nsset.id(self.params["id"]),
+                        nsset.authInfo(self.params["auth_info"]),
                     ),
-                    op='request',
+                    op="request",
                 )
             )
         )

@@ -19,15 +19,24 @@
 from lxml.builder import ElementMaker
 from lxml.etree import QName, fromstring
 
-from epplib.commands.list import (GetResults, ListContacts, ListDomains, ListDomainsByContact, ListDomainsByKeyset,
-                                  ListDomainsByNsset, ListKeysets, ListKeysetsByContact, ListNssets,
-                                  ListNssetsByContact, ListNssetsByNs)
+from epplib.commands.list import (
+    GetResults,
+    ListContacts,
+    ListDomains,
+    ListDomainsByContact,
+    ListDomainsByKeyset,
+    ListDomainsByNsset,
+    ListKeysets,
+    ListKeysetsByContact,
+    ListNssets,
+    ListNssetsByContact,
+    ListNssetsByNs,
+)
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
 
 class TestList(XMLTestCase):
-
     def test_valid(self):
         self.assertRequestValid(ListContacts, {})
         self.assertRequestValid(ListDomains, {})
@@ -35,12 +44,12 @@ class TestList(XMLTestCase):
         self.assertRequestValid(ListNssets, {})
 
     def test_data(self):
-        tr_id = 'abc123'
+        tr_id = "abc123"
         data = (
-            (ListContacts, 'listContacts'),
-            (ListDomains, 'listDomains'),
-            (ListKeysets, 'listKeysets'),
-            (ListNssets, 'listNssets'),
+            (ListContacts, "listContacts"),
+            (ListDomains, "listDomains"),
+            (ListKeysets, "listKeysets"),
+            (ListNssets, "listNssets"),
         )
         for cls, tag in data:
             with self.subTest(tag=tag):
@@ -49,7 +58,11 @@ class TestList(XMLTestCase):
                 expected = make_epp_root(
                     EM.extension(
                         fred.extcommand(
-                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                            {
+                                QName(
+                                    NAMESPACE.XSI, "schemaLocation"
+                                ): SCHEMA_LOCATION.FRED
+                            },
                             fred(tag),
                             fred.clTRID(tr_id),
                         )
@@ -59,35 +72,38 @@ class TestList(XMLTestCase):
 
 
 class TestListBy(XMLTestCase):
-
     def test_valid(self):
-        self.assertRequestValid(ListDomainsByContact, {'id': 'item_id'})
-        self.assertRequestValid(ListDomainsByNsset, {'id': 'item_id'})
-        self.assertRequestValid(ListDomainsByKeyset, {'id': 'item_id'})
-        self.assertRequestValid(ListDomainsByContact, {'id': 'item_id'})
-        self.assertRequestValid(ListKeysetsByContact, {'id': 'item_id'})
-        self.assertRequestValid(ListNssetsByContact, {'id': 'item_id'})
-        self.assertRequestValid(ListNssetsByNs, {'name': 'item_id'})
+        self.assertRequestValid(ListDomainsByContact, {"id": "item_id"})
+        self.assertRequestValid(ListDomainsByNsset, {"id": "item_id"})
+        self.assertRequestValid(ListDomainsByKeyset, {"id": "item_id"})
+        self.assertRequestValid(ListDomainsByContact, {"id": "item_id"})
+        self.assertRequestValid(ListKeysetsByContact, {"id": "item_id"})
+        self.assertRequestValid(ListNssetsByContact, {"id": "item_id"})
+        self.assertRequestValid(ListNssetsByNs, {"name": "item_id"})
 
     def test_data(self):
-        tr_id = 'abc123'
+        tr_id = "abc123"
         data = (
-            (ListDomainsByContact, 'domainsByContact', 'id'),
-            (ListDomainsByNsset, 'domainsByNsset', 'id'),
-            (ListDomainsByKeyset, 'domainsByKeyset', 'id'),
-            (ListDomainsByContact, 'domainsByContact', 'id'),
-            (ListKeysetsByContact, 'keysetsByContact', 'id'),
-            (ListNssetsByNs, 'nssetsByNs', 'name'),
+            (ListDomainsByContact, "domainsByContact", "id"),
+            (ListDomainsByNsset, "domainsByNsset", "id"),
+            (ListDomainsByKeyset, "domainsByKeyset", "id"),
+            (ListDomainsByContact, "domainsByContact", "id"),
+            (ListKeysetsByContact, "keysetsByContact", "id"),
+            (ListNssetsByNs, "nssetsByNs", "name"),
         )
         for cls, command_tag, item_tag in data:
             with self.subTest(tag=command_tag):
-                root = fromstring(cls('item_id').xml(tr_id))
+                root = fromstring(cls("item_id").xml(tr_id))
                 fred = ElementMaker(namespace=NAMESPACE.FRED)
                 expected = make_epp_root(
                     EM.extension(
                         fred.extcommand(
-                            {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
-                            fred(command_tag, fred(item_tag, 'item_id')),
+                            {
+                                QName(
+                                    NAMESPACE.XSI, "schemaLocation"
+                                ): SCHEMA_LOCATION.FRED
+                            },
+                            fred(command_tag, fred(item_tag, "item_id")),
                             fred.clTRID(tr_id),
                         )
                     )
@@ -96,18 +112,17 @@ class TestListBy(XMLTestCase):
 
 
 class TestGetResults(XMLTestCase):
-
     def test_valid(self):
         self.assertRequestValid(GetResults, {})
 
     def test_data(self):
-        tr_id = 'abc123'
+        tr_id = "abc123"
         root = fromstring(GetResults().xml(tr_id))
         fred = ElementMaker(namespace=NAMESPACE.FRED)
         expected = make_epp_root(
             EM.extension(
                 fred.extcommand(
-                    {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.FRED},
+                    {QName(NAMESPACE.XSI, "schemaLocation"): SCHEMA_LOCATION.FRED},
                     fred.getResults(),
                     fred.clTRID(tr_id),
                 )

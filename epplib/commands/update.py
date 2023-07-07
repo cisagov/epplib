@@ -24,8 +24,19 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import (AuthInfo, Disclose, Dnskey, DomainContact, HostObjSet, HostStatus, Ident, Ip, Ns,
-                           PostalInfo, Status)
+from epplib.models import (
+    AuthInfo,
+    Disclose,
+    Dnskey,
+    DomainContact,
+    HostObjSet,
+    HostStatus,
+    Ident,
+    Ip,
+    Ns,
+    PostalInfo,
+    Status,
+)
 from epplib.responses import Result
 
 
@@ -47,8 +58,12 @@ class UpdateDomain(Command):
     response_class = Result
 
     name: str
-    add: Sequence[Union[str, Status, DomainContact, HostObjSet]] = field(default_factory=list)
-    rem: Sequence[Union[str, Status, DomainContact, HostObjSet]] = field(default_factory=list)
+    add: Sequence[Union[str, Status, DomainContact, HostObjSet]] = field(
+        default_factory=list
+    )
+    rem: Sequence[Union[str, Status, DomainContact, HostObjSet]] = field(
+        default_factory=list
+    )
     nsset: Optional[str] = None
     keyset: Optional[str] = None
     registrant: Optional[str] = None
@@ -60,41 +75,53 @@ class UpdateDomain(Command):
         Returns:
             Element with a domain to update.
         """
-        update = Element(QName(NAMESPACE.EPP, 'update'))
+        update = Element(QName(NAMESPACE.EPP, "update"))
 
-        domain_update = SubElement(update, QName(NAMESPACE.NIC_DOMAIN, 'update'))
-        domain_update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_DOMAIN)
+        domain_update = SubElement(update, QName(NAMESPACE.NIC_DOMAIN, "update"))
+        domain_update.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_DOMAIN
+        )
 
-        SubElement(domain_update, QName(NAMESPACE.NIC_DOMAIN, 'name')).text = self.name
+        SubElement(domain_update, QName(NAMESPACE.NIC_DOMAIN, "name")).text = self.name
 
         if self.add:
-            add = SubElement(domain_update, QName(NAMESPACE.NIC_DOMAIN, 'add'))
+            add = SubElement(domain_update, QName(NAMESPACE.NIC_DOMAIN, "add"))
             for item in self.add:
                 if isinstance(item, str):
-                    SubElement(add, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = item
+                    SubElement(add, QName(NAMESPACE.NIC_DOMAIN, "admin")).text = item
                 elif isinstance(item, (Status, DomainContact, HostObjSet)):
                     add.append(item.get_payload())
 
         if self.rem:
-            rem = SubElement(domain_update, QName(NAMESPACE.NIC_DOMAIN, 'rem'))
+            rem = SubElement(domain_update, QName(NAMESPACE.NIC_DOMAIN, "rem"))
             for item in self.rem:
                 if isinstance(item, str):
-                    SubElement(rem, QName(NAMESPACE.NIC_DOMAIN, 'admin')).text = item
+                    SubElement(rem, QName(NAMESPACE.NIC_DOMAIN, "admin")).text = item
                 elif isinstance(item, (Status, DomainContact, HostObjSet)):
                     rem.append(item.get_payload())
 
-        if self.nsset is not None or self.keyset is not None or \
-                self.registrant is not None or self.auth_info is not None:
-            chg = SubElement(domain_update, QName(NAMESPACE.NIC_DOMAIN, 'chg'))
+        if (
+            self.nsset is not None
+            or self.keyset is not None
+            or self.registrant is not None
+            or self.auth_info is not None
+        ):
+            chg = SubElement(domain_update, QName(NAMESPACE.NIC_DOMAIN, "chg"))
             if self.nsset is not None:
-                SubElement(chg, QName(NAMESPACE.NIC_DOMAIN, 'nsset')).text = self.nsset
+                SubElement(chg, QName(NAMESPACE.NIC_DOMAIN, "nsset")).text = self.nsset
             if self.keyset is not None:
-                SubElement(chg, QName(NAMESPACE.NIC_DOMAIN, 'keyset')).text = self.keyset
+                SubElement(
+                    chg, QName(NAMESPACE.NIC_DOMAIN, "keyset")
+                ).text = self.keyset
             if self.registrant is not None:
-                SubElement(chg, QName(NAMESPACE.NIC_DOMAIN, 'registrant')).text = self.registrant
+                SubElement(
+                    chg, QName(NAMESPACE.NIC_DOMAIN, "registrant")
+                ).text = self.registrant
             if self.auth_info is not None:
                 if isinstance(self.auth_info, str):
-                    SubElement(chg, QName(NAMESPACE.NIC_DOMAIN, 'authInfo')).text = self.auth_info
+                    SubElement(
+                        chg, QName(NAMESPACE.NIC_DOMAIN, "authInfo")
+                    ).text = self.auth_info
                 elif isinstance(self.auth_info, AuthInfo):
                     chg.append(self.auth_info.get_payload())
 
@@ -138,12 +165,14 @@ class UpdateContact(Command):
         Returns:
             Element with a contact to update.
         """
-        update = Element(QName(NAMESPACE.EPP, 'update'))
+        update = Element(QName(NAMESPACE.EPP, "update"))
 
-        contact_update = SubElement(update, QName(NAMESPACE.NIC_CONTACT, 'update'))
-        contact_update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_CONTACT)
+        contact_update = SubElement(update, QName(NAMESPACE.NIC_CONTACT, "update"))
+        contact_update.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_CONTACT
+        )
 
-        SubElement(contact_update, QName(NAMESPACE.NIC_CONTACT, 'id')).text = self.id
+        SubElement(contact_update, QName(NAMESPACE.NIC_CONTACT, "id")).text = self.id
 
         change = self._get_change()
         if len(change):
@@ -157,29 +186,33 @@ class UpdateContact(Command):
         Returns:
             Element with the chg element.
         """
-        change = Element(QName(NAMESPACE.NIC_CONTACT, 'chg'))
+        change = Element(QName(NAMESPACE.NIC_CONTACT, "chg"))
 
         if self.postal_info is not None:
             change.append(self.postal_info.get_payload())
         if self.voice is not None:
-            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'voice')).text = self.voice
+            SubElement(change, QName(NAMESPACE.NIC_CONTACT, "voice")).text = self.voice
         if self.fax is not None:
-            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'fax')).text = self.fax
+            SubElement(change, QName(NAMESPACE.NIC_CONTACT, "fax")).text = self.fax
         if self.email is not None:
-            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'email')).text = self.email
+            SubElement(change, QName(NAMESPACE.NIC_CONTACT, "email")).text = self.email
         if self.auth_info is not None:
             if isinstance(self.auth_info, str):
-                SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'authInfo')).text = self.auth_info
+                SubElement(
+                    change, QName(NAMESPACE.NIC_CONTACT, "authInfo")
+                ).text = self.auth_info
             elif isinstance(self.auth_info, AuthInfo):
                 change.append(self.auth_info.get_payload())
         if self.disclose is not None:
             change.append(self.disclose.get_payload())
         if self.vat is not None:
-            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'vat')).text = self.vat
+            SubElement(change, QName(NAMESPACE.NIC_CONTACT, "vat")).text = self.vat
         if self.ident is not None:
             change.append(self.ident.get_payload())
         if self.notify_email is not None:
-            SubElement(change, QName(NAMESPACE.NIC_CONTACT, 'notifyEmail')).text = self.notify_email
+            SubElement(
+                change, QName(NAMESPACE.NIC_CONTACT, "notifyEmail")
+            ).text = self.notify_email
 
         return change
 
@@ -208,28 +241,30 @@ class UpdateHost(Command):
         Returns:
             Element with a host to update.
         """
-        update = Element(QName(NAMESPACE.EPP, 'update'))
+        update = Element(QName(NAMESPACE.EPP, "update"))
 
-        host_update = SubElement(update, QName(NAMESPACE.NIC_HOST, 'update'))
-        host_update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_HOST)
+        host_update = SubElement(update, QName(NAMESPACE.NIC_HOST, "update"))
+        host_update.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_HOST
+        )
 
-        SubElement(host_update, QName(NAMESPACE.NIC_HOST, 'name')).text = self.name
+        SubElement(host_update, QName(NAMESPACE.NIC_HOST, "name")).text = self.name
 
-        add = Element(QName(NAMESPACE.NIC_HOST, 'add'))
+        add = Element(QName(NAMESPACE.NIC_HOST, "add"))
         for item in self.add:
             add.append(item.get_payload())
         if len(add):
             host_update.append(add)
 
-        rem = Element(QName(NAMESPACE.NIC_HOST, 'rem'))
+        rem = Element(QName(NAMESPACE.NIC_HOST, "rem"))
         for item in self.rem:
             rem.append(item.get_payload())
         if len(rem):
             host_update.append(rem)
 
         if self.chg is not None:
-            chg = SubElement(host_update, QName(NAMESPACE.NIC_HOST, 'chg'))
-            SubElement(chg, QName(NAMESPACE.NIC_HOST, 'name')).text = self.chg
+            chg = SubElement(host_update, QName(NAMESPACE.NIC_HOST, "chg"))
+            SubElement(chg, QName(NAMESPACE.NIC_HOST, "name")).text = self.chg
 
         return update
 
@@ -258,34 +293,38 @@ class UpdateKeyset(Command):
         Returns:
             Element with a keyset to update.
         """
-        update = Element(QName(NAMESPACE.EPP, 'update'))
+        update = Element(QName(NAMESPACE.EPP, "update"))
 
-        keyset_update = SubElement(update, QName(NAMESPACE.NIC_KEYSET, 'update'))
-        keyset_update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_KEYSET)
+        keyset_update = SubElement(update, QName(NAMESPACE.NIC_KEYSET, "update"))
+        keyset_update.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_KEYSET
+        )
 
-        SubElement(keyset_update, QName(NAMESPACE.NIC_KEYSET, 'id')).text = self.id
+        SubElement(keyset_update, QName(NAMESPACE.NIC_KEYSET, "id")).text = self.id
 
-        add = Element(QName(NAMESPACE.NIC_KEYSET, 'add'))
+        add = Element(QName(NAMESPACE.NIC_KEYSET, "add"))
         for item in self.add:
             if isinstance(item, Dnskey):
                 add.append(item.get_payload())
             else:
-                SubElement(add, QName(NAMESPACE.NIC_KEYSET, 'tech')).text = item
+                SubElement(add, QName(NAMESPACE.NIC_KEYSET, "tech")).text = item
         if len(add):
             keyset_update.append(add)
 
-        rem = Element(QName(NAMESPACE.NIC_KEYSET, 'rem'))
+        rem = Element(QName(NAMESPACE.NIC_KEYSET, "rem"))
         for item in self.rem:
             if isinstance(item, Dnskey):
                 rem.append(item.get_payload())
             else:
-                SubElement(rem, QName(NAMESPACE.NIC_KEYSET, 'tech')).text = item
+                SubElement(rem, QName(NAMESPACE.NIC_KEYSET, "tech")).text = item
         if len(rem):
             keyset_update.append(rem)
 
         if self.auth_info is not None:
-            chg = SubElement(keyset_update, QName(NAMESPACE.NIC_KEYSET, 'chg'))
-            SubElement(chg, QName(NAMESPACE.NIC_KEYSET, 'authInfo')).text = self.auth_info
+            chg = SubElement(keyset_update, QName(NAMESPACE.NIC_KEYSET, "chg"))
+            SubElement(
+                chg, QName(NAMESPACE.NIC_KEYSET, "authInfo")
+            ).text = self.auth_info
 
         return update
 
@@ -316,36 +355,42 @@ class UpdateNsset(Command):
         Returns:
             Element with a nsset to update.
         """
-        update = Element(QName(NAMESPACE.EPP, 'update'))
+        update = Element(QName(NAMESPACE.EPP, "update"))
 
-        nsset_update = SubElement(update, QName(NAMESPACE.NIC_NSSET, 'update'))
-        nsset_update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_NSSET)
+        nsset_update = SubElement(update, QName(NAMESPACE.NIC_NSSET, "update"))
+        nsset_update.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_NSSET
+        )
 
-        SubElement(nsset_update, QName(NAMESPACE.NIC_NSSET, 'id')).text = self.id
+        SubElement(nsset_update, QName(NAMESPACE.NIC_NSSET, "id")).text = self.id
 
-        add = Element(QName(NAMESPACE.NIC_NSSET, 'add'))
+        add = Element(QName(NAMESPACE.NIC_NSSET, "add"))
         for item in self.add:
             if isinstance(item, Ns):
                 add.append(item.get_payload())
             else:
-                SubElement(add, QName(NAMESPACE.NIC_NSSET, 'tech')).text = item
+                SubElement(add, QName(NAMESPACE.NIC_NSSET, "tech")).text = item
         if len(add):
             nsset_update.append(add)
 
-        rem = Element(QName(NAMESPACE.NIC_NSSET, 'rem'))
+        rem = Element(QName(NAMESPACE.NIC_NSSET, "rem"))
         for item in self.rem:
             if isinstance(item, Ns):
-                SubElement(rem, QName(NAMESPACE.NIC_NSSET, 'name')).text = item.name
+                SubElement(rem, QName(NAMESPACE.NIC_NSSET, "name")).text = item.name
             else:
-                SubElement(rem, QName(NAMESPACE.NIC_NSSET, 'tech')).text = item
+                SubElement(rem, QName(NAMESPACE.NIC_NSSET, "tech")).text = item
         if len(rem):
             nsset_update.append(rem)
 
-        chg = Element(QName(NAMESPACE.NIC_NSSET, 'chg'))
+        chg = Element(QName(NAMESPACE.NIC_NSSET, "chg"))
         if self.auth_info is not None:
-            SubElement(chg, QName(NAMESPACE.NIC_NSSET, 'authInfo')).text = self.auth_info
+            SubElement(
+                chg, QName(NAMESPACE.NIC_NSSET, "authInfo")
+            ).text = self.auth_info
         if self.reportlevel is not None:
-            SubElement(chg, QName(NAMESPACE.NIC_NSSET, 'reportlevel')).text = str(self.reportlevel)
+            SubElement(chg, QName(NAMESPACE.NIC_NSSET, "reportlevel")).text = str(
+                self.reportlevel
+            )
 
         if len(chg):
             nsset_update.append(chg)

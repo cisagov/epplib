@@ -37,171 +37,177 @@ from epplib.tests.utils import BASE_DATA_PATH, EM, SCHEMA
 
 @dataclass
 class DummyResponse(Response):
-
-    _payload_tag: ClassVar = QName(NAMESPACE.EPP, 'dummy')
+    _payload_tag: ClassVar = QName(NAMESPACE.EPP, "dummy")
     payload: str
 
     @classmethod
-    def parse(cls, raw_response: bytes, schema: Optional[XMLSchema] = None) -> 'DummyResponse':
+    def parse(
+        cls, raw_response: bytes, schema: Optional[XMLSchema] = None
+    ) -> "DummyResponse":
         return super().parse(raw_response, schema)
 
     @classmethod
     def _extract_payload(cls, element: Element) -> Mapping[str, str]:
-        return {'payload': element.tag}
+        return {"payload": element.tag}
 
 
 @dataclass
 class DummyExtension(ResponseExtension):
-
-    tag = QName('dummy', 'dummyExtension')
+    tag = QName("dummy", "dummyExtension")
     text: str
 
     @classmethod
-    def extract(cls, element: Element) -> 'DummyExtension':
+    def extract(cls, element: Element) -> "DummyExtension":
         return cls(element.text)
 
 
 @dataclass
 class OtherExtension(ResponseExtension):
-
-    tag = QName('dummy', 'otherExtension')
+    tag = QName("dummy", "otherExtension")
     value: int
 
     @classmethod
-    def extract(cls, element: Element) -> 'OtherExtension':
-        return cls(int(element.attrib['value']))
+    def extract(cls, element: Element) -> "OtherExtension":
+        return cls(int(element.attrib["value"]))
 
 
 @dataclass
 class DummyMessage(PollMessage):
-
-    tag = QName(NAMESPACE.EPP, 'dummyMessage')
+    tag = QName(NAMESPACE.EPP, "dummyMessage")
     value: str
 
     @classmethod
-    def extract(cls, element: Element) -> 'DummyMessage':
+    def extract(cls, element: Element) -> "DummyMessage":
         return cls(element.text.strip())
 
 
 class TestResponse(TestCase):
     def test_parse(self):
-        data = b'''<?xml version="1.0" encoding="UTF-8"?>
+        data = b"""<?xml version="1.0" encoding="UTF-8"?>
                    <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
                        <dummy/>
-                   </epp>'''
+                   </epp>"""
 
         response = DummyResponse.parse(data)
-        self.assertEqual(response.payload, QName(NAMESPACE.EPP, 'dummy'))
+        self.assertEqual(response.payload, QName(NAMESPACE.EPP, "dummy"))
 
     def test_raise_if_not_epp(self):
-        data = b'''<?xml version="1.0" encoding="UTF-8"?>
+        data = b"""<?xml version="1.0" encoding="UTF-8"?>
                    <other xmlns="urn:ietf:params:xml:ns:epp-1.0">
                        <dummy/>
-                   </other>'''
+                   </other>"""
 
         with self.assertRaisesRegex(ValueError, 'Root element has to be "epp"'):
             DummyResponse.parse(data)
 
     def test_raise_if_unexpected_tag(self):
-        data = b'''<?xml version="1.0" encoding="UTF-8"?>
+        data = b"""<?xml version="1.0" encoding="UTF-8"?>
                    <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
                        <unexpected/>
-                   </epp>'''
+                   </epp>"""
 
-        message = 'Expected {} tag\\. Found {} instead\\.'.format(
-            QName(NAMESPACE.EPP, 'dummy'),
-            QName(NAMESPACE.EPP, 'unexpected')
+        message = "Expected {} tag\\. Found {} instead\\.".format(
+            QName(NAMESPACE.EPP, "dummy"), QName(NAMESPACE.EPP, "unexpected")
         )
         with self.assertRaisesRegex(ValueError, message):
             DummyResponse.parse(data)
 
     def test_parse_with_schema(self):
-        invalid = b'''<?xml version="1.0" encoding="UTF-8"?>
+        invalid = b"""<?xml version="1.0" encoding="UTF-8"?>
                       <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
                           <invalid/>
-                      </epp>'''
+                      </epp>"""
 
         message = "Element '{urn:ietf:params:xml:ns:epp-1.0}invalid': This element is not expected\\."
         with self.assertRaisesRegex(DocumentInvalid, message):
             DummyResponse.parse(invalid, SCHEMA)
 
-    @patch('epplib.tests.test_responses_base.DummyResponse._extract_payload')
+    @patch("epplib.tests.test_responses_base.DummyResponse._extract_payload")
     def test_wrap_exceptions(self, mock_parse):
-        mock_parse.side_effect = ValueError('It is broken!')
-        data = b'''<?xml version="1.0" encoding="UTF-8"?>
+        mock_parse.side_effect = ValueError("It is broken!")
+        data = b"""<?xml version="1.0" encoding="UTF-8"?>
                    <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
                        <dummy/>
-                   </epp>'''
-        with self.assertRaisesRegex(ParsingError, '<dummy\\/>'):
+                   </epp>"""
+        with self.assertRaisesRegex(ParsingError, "<dummy\\/>"):
             DummyResponse.parse(data)
 
 
 class TestGreeting(TestCase):
-    greeting_template = (BASE_DATA_PATH / 'responses/greeting_template.xml').read_bytes()
+    greeting_template = (
+        BASE_DATA_PATH / "responses/greeting_template.xml"
+    ).read_bytes()
 
-    expiry_absolute = b'<expiry><absolute>2021-05-04T03:14:15+02:00</absolute></expiry>'
-    expiry_relative = b'<expiry><relative>P0Y0M1DT10H15M20S</relative></expiry>'
+    expiry_absolute = b"<expiry><absolute>2021-05-04T03:14:15+02:00</absolute></expiry>"
+    expiry_relative = b"<expiry><relative>P0Y0M1DT10H15M20S</relative></expiry>"
 
     def test_parse(self):
-        xml = self.greeting_template.replace(b'{expiry}', self.expiry_absolute)
+        xml = self.greeting_template.replace(b"{expiry}", self.expiry_absolute)
         greeting = Greeting.parse(xml, SCHEMA)
 
         obj_uris = [
-            'http://www.nic.cz/xml/epp/contact-1.6',
-            'http://www.nic.cz/xml/epp/domain-1.4',
-            'http://www.nic.cz/xml/epp/nsset-1.2',
-            'http://www.nic.cz/xml/epp/keyset-1.3',
+            "http://www.nic.cz/xml/epp/contact-1.6",
+            "http://www.nic.cz/xml/epp/domain-1.4",
+            "http://www.nic.cz/xml/epp/nsset-1.2",
+            "http://www.nic.cz/xml/epp/keyset-1.3",
         ]
 
-        self.assertEqual(greeting.sv_id, 'EPP server (DSDng)')
-        self.assertEqual(greeting.sv_date, '2018-05-15T21:05:42+02:00')
-        self.assertEqual(greeting.versions, ['1.0'])
-        self.assertEqual(greeting.langs, ['en', 'cs'])
+        self.assertEqual(greeting.sv_id, "EPP server (DSDng)")
+        self.assertEqual(greeting.sv_date, "2018-05-15T21:05:42+02:00")
+        self.assertEqual(greeting.versions, ["1.0"])
+        self.assertEqual(greeting.langs, ["en", "cs"])
         self.assertEqual(greeting.obj_uris, obj_uris)
-        self.assertEqual(greeting.ext_uris, ['http://www.nic.cz/xml/epp/enumval-1.2'])
+        self.assertEqual(greeting.ext_uris, ["http://www.nic.cz/xml/epp/enumval-1.2"])
 
-        self.assertEqual(greeting.access, 'none')
-        self.assertEqual(greeting.expiry, datetime(2021, 5, 4, 3, 14, 15, tzinfo=timezone(timedelta(hours=2))))
+        self.assertEqual(greeting.access, "none")
+        self.assertEqual(
+            greeting.expiry,
+            datetime(2021, 5, 4, 3, 14, 15, tzinfo=timezone(timedelta(hours=2))),
+        )
 
         statement = Statement(
-            purpose=['admin', 'prov'],
-            recipient=['public'],
-            retention='stated',
+            purpose=["admin", "prov"],
+            recipient=["public"],
+            retention="stated",
         )
         self.assertEqual(greeting.statements, [statement])
 
     def test_parse_expiry_absolute(self):
-        xml = self.greeting_template.replace(b'{expiry}', self.expiry_absolute)
+        xml = self.greeting_template.replace(b"{expiry}", self.expiry_absolute)
         greeting = Greeting.parse(xml, SCHEMA)
 
         expected = datetime(2021, 5, 4, 3, 14, 15, tzinfo=timezone(timedelta(hours=2)))
         self.assertEqual(greeting.expiry, expected)
 
     def test_parse_expiry_relative(self):
-        xml = self.greeting_template.replace(b'{expiry}', self.expiry_relative)
+        xml = self.greeting_template.replace(b"{expiry}", self.expiry_relative)
         greeting = Greeting.parse(xml, SCHEMA)
 
         expected = relativedelta(days=1, hours=10, minutes=15, seconds=20)
         self.assertEqual(greeting.expiry, expected)
 
     def test_parse_no_expiry(self):
-        xml = self.greeting_template.replace(b'{expiry}', b'')
+        xml = self.greeting_template.replace(b"{expiry}", b"")
         greeting = Greeting.parse(xml, SCHEMA)
 
         self.assertEqual(greeting.expiry, None)
 
     def test_extract_absolute_expiry_error(self):
-        expiry = EM.expiry(EM.absolute('Gazpacho!'))
-        with self.assertRaisesRegex(ParsingError, 'Could not parse "Gazpacho!" as absolute expiry\\.'):
+        expiry = EM.expiry(EM.absolute("Gazpacho!"))
+        with self.assertRaisesRegex(
+            ParsingError, 'Could not parse "Gazpacho!" as absolute expiry\\.'
+        ):
             Greeting._extract_expiry(expiry)
 
     def test_extract_relative_expiry_error(self):
-        expiry = EM.expiry(EM.relative('Gazpacho!'))
-        with self.assertRaisesRegex(ParsingError, 'Could not parse "Gazpacho!" as relative expiry\\.'):
+        expiry = EM.expiry(EM.relative("Gazpacho!"))
+        with self.assertRaisesRegex(
+            ParsingError, 'Could not parse "Gazpacho!" as relative expiry\\.'
+        ):
             Greeting._extract_expiry(expiry)
 
     def test_extract_expiry_invalid_tag(self):
-        expiry = EM.expiry(EM.invalid('2021-05-04T03:14:15+02:00'))
+        expiry = EM.expiry(EM.invalid("2021-05-04T03:14:15+02:00"))
         message = 'Expected expiry specification. Found "{urn:ietf:params:xml:ns:epp-1.0}invalid" instead\\.'
         with self.assertRaisesRegex(ValueError, message):
             Greeting._extract_expiry(expiry)
@@ -212,19 +218,17 @@ TestResult = Result[Any]
 
 
 class ResultTest(TestCase):
-
     def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result.xml").read_bytes()
         result = TestResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 1000)
-        self.assertEqual(result.msg, 'Command completed successfully')
+        self.assertEqual(result.msg, "Command completed successfully")
         self.assertEqual(result.res_data, None)
-        self.assertEqual(result.cl_tr_id, 'sdmj001#17-03-06at18:48:03')
-        self.assertEqual(result.sv_tr_id, 'ReqID-0000126633')
+        self.assertEqual(result.cl_tr_id, "sdmj001#17-03-06at18:48:03")
+        self.assertEqual(result.sv_tr_id, "ReqID-0000126633")
 
 
 class TestResultExtensions(TestCase):
-
     TEST_EXTENSIONS = {
         DummyExtension.tag: DummyExtension,
         OtherExtension.tag: OtherExtension,
@@ -244,41 +248,40 @@ class TestResultExtensions(TestCase):
 
     def test_extract_unknown(self):
         extension = EM.extension(EM.unknown())
-        with LogCapture('epplib.responses.base', propagate=False) as log_handler:
+        with LogCapture("epplib.responses.base", propagate=False) as log_handler:
             result = TestResult._extract_extensions(extension)
 
         self.assertEqual(result, [])
 
-        message = 'Could not find class to extract extension {urn:ietf:params:xml:ns:epp-1.0}unknown.'
-        log_handler.check(('epplib.responses.base', 'WARNING', message))
+        message = "Could not find class to extract extension {urn:ietf:params:xml:ns:epp-1.0}unknown."
+        log_handler.check(("epplib.responses.base", "WARNING", message))
 
     def test_extract(self):
-        EXT = ElementMaker(namespace='dummy')
+        EXT = ElementMaker(namespace="dummy")
         extension = EM.extension(
-            EXT.dummyExtension('Gazpacho!'),
-            EXT.otherExtension(value='1'),
+            EXT.dummyExtension("Gazpacho!"),
+            EXT.otherExtension(value="1"),
         )
         result = TestResult._extract_extensions(extension)
-        self.assertEqual(result, [DummyExtension('Gazpacho!'), OtherExtension(1)])
+        self.assertEqual(result, [DummyExtension("Gazpacho!"), OtherExtension(1)])
 
     def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_dummy_extension.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_dummy_extension.xml").read_bytes()
         result = TestResult.parse(xml)
-        self.assertEqual(result.extensions, [DummyExtension('Gazpacho!')])
+        self.assertEqual(result.extensions, [DummyExtension("Gazpacho!")])
 
 
 @patch.dict(POLL_MESSAGE_TYPES, {DummyMessage.tag: DummyMessage})
 class TestMsgQ(TestCase):
-
     def test_extract_minimal(self):
         msg_q = EM.msgQ(
-            count='7',
-            id='19596173',
+            count="7",
+            id="19596173",
         )
         result = MsgQ.extract(msg_q)
         expected = MsgQ(
             count=7,
-            id='19596173',
+            id="19596173",
             q_date=None,
             msg=None,
         )
@@ -287,13 +290,13 @@ class TestMsgQ(TestCase):
     def test_extract_empty_msg(self):
         msg_q = EM.msgQ(
             EM.msg(),
-            count='7',
-            id='19596173',
+            count="7",
+            id="19596173",
         )
         result = MsgQ.extract(msg_q)
         expected = MsgQ(
             count=7,
-            id='19596173',
+            id="19596173",
             q_date=None,
             msg=None,
         )
@@ -301,60 +304,62 @@ class TestMsgQ(TestCase):
 
     def test_extract_date(self):
         msg_q = EM.msgQ(
-            EM.qDate('2017-07-15T01:18:13+02:00'),
-            count='7',
-            id='19596173',
+            EM.qDate("2017-07-15T01:18:13+02:00"),
+            count="7",
+            id="19596173",
         )
         result = MsgQ.extract(msg_q)
         expected = MsgQ(
             count=7,
-            id='19596173',
-            q_date=datetime(2017, 7, 15, 1, 18, 13, tzinfo=timezone(timedelta(hours=2))),
+            id="19596173",
+            q_date=datetime(
+                2017, 7, 15, 1, 18, 13, tzinfo=timezone(timedelta(hours=2))
+            ),
             msg=None,
         )
         self.assertEqual(result, expected)
 
     def test_extract_unknown(self):
         msg_q = EM.msgQ(
-            EM.qDate('2017-07-15T01:18:13+02:00'),
-            EM.msg(
-                EM.unknown()
-            ),
-            count='7',
-            id='19596173',
+            EM.qDate("2017-07-15T01:18:13+02:00"),
+            EM.msg(EM.unknown()),
+            count="7",
+            id="19596173",
         )
-        with LogCapture('epplib.responses.base', propagate=False) as log_handler:
+        with LogCapture("epplib.responses.base", propagate=False) as log_handler:
             result = MsgQ.extract(msg_q)
 
         self.assertIsNone(result.msg)
 
-        message = 'Could not find class to extract poll message {urn:ietf:params:xml:ns:epp-1.0}unknown.'
-        log_handler.check(('epplib.responses.base', 'INFO', message))
+        message = "Could not find class to extract poll message {urn:ietf:params:xml:ns:epp-1.0}unknown."
+        log_handler.check(("epplib.responses.base", "INFO", message))
 
     def test_extract_dummy_msg(self):
         msg_q = EM.msgQ(
             EM.msg(
-                EM.dummyMessage('content'),
+                EM.dummyMessage("content"),
             ),
-            count='7',
-            id='19596173',
+            count="7",
+            id="19596173",
         )
         result = MsgQ.extract(msg_q)
         expected = MsgQ(
             count=7,
-            id='19596173',
+            id="19596173",
             q_date=None,
-            msg=DummyMessage('content'),
+            msg=DummyMessage("content"),
         )
         self.assertEqual(result, expected)
 
     def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_dummy_poll_message.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_dummy_poll_message.xml").read_bytes()
         result = TestResult.parse(xml)
         expected = MsgQ(
             count=7,
-            id='19596173',
-            q_date=datetime(2017, 7, 15, 1, 18, 13, tzinfo=timezone(timedelta(hours=2))),
-            msg=DummyMessage('content')
+            id="19596173",
+            q_date=datetime(
+                2017, 7, 15, 1, 18, 13, tzinfo=timezone(timedelta(hours=2))
+            ),
+            msg=DummyMessage("content"),
         )
         self.assertEqual(result.msg_q, expected)

@@ -31,16 +31,18 @@ class Delete(Command):
 
     response_class = Result
 
-    def _get_delete_payload(self, namespace: str, schema_location: str, tag: str, item: str) -> Element:
+    def _get_delete_payload(
+        self, namespace: str, schema_location: str, tag: str, item: str
+    ) -> Element:
         """Create subelements of the command element specific for the Delete command.
 
         Returns:
             Element with the item to delete.
         """
-        root = Element(QName(NAMESPACE.EPP, 'delete'))
+        root = Element(QName(NAMESPACE.EPP, "delete"))
 
-        item_delete = SubElement(root, QName(namespace, 'delete'))
-        item_delete.set(QName(NAMESPACE.XSI, 'schemaLocation'), schema_location)
+        item_delete = SubElement(root, QName(namespace, "delete"))
+        item_delete.set(QName(NAMESPACE.XSI, "schemaLocation"), schema_location)
         SubElement(item_delete, QName(namespace, tag)).text = item
 
         return root
@@ -62,7 +64,9 @@ class DeleteDomain(Delete):
         Returns:
             Element with a list of domains to delete.
         """
-        return self._get_delete_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.name)
+        return self._get_delete_payload(
+            NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, "name", self.name
+        )
 
 
 @dataclass
@@ -81,7 +85,9 @@ class DeleteContact(Delete):
         Returns:
             Element with the contact to delete.
         """
-        return self._get_delete_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id)
+        return self._get_delete_payload(
+            NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, "id", self.id
+        )
 
 
 @dataclass
@@ -100,7 +106,9 @@ class DeleteHost(Delete):
         Returns:
             Element with a list of domains to delete.
         """
-        return self._get_delete_payload(NAMESPACE.NIC_HOST, SCHEMA_LOCATION.NIC_HOST, 'name', self.name)
+        return self._get_delete_payload(
+            NAMESPACE.NIC_HOST, SCHEMA_LOCATION.NIC_HOST, "name", self.name
+        )
 
 
 @dataclass
@@ -119,7 +127,9 @@ class DeleteKeyset(Delete):
         Returns:
             Element with the keyset to delete.
         """
-        return self._get_delete_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id)
+        return self._get_delete_payload(
+            NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, "id", self.id
+        )
 
 
 @dataclass
@@ -138,4 +148,6 @@ class DeleteNsset(Delete):
         Returns:
             Element with the nsset to delete.
         """
-        return self._get_delete_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.id)
+        return self._get_delete_payload(
+            NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, "id", self.id
+        )

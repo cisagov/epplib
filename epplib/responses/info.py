@@ -20,8 +20,13 @@
 
 from dataclasses import dataclass
 
-from epplib.models.info import (InfoContactResultData, InfoDomainResultData, InfoHostResultData, InfoKeysetResultData,
-                                InfoNssetResultData)
+from epplib.models.info import (
+    InfoContactResultData,
+    InfoDomainResultData,
+    InfoHostResultData,
+    InfoKeysetResultData,
+    InfoNssetResultData,
+)
 from epplib.responses.base import Result
 
 
@@ -37,7 +42,7 @@ class InfoDomainResult(Result[InfoDomainResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './domain:infData'
+    _res_data_path = "./domain:infData"
     _res_data_class = InfoDomainResultData
 
 
@@ -53,7 +58,7 @@ class InfoContactResult(Result[InfoContactResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './contact:infData'
+    _res_data_path = "./contact:infData"
     _res_data_class = InfoContactResultData
 
 
@@ -69,7 +74,7 @@ class InfoHostResult(Result[InfoHostResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './host:infData'
+    _res_data_path = "./host:infData"
     _res_data_class = InfoHostResultData
 
 
@@ -85,7 +90,7 @@ class InfoKeysetResult(Result[InfoKeysetResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './keyset:infData'
+    _res_data_path = "./keyset:infData"
     _res_data_class = InfoKeysetResultData
 
 
@@ -101,5 +106,5 @@ class InfoNssetResult(Result[InfoNssetResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './nsset:infData'
+    _res_data_path = "./nsset:infData"
     _res_data_class = InfoNssetResultData

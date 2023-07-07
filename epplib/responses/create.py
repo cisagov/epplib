@@ -21,8 +21,13 @@
 from dataclasses import dataclass
 from typing import ClassVar, Optional
 
-from epplib.models.create import (CreateContactResultData, CreateDomainResultData, CreateHostResultData,
-                                  CreateKeysetResultData, CreateNssetResultData)
+from epplib.models.create import (
+    CreateContactResultData,
+    CreateDomainResultData,
+    CreateHostResultData,
+    CreateKeysetResultData,
+    CreateNssetResultData,
+)
 from epplib.responses.base import Result, T
 
 
@@ -38,7 +43,7 @@ class CreateDomainResult(Result[CreateDomainResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './domain:creData'
+    _res_data_path = "./domain:creData"
     _res_data_class = CreateDomainResultData
 
 
@@ -55,7 +60,7 @@ class CreateNonDomainResult(Result[T]):
     """
 
     _namespace_prefix: ClassVar[Optional[str]] = None
-    _res_data_path = './{}:creData'.format(_namespace_prefix)
+    _res_data_path = "./{}:creData".format(_namespace_prefix)
 
 
 @dataclass
@@ -70,8 +75,8 @@ class CreateContactResult(CreateNonDomainResult[CreateContactResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _namespace_prefix: ClassVar[Optional[str]] = 'contact'
-    _res_data_path = './{}:creData'.format(_namespace_prefix)
+    _namespace_prefix: ClassVar[Optional[str]] = "contact"
+    _res_data_path = "./{}:creData".format(_namespace_prefix)
     _res_data_class = CreateContactResultData
 
 
@@ -87,8 +92,8 @@ class CreateHostResult(CreateNonDomainResult[CreateHostResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _namespace_prefix: ClassVar[Optional[str]] = 'host'
-    _res_data_path = './{}:creData'.format(_namespace_prefix)
+    _namespace_prefix: ClassVar[Optional[str]] = "host"
+    _res_data_path = "./{}:creData".format(_namespace_prefix)
     _res_data_class = CreateHostResultData
 
 
@@ -104,8 +109,8 @@ class CreateNssetResult(CreateNonDomainResult[CreateNssetResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _namespace_prefix: ClassVar[Optional[str]] = 'nsset'
-    _res_data_path = './{}:creData'.format(_namespace_prefix)
+    _namespace_prefix: ClassVar[Optional[str]] = "nsset"
+    _res_data_path = "./{}:creData".format(_namespace_prefix)
     _res_data_class = CreateNssetResultData
 
 
@@ -121,6 +126,6 @@ class CreateKeysetResult(CreateNonDomainResult[CreateKeysetResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _namespace_prefix: ClassVar[Optional[str]] = 'keyset'
-    _res_data_path = './{}:creData'.format(_namespace_prefix)
+    _namespace_prefix: ClassVar[Optional[str]] = "keyset"
+    _res_data_path = "./{}:creData".format(_namespace_prefix)
     _res_data_class = CreateKeysetResultData

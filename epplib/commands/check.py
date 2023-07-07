@@ -24,23 +24,30 @@ from lxml.etree import Element, QName, SubElement
 
 from epplib.commands.base import Command
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.responses import (CheckContactResult, CheckDomainResult, CheckHostResult, CheckKeysetResult,
-                              CheckNssetResult)
+from epplib.responses import (
+    CheckContactResult,
+    CheckDomainResult,
+    CheckHostResult,
+    CheckKeysetResult,
+    CheckNssetResult,
+)
 
 
 class Check(Command):
     """Base class for EPP Check commands."""
 
-    def _get_check_payload(self, namespace: str, schema_location: str, tag: str, items: Sequence[str]) -> Element:
+    def _get_check_payload(
+        self, namespace: str, schema_location: str, tag: str, items: Sequence[str]
+    ) -> Element:
         """Create subelements of the command element specific for the Check command.
 
         Returns:
             Element with a list of items to check.
         """
-        root = Element(QName(NAMESPACE.EPP, 'check'))
+        root = Element(QName(NAMESPACE.EPP, "check"))
 
-        item_check = SubElement(root, QName(namespace, 'check'))
-        item_check.set(QName(NAMESPACE.XSI, 'schemaLocation'), schema_location)
+        item_check = SubElement(root, QName(namespace, "check"))
+        item_check.set(QName(NAMESPACE.XSI, "schemaLocation"), schema_location)
         for item in items:
             SubElement(item_check, QName(namespace, tag)).text = item
 
@@ -64,7 +71,9 @@ class CheckDomain(Check):
         Returns:
             Element with a list of domains to check.
         """
-        return self._get_check_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.names)
+        return self._get_check_payload(
+            NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, "name", self.names
+        )
 
 
 @dataclass
@@ -85,7 +94,9 @@ class CheckContact(Check):
         Returns:
             Element with a list of contacts to check.
         """
-        return self._get_check_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.ids)
+        return self._get_check_payload(
+            NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, "id", self.ids
+        )
 
 
 @dataclass
@@ -105,7 +116,9 @@ class CheckHost(Check):
         Returns:
             Element with a list of hosts to check.
         """
-        return self._get_check_payload(NAMESPACE.NIC_HOST, SCHEMA_LOCATION.NIC_HOST, 'name', self.names)
+        return self._get_check_payload(
+            NAMESPACE.NIC_HOST, SCHEMA_LOCATION.NIC_HOST, "name", self.names
+        )
 
 
 @dataclass
@@ -126,7 +139,9 @@ class CheckNsset(Check):
         Returns:
             Element with a list of nssets to check.
         """
-        return self._get_check_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.ids)
+        return self._get_check_payload(
+            NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, "id", self.ids
+        )
 
 
 @dataclass
@@ -147,4 +162,6 @@ class CheckKeyset(Check):
         Returns:
             Element with a list of keysets to check.
         """
-        return self._get_check_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.ids)
+        return self._get_check_payload(
+            NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, "id", self.ids
+        )

@@ -33,32 +33,32 @@ class DiscloseField(str, Enum):
     """Allowed values of subelements of disclose element."""
 
     # Order matters! Elements are ordered by their position within disclose flag.
-    ADDR = 'addr'
-    VOICE = 'voice'
-    FAX = 'fax'
-    EMAIL = 'email'
-    VAT = 'vat'
-    IDENT = 'ident'
-    NOTIFY_EMAIL = 'notifyEmail'
+    ADDR = "addr"
+    VOICE = "voice"
+    FAX = "fax"
+    EMAIL = "email"
+    VAT = "vat"
+    IDENT = "ident"
+    NOTIFY_EMAIL = "notifyEmail"
 
 
 @unique
 class IdentType(str, Enum):
     """Allowed values of the type attribure of ident."""
 
-    OP = 'op'
-    PASSPORT = 'passport'
-    MPSV = 'mpsv'
-    ICO = 'ico'
-    BIRTHDAY = 'birthday'
+    OP = "op"
+    PASSPORT = "passport"
+    MPSV = "mpsv"
+    ICO = "ico"
+    BIRTHDAY = "birthday"
 
 
 @unique
 class Unit(str, Enum):
     """Unit for registration period."""
 
-    MONTH = 'm'
-    YEAR = 'y'
+    MONTH = "m"
+    YEAR = "y"
 
 
 class ExtractModelMixin(ParseXMLMixin, ABC):
@@ -66,7 +66,7 @@ class ExtractModelMixin(ParseXMLMixin, ABC):
 
     @classmethod
     @abstractmethod
-    def extract(cls, element: Element) -> 'ExtractModelMixin':
+    def extract(cls, element: Element) -> "ExtractModelMixin":
         """Extract the model from the element."""
 
 
@@ -106,25 +106,25 @@ class Addr(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
-        addr = Element(QName(self.namespace, 'addr'))
+        addr = Element(QName(self.namespace, "addr"))
         for line in self.street:
-            SubElement(addr, QName(self.namespace, 'street')).text = line
-        SubElement(addr, QName(self.namespace, 'city')).text = self.city
+            SubElement(addr, QName(self.namespace, "street")).text = line
+        SubElement(addr, QName(self.namespace, "city")).text = self.city
         if self.sp:
-            SubElement(addr, QName(self.namespace, 'sp')).text = self.sp
-        SubElement(addr, QName(self.namespace, 'pc')).text = self.pc
-        SubElement(addr, QName(self.namespace, 'cc')).text = self.cc
+            SubElement(addr, QName(self.namespace, "sp")).text = self.sp
+        SubElement(addr, QName(self.namespace, "pc")).text = self.pc
+        SubElement(addr, QName(self.namespace, "cc")).text = self.cc
         return addr
 
     @classmethod
-    def extract(cls, element: Element) -> 'Addr':
+    def extract(cls, element: Element) -> "Addr":
         """Extract the model from the element."""
         return cls(
-            street=cls._find_all_text(element, f'./{cls._alias}:street'),
-            city=cls._find_text(element, f'./{cls._alias}:city'),
-            pc=cls._find_text(element, f'./{cls._alias}:pc'),
-            cc=cls._find_text(element, f'./{cls._alias}:cc'),
-            sp=cls._find_text(element, f'./{cls._alias}:sp'),
+            street=cls._find_all_text(element, f"./{cls._alias}:street"),
+            city=cls._find_text(element, f"./{cls._alias}:city"),
+            pc=cls._find_text(element, f"./{cls._alias}:pc"),
+            cc=cls._find_text(element, f"./{cls._alias}:cc"),
+            sp=cls._find_text(element, f"./{cls._alias}:sp"),
         )
 
 
@@ -140,14 +140,14 @@ class AuthInfo(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
-        auth_info = Element(QName(self.namespace, 'authInfo'))
-        SubElement(auth_info, QName(self.namespace, 'pw')).text = self.pw
+        auth_info = Element(QName(self.namespace, "authInfo"))
+        SubElement(auth_info, QName(self.namespace, "pw")).text = self.pw
         return auth_info
 
     @classmethod
-    def extract(cls, element: Element) -> Union[str, 'AuthInfo']:
+    def extract(cls, element: Element) -> Union[str, "AuthInfo"]:
         """Extract the model from the element."""
-        pw = cls._find_text(element, './{*}pw')
+        pw = cls._find_text(element, "./{*}pw")
         if pw is None:
             return element.text
         return cls(pw=pw)
@@ -165,13 +165,13 @@ class ContactAddr(Addr):
         sp: Content of the addr/sp element.
     """
 
-    _alias = 'contact'
+    _alias = "contact"
     namespace = NAMESPACE.NIC_CONTACT
 
     @classmethod
-    def extract(cls, element: Element) -> 'ContactAddr':
+    def extract(cls, element: Element) -> "ContactAddr":
         """Extract the model from the element."""
-        return cast('ContactAddr', super().extract(element))
+        return cast("ContactAddr", super().extract(element))
 
 
 @dataclass
@@ -185,9 +185,9 @@ class ContactAuthInfo(AuthInfo):
     namespace = NAMESPACE.NIC_CONTACT
 
     @classmethod
-    def extract(cls, element: Element) -> 'ContactAuthInfo':
+    def extract(cls, element: Element) -> "ContactAuthInfo":
         """Extract the model from the element."""
-        return cast('ContactAuthInfo', super().extract(element))
+        return cast("ContactAuthInfo", super().extract(element))
 
 
 @dataclass
@@ -207,8 +207,8 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
-        flag = '1' if self.flag else '0'
-        disclose = Element(QName(self.namespace, 'disclose'), flag=flag)
+        flag = "1" if self.flag else "0"
+        disclose = Element(QName(self.namespace, "disclose"), flag=flag)
         for item in sorted(self.fields, key=tuple(DiscloseField).index):
             if self.types and item in self.types:
                 type = self.types[item]
@@ -218,11 +218,13 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
         return disclose
 
     @classmethod
-    def extract(cls, element: Element) -> 'Disclose':
+    def extract(cls, element: Element) -> "Disclose":
         """Extract the model from the element."""
         return cls(
-            flag=cls._str_to_bool(cls._find_attrib(element, '.', 'flag')),
-            fields=set(DiscloseField(item) for item in cls._find_children(element, './')),
+            flag=cls._str_to_bool(cls._find_attrib(element, ".", "flag")),
+            fields=set(
+                DiscloseField(item) for item in cls._find_children(element, "./")
+            ),
         )
 
 
@@ -237,9 +239,9 @@ class DomainAuthInfo(AuthInfo):
     namespace = NAMESPACE.NIC_DOMAIN
 
     @classmethod
-    def extract(cls, element: Element) -> 'DomainAuthInfo':
+    def extract(cls, element: Element) -> "DomainAuthInfo":
         """Extract the model from the element."""
-        return cast('DomainAuthInfo', super().extract(element))
+        return cast("DomainAuthInfo", super().extract(element))
 
 
 @dataclass
@@ -258,15 +260,15 @@ class DomainContact(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
-        domain_contact = Element(QName(self.namespace, 'contact'))
+        domain_contact = Element(QName(self.namespace, "contact"))
         domain_contact.text = self.contact
-        domain_contact.set('type', self.type)
+        domain_contact.set("type", self.type)
         return domain_contact
 
     @classmethod
-    def extract(cls, element: Element) -> 'DomainContact':
+    def extract(cls, element: Element) -> "DomainContact":
         """Extract the model from the element."""
-        return cls(contact=element.text, type=element.get('type'))
+        return cls(contact=element.text, type=element.get("type"))
 
 
 @dataclass
@@ -281,7 +283,7 @@ class ExtraAddr(Addr):
         sp: Content of the addr/sp element.
     """
 
-    _alias = 'extra-addr'
+    _alias = "extra-addr"
     _NAMESPACES: ClassVar[Mapping[str, str]] = {
         **ParseXMLMixin._NAMESPACES,
         _alias: NAMESPACE.NIC_EXTRA_ADDR,
@@ -289,9 +291,9 @@ class ExtraAddr(Addr):
     namespace = NAMESPACE.NIC_EXTRA_ADDR
 
     @classmethod
-    def extract(cls, element: Element) -> 'ExtraAddr':
+    def extract(cls, element: Element) -> "ExtraAddr":
         """Extract the model from the element."""
-        return cast('ExtraAddr', super().extract(element))
+        return cast("ExtraAddr", super().extract(element))
 
 
 @dataclass
@@ -314,22 +316,23 @@ class Dnskey(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the the model."""
-        dnskey = Element(QName(self.namespace, 'dnskey'))
-        SubElement(dnskey, QName(self.namespace, 'flags')).text = str(self.flags)
-        SubElement(dnskey, QName(self.namespace, 'protocol')).text = str(self.protocol)
-        SubElement(dnskey, QName(self.namespace, 'alg')).text = str(self.alg)
-        SubElement(dnskey, QName(self.namespace, 'pubKey')).text = self.pub_key
+        dnskey = Element(QName(self.namespace, "dnskey"))
+        SubElement(dnskey, QName(self.namespace, "flags")).text = str(self.flags)
+        SubElement(dnskey, QName(self.namespace, "protocol")).text = str(self.protocol)
+        SubElement(dnskey, QName(self.namespace, "alg")).text = str(self.alg)
+        SubElement(dnskey, QName(self.namespace, "pubKey")).text = self.pub_key
         return dnskey
 
     @classmethod
-    def extract(cls, element: Element) -> 'Dnskey':
+    def extract(cls, element: Element) -> "Dnskey":
         """Extract the model from the element."""
-        flags = int(cls._find_text(element, './keyset:flags'))
-        protocol = int(cls._find_text(element, './keyset:protocol'))
-        alg = int(cls._find_text(element, './keyset:alg'))
-        pub_key = cls._find_text(element, './keyset:pubKey')
+        flags = int(cls._find_text(element, "./keyset:flags"))
+        protocol = int(cls._find_text(element, "./keyset:protocol"))
+        alg = int(cls._find_text(element, "./keyset:alg"))
+        pub_key = cls._find_text(element, "./keyset:pubKey")
 
         return cls(flags=flags, protocol=protocol, alg=alg, pub_key=pub_key)
+
 
 @dataclass
 class HostObjSet(PayloadModelMixin, ExtractModelMixin):
@@ -345,19 +348,20 @@ class HostObjSet(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the the model."""
-        ns = Element(QName(self.namespace, 'ns'))
+        ns = Element(QName(self.namespace, "ns"))
         for host in self.hosts:
-            SubElement(ns, QName(self.namespace, 'hostObj')).text = host
+            SubElement(ns, QName(self.namespace, "hostObj")).text = host
         return ns
 
     @classmethod
-    def extract(cls, element: Element) -> 'Dnskey':
+    def extract(cls, element: Element) -> "Dnskey":
         """Extract the model from the element."""
-        ns = cls._find(element, f'./{cls.namespace}:ns')
+        ns = cls._find(element, f"./{cls.namespace}:ns")
         if ns is not None:
-            return cls(hosts=cls._find_all_text(ns, f'./{cls._namespace}:hostObj'))
+            return cls(hosts=cls._find_all_text(ns, f"./{cls._namespace}:hostObj"))
         else:
             return []
+
 
 @dataclass
 class Ident(PayloadModelMixin, ExtractModelMixin):
@@ -375,15 +379,15 @@ class Ident(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
-        ident = Element(QName(self.namespace, 'ident'), type=self.type)
+        ident = Element(QName(self.namespace, "ident"), type=self.type)
         ident.text = self.value
         return ident
 
     @classmethod
-    def extract(cls, element: Element) -> 'Ident':
+    def extract(cls, element: Element) -> "Ident":
         """Extract the model from the element."""
-        type = IdentType(cls._find_attrib(element, '.', 'type'))
-        value = cls._find_text(element, '.')
+        type = IdentType(cls._find_attrib(element, ".", "type"))
+        value = cls._find_text(element, ".")
         return cls(type=type, value=value)
 
 
@@ -395,6 +399,7 @@ class Ip(PayloadModelMixin, ExtractModelMixin):
         addr: Content of the addr element.
         ip: Content of the ip attribute of the addr element.
     """
+
     namespace = NAMESPACE.NIC_HOST
 
     addr: str
@@ -402,17 +407,17 @@ class Ip(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the the model."""
-        addr = Element(QName(self.namespace, 'addr'))
+        addr = Element(QName(self.namespace, "addr"))
         addr.text = self.addr
         if self.ip is not None:
-            addr.set('ip', self.ip)
+            addr.set("ip", self.ip)
         return addr
 
     @classmethod
-    def extract(cls, element: Element) -> 'Ip':
+    def extract(cls, element: Element) -> "Ip":
         """Extract the model from the element."""
-        addr = cls._find_text(element, '.')
-        ip = cls._find_attrib(element, '.', 'ip')
+        addr = cls._find_text(element, ".")
+        ip = cls._find_attrib(element, ".", "ip")
         return cls(addr=addr, ip=ip)
 
 
@@ -432,17 +437,17 @@ class Ns(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the the model."""
-        ns = Element(QName(self.namespace, 'ns'))
-        SubElement(ns, QName(self.namespace, 'name')).text = self.name
+        ns = Element(QName(self.namespace, "ns"))
+        SubElement(ns, QName(self.namespace, "name")).text = self.name
         for addr in self.addrs:
-            SubElement(ns, QName(self.namespace, 'addr')).text = addr
+            SubElement(ns, QName(self.namespace, "addr")).text = addr
         return ns
 
     @classmethod
-    def extract(cls, element: Element) -> 'Ns':
+    def extract(cls, element: Element) -> "Ns":
         """Extract the model from the element."""
-        name = cls._find_text(element, './nsset:name')
-        addrs = cls._find_all_text(element, './nsset:addr')
+        name = cls._find_text(element, "./nsset:name")
+        addrs = cls._find_all_text(element, "./nsset:addr")
         return cls(name=name, addrs=addrs)
 
 
@@ -462,8 +467,8 @@ class Period(PayloadModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
-        period = Element(QName(self.namespace, 'period'))
-        period.attrib['unit'] = self.unit.value
+        period = Element(QName(self.namespace, "period"))
+        period.attrib["unit"] = self.unit.value
         period.text = str(self.length)
 
         return period
@@ -489,25 +494,25 @@ class PostalInfo(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
-        postal_info = Element(QName(self.namespace, 'postalInfo'))
+        postal_info = Element(QName(self.namespace, "postalInfo"))
 
         if self.name:
-            SubElement(postal_info, QName(self.namespace, 'name')).text = self.name
+            SubElement(postal_info, QName(self.namespace, "name")).text = self.name
         if self.type is not None:
-            postal_info.set('type', self.type)
+            postal_info.set("type", self.type)
         if self.org is not None:
-            SubElement(postal_info, QName(self.namespace, 'org')).text = self.org
+            SubElement(postal_info, QName(self.namespace, "org")).text = self.org
         if self.addr:
             postal_info.append(self.addr.get_payload())
 
         return postal_info
 
     @classmethod
-    def extract(cls, element: Element) -> 'PostalInfo':
+    def extract(cls, element: Element) -> "PostalInfo":
         """Extract the model from the element."""
-        name = cls._find_text(element, './contact:name')
-        org = cls._find_text(element, './contact:org')
-        addr = cls._optional(ContactAddr.extract, cls._find(element, './contact:addr'))
+        name = cls._find_text(element, "./contact:name")
+        org = cls._find_text(element, "./contact:org")
+        addr = cls._optional(ContactAddr.extract, cls._find(element, "./contact:addr"))
         return cls(name=name, addr=addr, org=org)
 
 
@@ -526,12 +531,12 @@ class Statement(ExtractModelMixin):
     retention: Optional[str]
 
     @classmethod
-    def extract(cls, element: Element) -> 'Statement':
+    def extract(cls, element: Element) -> "Statement":
         """Extract the model from the element."""
         return cls(
-            purpose=cls._find_children(element, './epp:purpose'),
-            recipient=cls._find_children(element, './epp:recipient'),
-            retention=cls._find_child(element, './epp:retention'),
+            purpose=cls._find_children(element, "./epp:purpose"),
+            recipient=cls._find_children(element, "./epp:recipient"),
+            retention=cls._find_child(element, "./epp:retention"),
         )
 
 
@@ -547,18 +552,18 @@ class Status(PayloadModelMixin, ExtractModelMixin):
 
     def __post_init__(self) -> None:
         if self.lang is None:
-            self.lang = 'en'
+            self.lang = "en"
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
-        status = Element(QName(self.namespace, 'status'))
-        status.set('s', self.state)
+        status = Element(QName(self.namespace, "status"))
+        status.set("s", self.state)
         return status
 
     @classmethod
-    def extract(cls, element: Element) -> 'Status':
+    def extract(cls, element: Element) -> "Status":
         """Extract the model from the element."""
-        return cls(element.get('s'), element.text, element.get('lang'))
+        return cls(element.get("s"), element.text, element.get("lang"))
 
 
 @dataclass
@@ -575,14 +580,14 @@ class HostStatus(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
-        status = Element(QName(self.namespace, 'status'))
-        status.set('s', self.s)
+        status = Element(QName(self.namespace, "status"))
+        status.set("s", self.s)
         return status
 
     @classmethod
-    def extract(cls, element: Element) -> 'Status':
+    def extract(cls, element: Element) -> "Status":
         """Extract the model from the element."""
-        return cls(s=element.get('s'))
+        return cls(s=element.get("s"))
 
 
 @dataclass
@@ -594,9 +599,9 @@ class TestResult(ExtractModelMixin):
     note: Optional[str]
 
     @classmethod
-    def extract(cls, element: Element) -> 'TestResult':
+    def extract(cls, element: Element) -> "TestResult":
         """Extract the model from the element."""
-        testname = cls._find_text(element, './nsset:testname')
-        status = cls._str_to_bool(cls._find_text(element, './nsset:status'))
-        note = cls._find_text(element, './nsset:note')
+        testname = cls._find_text(element, "./nsset:testname")
+        status = cls._str_to_bool(cls._find_text(element, "./nsset:status"))
+        note = cls._find_text(element, "./nsset:note")
         return cls(testname=testname, status=status, note=note)

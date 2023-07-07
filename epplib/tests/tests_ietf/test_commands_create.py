@@ -31,14 +31,14 @@ from epplib.tests.tests_ietf.constants import NAMESPACE, SCHEMA_LOCATION, SCHEMA
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
 
-@patch('epplib.commands.create.NAMESPACE', NAMESPACE)
-@patch('epplib.commands.create.SCHEMA_LOCATION', SCHEMA_LOCATION)
-@patch('epplib.models.common.DomainAuthInfo.namespace', NAMESPACE.NIC_DOMAIN)
+@patch("epplib.commands.create.NAMESPACE", NAMESPACE)
+@patch("epplib.commands.create.SCHEMA_LOCATION", SCHEMA_LOCATION)
+@patch("epplib.models.common.DomainAuthInfo.namespace", NAMESPACE.NIC_DOMAIN)
 class TestCreateDomain(XMLTestCase):
     params: Dict[str, Any] = {
-        'name': 'thisdomain.cz',
-        'registrant': 'CID-MYOWN',
-        'auth_info': DomainAuthInfo(pw='2fooBAR123fooBaz'),
+        "name": "thisdomain.cz",
+        "registrant": "CID-MYOWN",
+        "auth_info": DomainAuthInfo(pw="2fooBAR123fooBaz"),
     }
 
     def test_valid(self):
@@ -51,11 +51,15 @@ class TestCreateDomain(XMLTestCase):
             EM.command(
                 EM.create(
                     domain.create(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        domain.name(self.params['name']),
-                        domain.registrant(self.params['registrant']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
+                        domain.name(self.params["name"]),
+                        domain.registrant(self.params["registrant"]),
                         domain.authInfo(
-                            domain.pw(self.params['auth_info'].pw),
+                            domain.pw(self.params["auth_info"].pw),
                         ),
                     )
                 )
@@ -64,26 +68,19 @@ class TestCreateDomain(XMLTestCase):
         self.assertXMLEqual(root, expected)
 
 
-@patch('epplib.commands.create.NAMESPACE', NAMESPACE)
-@patch('epplib.commands.create.SCHEMA_LOCATION', SCHEMA_LOCATION)
-@patch('epplib.models.common.ContactAuthInfo.namespace', NAMESPACE.NIC_CONTACT)
-@patch('epplib.models.create.CreatePostalInfo.namespace', NAMESPACE.NIC_CONTACT)
-@patch('epplib.models.ContactAddr.namespace', NAMESPACE.NIC_CONTACT)
+@patch("epplib.commands.create.NAMESPACE", NAMESPACE)
+@patch("epplib.commands.create.SCHEMA_LOCATION", SCHEMA_LOCATION)
+@patch("epplib.models.common.ContactAuthInfo.namespace", NAMESPACE.NIC_CONTACT)
+@patch("epplib.models.create.CreatePostalInfo.namespace", NAMESPACE.NIC_CONTACT)
+@patch("epplib.models.ContactAddr.namespace", NAMESPACE.NIC_CONTACT)
 class TestCreateContact(XMLTestCase):
     params: Dict[str, Any] = {
-        'id': 'CID-MYCONTACT',
-        'postal_info': CreatePostalInfo(
-            'John Doe',
-            ContactAddr(
-               ['Street 123'],
-               'City',
-               '12300',
-               'CZ'
-            ),
-            type='loc'
+        "id": "CID-MYCONTACT",
+        "postal_info": CreatePostalInfo(
+            "John Doe", ContactAddr(["Street 123"], "City", "12300", "CZ"), type="loc"
         ),
-        'email': 'john@doe.cz',
-        'auth_info': ContactAuthInfo(pw='2fooBAR123fooBaz'),
+        "email": "john@doe.cz",
+        "auth_info": ContactAuthInfo(pw="2fooBAR123fooBaz"),
     }
 
     def test_valid(self):
@@ -96,21 +93,27 @@ class TestCreateContact(XMLTestCase):
             EM.command(
                 EM.create(
                     contact.create(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
-                        contact.id(self.params['id']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_CONTACT
+                        },
+                        contact.id(self.params["id"]),
                         contact.postalInfo(
-                            {'type': self.params['postal_info'].type},
-                            contact.name(self.params['postal_info'].name),
+                            {"type": self.params["postal_info"].type},
+                            contact.name(self.params["postal_info"].name),
                             contact.addr(
-                                contact.street(self.params['postal_info'].addr.street[0]),
-                                contact.city(self.params['postal_info'].addr.city),
-                                contact.pc(self.params['postal_info'].addr.pc),
-                                contact.cc(self.params['postal_info'].addr.cc),
+                                contact.street(
+                                    self.params["postal_info"].addr.street[0]
+                                ),
+                                contact.city(self.params["postal_info"].addr.city),
+                                contact.pc(self.params["postal_info"].addr.pc),
+                                contact.cc(self.params["postal_info"].addr.cc),
                             ),
                         ),
-                        contact.email(self.params['email']),
+                        contact.email(self.params["email"]),
                         contact.authInfo(
-                            contact.pw(self.params['auth_info'].pw),
+                            contact.pw(self.params["auth_info"].pw),
                         ),
                     ),
                 ),
@@ -121,10 +124,10 @@ class TestCreateContact(XMLTestCase):
 
 class TestCreateHost(XMLTestCase):
     params: Dict[str, Any] = {
-        'name': 'ns1.thisdomain.cz',
-        'addrs': [
-            Ip('192.0.2.2'),
-            Ip('1080:0:0:0:8:800:200C:417A', 'v6'),
+        "name": "ns1.thisdomain.cz",
+        "addrs": [
+            Ip("192.0.2.2"),
+            Ip("1080:0:0:0:8:800:200C:417A", "v6"),
         ],
     }
 
@@ -138,9 +141,13 @@ class TestCreateHost(XMLTestCase):
             EM.command(
                 EM.create(
                     host.create(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_HOST},
-                        host.name(self.params['name']),
-                        *[addr.get_payload() for addr in self.params['addrs']],
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_HOST
+                        },
+                        host.name(self.params["name"]),
+                        *[addr.get_payload() for addr in self.params["addrs"]],
                     ),
                 ),
             )

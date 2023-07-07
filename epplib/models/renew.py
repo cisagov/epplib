@@ -40,10 +40,10 @@ class RenewDomainResultData(ExtractModelMixin):
     ex_date: Optional[date]
 
     @classmethod
-    def extract(cls, element: Element) -> 'RenewDomainResultData':
+    def extract(cls, element: Element) -> "RenewDomainResultData":
         """Extract params for own init from the element."""
         params = (
-            cls._find_text(element, './domain:name'),
-            cls._optional(cls._parse_date, cls._find_text(element, './domain:exDate')),
+            cls._find_text(element, "./domain:name"),
+            cls._optional(cls._parse_date, cls._find_text(element, "./domain:exDate")),
         )
         return cls(*params)

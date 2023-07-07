@@ -36,5 +36,5 @@ class CreditInfoResult(Result[CreditInfoResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './fred:resCreditInfo/fred:zoneCredit'
+    _res_data_path = "./fred:resCreditInfo/fred:zoneCredit"
     _res_data_class = CreditInfoResultData

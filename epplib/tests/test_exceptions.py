@@ -23,6 +23,8 @@ from epplib.exceptions import ParsingError
 
 class TestParsingError(TestCase):
     def test_str(self):
-        self.assertEqual(str(ParsingError()), '')
-        self.assertEqual(str(ParsingError('Gazpacho!')), 'Gazpacho!')
-        self.assertEqual(str(ParsingError(raw_response='Gazpacho!')), "Raw response:\n'Gazpacho!'")
+        self.assertEqual(str(ParsingError()), "")
+        self.assertEqual(str(ParsingError("Gazpacho!")), "Gazpacho!")
+        self.assertEqual(
+            str(ParsingError(raw_response="Gazpacho!")), "Raw response:\n'Gazpacho!'"
+        )
