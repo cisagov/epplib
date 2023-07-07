@@ -5,16 +5,16 @@ from lxml import etree
 
 from epplib.commands import CreateDomain
 from epplib.commands.command_extensions import (
-    CreateDomainSecDNSExtension,
-    UpdateDomainSecDNSExtension,
+    CreateDomainDNSSECExtension,
+    UpdateDomainDNSSECExtension,
 )
 
 from epplib.commands.update import UpdateDomain
 from epplib.tests.tests_ietf.constants import NAMESPACE, SCHEMA_LOCATION, SCHEMA
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root
-from epplib.models.common import DSData, DomainAuthInfo, SecDNSKeyData
+from epplib.models.common import DSData, DomainAuthInfo, DNSSECKeyData
 from unittest import TestCase
-from epplib.responses.extensions import SecDNSExtension
+from epplib.responses.extensions import DNSSECExtension
 
 
 keyDataDict = {"flags": 257, "protocol": 3, "alg": 1, "pubKey": "AQPJ////4Q=="}
@@ -24,7 +24,7 @@ dsDataDict = {
     "alg": 3,
     "digestType": 1,
     "digest": "49FD46E6C4B45C55D4AC",
-    "keyData": SecDNSKeyData(**keyDataDict),
+    "keyData": DNSSECKeyData(**keyDataDict),
 }
 dsDataIncomplete = {
     "keyTag": 1234,
@@ -40,7 +40,7 @@ paramsWithDsData: Mapping[str, Any] = {
 
 paramsWithKeyData: Mapping[str, Any] = {
     "maxSigLife": 3215,
-    "keyData": [SecDNSKeyData(**keyDataDict)],
+    "keyData": [DNSSECKeyData(**keyDataDict)],
 }
 
 paramsWithMultiDsData: Mapping[str, Any] = {
@@ -62,7 +62,7 @@ command_params: Dict[str, Any] = {
 @patch("epplib.constants.SCHEMA_LOCATION", SCHEMA_LOCATION)
 class TestCreateDomainSecDNS(XMLTestCase):
     def test_data_with_dsData(self):
-        extension = CreateDomainSecDNSExtension(**paramsWithMultiDsData)
+        extension = CreateDomainDNSSECExtension(**paramsWithMultiDsData)
         EM = ElementMaker(
             namespace=NAMESPACE.SEC_DNS, nsmap={"secDNS": NAMESPACE.SEC_DNS}
         )
@@ -92,7 +92,7 @@ class TestCreateDomainSecDNS(XMLTestCase):
         self.assertXMLEqual(extension.get_payload(), expected)
 
     def test_data_with_keyData(self):
-        extension = CreateDomainSecDNSExtension(**paramsWithKeyData)
+        extension = CreateDomainDNSSECExtension(**paramsWithKeyData)
 
         EM = ElementMaker(
             namespace=NAMESPACE.SEC_DNS, nsmap={"secDNS": NAMESPACE.SEC_DNS}
@@ -110,7 +110,7 @@ class TestCreateDomainSecDNS(XMLTestCase):
         self.assertXMLEqual(extension.get_payload(), expected)
 
     def test_valid(self):
-        extension = CreateDomainSecDNSExtension(**paramsWithMultiDsData)
+        extension = CreateDomainDNSSECExtension(**paramsWithMultiDsData)
         self.assertRequestValid(
             CreateDomain, command_params, extension=extension, schema=SCHEMA
         )
@@ -119,7 +119,7 @@ class TestCreateDomainSecDNS(XMLTestCase):
 @patch("epplib.commands.update.NAMESPACE", NAMESPACE)
 @patch("epplib.commands.update.SCHEMA_LOCATION", SCHEMA_LOCATION)
 @patch("epplib.models.common.DomainAuthInfo.namespace", NAMESPACE.NIC_DOMAIN)
-class TestUpdateDomainSecDnsExtension(XMLTestCase):
+class TestUpdateDomainDNSSECExtension(XMLTestCase):
     addKeyData = {
         "flags": 250,
         "protocol": 2,
@@ -131,7 +131,7 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
         "alg": 1,
         "digestType": 3,
         "digest": "ec0bdd990b39feead889f0ba613db4ad",
-        "keyData": SecDNSKeyData(**addKeyData),
+        "keyData": DNSSECKeyData(**addKeyData),
     }
     updateParams = {
         "maxSigLife": 1222,
@@ -140,7 +140,7 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
     }
     updateParamsKeyData = {
         "remKeyData": paramsWithKeyData["keyData"],
-        "keyData": [SecDNSKeyData(**addKeyData)],
+        "keyData": [DNSSECKeyData(**addKeyData)],
     }
 
     def setUp(self) -> None:
@@ -151,7 +151,7 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
         }
 
     def test_data_with_dsData(self):
-        extension = UpdateDomainSecDNSExtension(**self.updateParams)
+        extension = UpdateDomainDNSSECExtension(**self.updateParams)
         EM = ElementMaker(
             namespace=NAMESPACE.SEC_DNS, nsmap={"secDNS": NAMESPACE.SEC_DNS}
         )
@@ -203,7 +203,7 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
         self.assertXMLEqual(extension.get_payload(), expected)
 
     def test_data_with_removeAll(self):
-        extension = UpdateDomainSecDNSExtension(remAllDsKeyData=True)
+        extension = UpdateDomainDNSSECExtension(remAllDsKeyData=True)
         EM = ElementMaker(
             namespace=NAMESPACE.SEC_DNS, nsmap={"secDNS": NAMESPACE.SEC_DNS}
         )
@@ -212,7 +212,7 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
         self.assertXMLEqual(extension.get_payload(), expected)
 
     def test_data_with_keydata(self):
-        extension = UpdateDomainSecDNSExtension(**self.updateParamsKeyData)
+        extension = UpdateDomainDNSSECExtension(**self.updateParamsKeyData)
 
         EM = ElementMaker(
             namespace=NAMESPACE.SEC_DNS, nsmap={"secDNS": NAMESPACE.SEC_DNS}
@@ -242,13 +242,13 @@ class TestUpdateDomainSecDnsExtension(XMLTestCase):
         self.assertRequestValid(UpdateDomain, self.params, schema=SCHEMA)
 
     def test_valid(self):
-        extension = UpdateDomainSecDNSExtension(**self.updateParams)
+        extension = UpdateDomainDNSSECExtension(**self.updateParams)
         self.assertRequestValid(
             UpdateDomain, self.params, extension=extension, schema=SCHEMA
         )
 
 
-class TestSecDnsExtension(TestCase):
+class TestDNSSECExtension(TestCase):
     EM = ElementMaker(namespace=NAMESPACE.SEC_DNS, nsmap={"secDNS": NAMESPACE.SEC_DNS})
 
     def test_extract_with_DsData(self):
@@ -274,8 +274,8 @@ class TestSecDnsExtension(TestCase):
             ),
         )
 
-        result = SecDNSExtension.extract(element)
-        expected = SecDNSExtension(**paramsWithMultiDsData)
+        result = DNSSECExtension.extract(element)
+        expected = DNSSECExtension(**paramsWithMultiDsData)
 
         self.assertEqual(result, expected)
 
@@ -284,8 +284,8 @@ class TestSecDnsExtension(TestCase):
             self.EM.maxSigLife(str(paramsWithMultiDsData["maxSigLife"]))
         )
 
-        result = SecDNSExtension.extract(element)
-        expected = SecDNSExtension(maxSigLife=paramsWithMultiDsData["maxSigLife"])
+        result = DNSSECExtension.extract(element)
+        expected = DNSSECExtension(maxSigLife=paramsWithMultiDsData["maxSigLife"])
         self.assertEqual(result, expected)
 
     def test_extract_with_keyData(self):
@@ -297,6 +297,6 @@ class TestSecDnsExtension(TestCase):
                 self.EM.pubKey(str(keyDataDict["pubKey"])),
             )
         )
-        result = SecDNSExtension.extract(element)
-        expected = SecDNSExtension(keyData=[SecDNSKeyData(**keyDataDict)])
+        result = DNSSECExtension.extract(element)
+        expected = DNSSECExtension(keyData=[DNSSECKeyData(**keyDataDict)])
         self.assertEqual(result, expected)

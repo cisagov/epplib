@@ -330,7 +330,7 @@ class Dnskey(PayloadModelMixin, ExtractModelMixin):
 
         return cls(flags=flags, protocol=protocol, alg=alg, pub_key=pub_key)
 @dataclass
-class SecDNSKeyData(PayloadModelMixin, ExtractModelMixin):
+class DNSSECKeyData(PayloadModelMixin, ExtractModelMixin):
     """Dataclass to represent EPP keydata element.
 
     Attributes:
@@ -355,7 +355,7 @@ class SecDNSKeyData(PayloadModelMixin, ExtractModelMixin):
         return keyData
 
     @classmethod
-    def extract(cls, element: Element) -> 'SecDNSKeyData':
+    def extract(cls, element: Element) -> 'DNSSECKeyData':
         """Extract the model from the element."""
         flags = int(cls._find_text(element, './secDNS:flags'))
         protocol = int(cls._find_text(element, './secDNS:protocol'))
@@ -384,7 +384,7 @@ class DSData(PayloadModelMixin, ExtractModelMixin):
     alg: int
     digestType: int #typically 0 or 1 but can also be 2-255
     digest: str
-    keyData: Optional[SecDNSKeyData] =None
+    keyData: Optional[DNSSECKeyData] =None
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
@@ -409,7 +409,7 @@ class DSData(PayloadModelMixin, ExtractModelMixin):
             alg=int(cls._find_text(element, f'./{cls._alias}:alg')),
             digestType=int(cls._find_text(element, f'./{cls._alias}:digestType')),
             digest=cls._find_text(element, f'./{cls._alias}:digest'),
-            keyData=cls._optional(SecDNSKeyData.extract, cls._find(element, './secDNS:keyData'))
+            keyData=cls._optional(DNSSECKeyData.extract, cls._find(element, './secDNS:keyData'))
             )
     
 @dataclass

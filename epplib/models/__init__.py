@@ -20,7 +20,7 @@
 
 from .common import (Addr, AuthInfo, ContactAddr, ContactAuthInfo, Disclose, DiscloseField, Dnskey,
                      DomainAuthInfo, DomainContact, DSData, ExtraAddr, ExtractModelMixin, HostObjSet, HostStatus, Ident,
-                     IdentType, Ip, Ns, PayloadModelMixin, Period, PostalInfo, Statement, Status, SecDNSKeyData,TestResult, Unit)
+                     IdentType, Ip, Ns, PayloadModelMixin, Period, PostalInfo, Statement, Status, DNSSECKeyData,TestResult, Unit)
 
 
 __all__ = [
@@ -47,7 +47,7 @@ __all__ = [
     'PostalInfo',
     'Statement',
     'Status',
-    'SecDNSKeyData',
+    'DNSSECKeyData',
     'TestResult',
     'Unit',
 ]

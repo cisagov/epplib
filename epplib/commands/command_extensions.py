@@ -24,7 +24,7 @@ from datetime import date
 
 from lxml.etree import Element, QName, SubElement
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import ExtraAddr, DSData, SecDNSKeyData
+from epplib.models import ExtraAddr, DSData, DNSSECKeyData
 
 
 class CommandExtension(ABC):
@@ -54,7 +54,7 @@ class CreateContactMailingAddressExtension(CommandExtension):
         return create
 
 @dataclass
-class CreateDomainSecDNSExtension(CommandExtension):
+class CreateDomainDNSSECExtension(CommandExtension):
     """Sec DNS Extension for Create Domain command.
 
     Attributes:
@@ -65,7 +65,7 @@ class CreateDomainSecDNSExtension(CommandExtension):
 
     maxSigLife: Optional[int] =None
     dsData: Optional[Sequence[DSData]] = None 
-    keyData: Optional[Sequence[SecDNSKeyData]] = None
+    keyData: Optional[Sequence[DNSSECKeyData]] = None
     
     def get_payload(self) -> Element:
  
@@ -84,22 +84,22 @@ class CreateDomainSecDNSExtension(CommandExtension):
 
         return create
 @dataclass
-class UpdateDomainSecDNSExtension(CommandExtension):
+class UpdateDomainDNSSECExtension(CommandExtension):
     """Sec DNS Extension for Update Domain command.
     Attributes:
         maxSigLife: unsigned short, content of extension/update/secDNS/maxSigLife.
         dsData: list of DSData each will be the content of extension/update/secDNS/add/dsdata
-        keyData: list of SecDNSKeyData each will be the content of extension/update/secDNS/add/keyData
+        keyData: list of DNSSECKeyData each will be the content of extension/update/secDNS/add/keyData
         remDsData:  list of DSData each will be the content of extension/update/secDNS/rem/dsdata
-        remKeyData: list of SecDNSKeyData each will be the content of extension/update/secDNS/rem/keyData
+        remKeyData: list of DNSSECKeyData each will be the content of extension/update/secDNS/rem/keyData
         remAllDsKeyData: boolean False does nothing, content of extension/update/secDNS/rem/all.
     """
 
     maxSigLife: Optional[int] =None
     dsData: Optional[DSData] = None
-    keyData: Optional[SecDNSKeyData] =None
+    keyData: Optional[DNSSECKeyData] =None
     remDsData:Optional[DSData] = None 
-    remKeyData:Optional[SecDNSKeyData] =None 
+    remKeyData:Optional[DNSSECKeyData] =None 
     remAllDsKeyData: Optional[bool]=False
 
     def _make_remove_element(self, element: Element)->Element:
@@ -130,7 +130,7 @@ class UpdateDomainSecDNSExtension(CommandExtension):
 
             for dsDataObj in self.dsData:
                 addElement.append(dsDataObj.get_payload())
-                
+
         elif  not self.keyData is None: 
             addElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "add"))
 

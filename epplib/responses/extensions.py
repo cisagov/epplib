@@ -27,7 +27,7 @@ from lxml.etree import Element, QName
 
 from epplib.constants import NAMESPACE
 from epplib.models import ExtraAddr
-from epplib.models.common import DSData, SecDNSKeyData
+from epplib.models.common import DSData, DNSSECKeyData
 from epplib.utils import ParseXMLMixin
 
 
@@ -120,7 +120,7 @@ class MailingAddressExtension(ParseXMLMixin, ResponseExtension):
         return cls(addr=addr)
 
 @dataclass
-class SecDNSExtension(ParseXMLMixin, ResponseExtension):
+class DNSSECExtension(ParseXMLMixin, ResponseExtension):
     """Dataclass to represent secDNS as returned by InfoResponse
 
     Attributes:
@@ -139,10 +139,10 @@ class SecDNSExtension(ParseXMLMixin, ResponseExtension):
 
     maxSigLife: Optional[int] =None
     dsData: Optional[Sequence[DSData]] = None 
-    keyData: Optional[Sequence[SecDNSKeyData]] = None
+    keyData: Optional[Sequence[DNSSECKeyData]] = None
 
     @classmethod
-    def extract(cls, element: Element) -> 'SecDNSExtension':
+    def extract(cls, element: Element) -> 'DNSSECExtension':
         """Extract the extension content from the element.
 
         Args:
@@ -157,7 +157,7 @@ class SecDNSExtension(ParseXMLMixin, ResponseExtension):
         allKeyData=cls._find_all(element, './secDNS:keyData')
 
         dsData = [ cls._optional(DSData.extract, dsElement) for dsElement in allDsData] if len(allDsData) > 0 else None
-        keyData=[ cls._optional(SecDNSKeyData.extract, keyElement) for keyElement in allKeyData] if len(allKeyData) > 0 else None
+        keyData=[ cls._optional(DNSSECKeyData.extract, keyElement) for keyElement in allKeyData] if len(allKeyData) > 0 else None
         
         return cls(maxSigLife=maxSigLife, dsData=dsData,keyData=keyData)
 
@@ -166,5 +166,5 @@ class SecDNSExtension(ParseXMLMixin, ResponseExtension):
 EXTENSIONS: Dict[QName, Type[ResponseExtension]] = {
     EnumInfoExtension.tag: EnumInfoExtension,
     MailingAddressExtension.tag: MailingAddressExtension,
-    SecDNSExtension.tag: SecDNSExtension
+    DNSSECExtension.tag: DNSSECExtension
 }
