@@ -114,13 +114,13 @@ class UpdateDomainDNSSECExtension(CommandExtension):
             remAll=self._make_remove_element(update)
             SubElement(remAll,QName(NAMESPACE.SEC_DNS, "all")).text = "true"
 
-        elif not self.remDsData is None: #change when made a list?
+        elif not self.remDsData is None:
             remDsElement=self._make_remove_element(update)
             
             for remDsDataObj in self.remDsData:  
                 remDsElement.append(remDsDataObj.get_payload())
         
-        elif  not self.remKeyData is None: #change when made a list?
+        elif  not self.remKeyData is None:
             remKeyElement=self._make_remove_element(update)
             for remKeyDataObj in self.remKeyData:
                 remKeyElement.append(remKeyDataObj.get_payload())
