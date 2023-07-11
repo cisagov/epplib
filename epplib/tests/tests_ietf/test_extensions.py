@@ -60,7 +60,7 @@ command_params: Dict[str, Any] = {
 @patch("epplib.models.common.DomainAuthInfo.namespace", NAMESPACE.NIC_DOMAIN)
 @patch("epplib.constants", NAMESPACE)
 @patch("epplib.constants.SCHEMA_LOCATION", SCHEMA_LOCATION)
-class TestCreateDomainSecDNS(XMLTestCase):
+class TestCreateDomainDNSSecExtension(XMLTestCase):
     def test_data_with_dsData(self):
         extension = CreateDomainDNSSECExtension(**paramsWithMultiDsData)
         EM = ElementMaker(

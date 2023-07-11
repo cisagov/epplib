@@ -68,7 +68,7 @@ class CreateDomainDNSSECExtension(CommandExtension):
     keyData: Optional[Sequence[DNSSECKeyData]] = None
     
     def get_payload(self) -> Element:
- 
+        """This method is inherited and will ultimately get called on .send"""
         create =Element(QName(NAMESPACE.SEC_DNS, "create"), nsmap={"secDNS":NAMESPACE.SEC_DNS})
     
         if not self.maxSigLife is None:
@@ -105,7 +105,7 @@ class UpdateDomainDNSSECExtension(CommandExtension):
     def _make_remove_element(self, element: Element)->Element:
         return SubElement(element,QName(NAMESPACE.SEC_DNS, "rem"))
     def get_payload(self) -> Element:
- 
+        """This method is inherited and will ultimately get called on .send"""
         update =Element(QName(NAMESPACE.SEC_DNS, "update"), nsmap={"secDNS":NAMESPACE.SEC_DNS})
     
        
