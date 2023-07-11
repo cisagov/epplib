@@ -65,8 +65,8 @@ class XMLTestCase(TestCase):
         request = request_class(**params)
         if extension is not None:
             cast(Command, request).add_extension(extension)
-        xml = request.xml(tr_id='tr_id_123')
-  
+        xml = request.xml(tr_id="tr_id_123")
+
         (schema or SCHEMA).assertValid(safe_parse(xml))
 
     def assertXMLEqual(self, doc_1: Element, doc_2: Element) -> None:

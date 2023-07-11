@@ -55,14 +55,14 @@ class ParseXMLMixin:
     """Mixin to simplify XML parsing."""
 
     _NAMESPACES: ClassVar[Mapping[str, str]] = {
-        'epp': NAMESPACE.EPP,
-        'fred': NAMESPACE.FRED,
-        'secDNS':NAMESPACE.SEC_DNS,
-        'contact': NAMESPACE.NIC_CONTACT,
-        'domain': NAMESPACE.NIC_DOMAIN,
-        'host': NAMESPACE.NIC_HOST,
-        'keyset': NAMESPACE.NIC_KEYSET,
-        'nsset': NAMESPACE.NIC_NSSET,
+        "epp": NAMESPACE.EPP,
+        "fred": NAMESPACE.FRED,
+        "secDNS": NAMESPACE.SEC_DNS,
+        "contact": NAMESPACE.NIC_CONTACT,
+        "domain": NAMESPACE.NIC_DOMAIN,
+        "host": NAMESPACE.NIC_HOST,
+        "keyset": NAMESPACE.NIC_KEYSET,
+        "nsset": NAMESPACE.NIC_NSSET,
     }
     duration_regex: ClassVar[Pattern] = re.compile(
         (
