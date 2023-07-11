@@ -18,7 +18,7 @@ from epplib.responses.extensions import DNSSECExtension
 
 
 keyDataDict = {"flags": 257, "protocol": 3, "alg": 1, "pubKey": "AQPJ////4Q=="}
-
+keyDataDict2 = {"flags": 267, "protocol": 1, "alg": 3, "pubKey": "AQPJ////4Q=="}
 dsDataDict = {
     "keyTag": 12345,
     "alg": 3,
@@ -42,7 +42,10 @@ paramsWithKeyData: Mapping[str, Any] = {
     "maxSigLife": 3215,
     "keyData": [DNSSECKeyData(**keyDataDict)],
 }
-
+paramsWithMultiKeyData:  Mapping[str, Any] = {
+    "maxSigLife": 3215,
+    "keyData": [DNSSECKeyData(**keyDataDict),DNSSECKeyData(**keyDataDict2)],
+}
 paramsWithMultiDsData: Mapping[str, Any] = {
     "maxSigLife": 3215,
     "dsData": [DSData(**dsDataDict), DSData(**dsDataIncomplete)],
@@ -108,7 +111,31 @@ class TestCreateDomainDNSSecExtension(XMLTestCase):
         )
 
         self.assertXMLEqual(extension.get_payload(), expected)
+    
+    def test_data_with_multi_keyData(self):
+        extension = CreateDomainDNSSECExtension(**paramsWithMultiKeyData)
 
+        EM = ElementMaker(
+            namespace=NAMESPACE.SEC_DNS, nsmap={"secDNS": NAMESPACE.SEC_DNS}
+        )
+        expected = EM.create(
+            EM.maxSigLife(str(paramsWithKeyData["maxSigLife"])),
+            EM.keyData(
+                EM.flags(str(keyDataDict["flags"])),
+                EM.protocol(str(keyDataDict["protocol"])),
+                EM.alg(str(keyDataDict["alg"])),
+                EM.pubKey(str(keyDataDict["pubKey"])),
+            ),
+            EM.keyData(
+                EM.flags(str(keyDataDict2["flags"])),
+                EM.protocol(str(keyDataDict2["protocol"])),
+                EM.alg(str(keyDataDict2["alg"])),
+                EM.pubKey(str(keyDataDict2["pubKey"])),
+            ),
+        )
+
+        self.assertXMLEqual(extension.get_payload(), expected)
+    
     def test_valid(self):
         extension = CreateDomainDNSSECExtension(**paramsWithMultiDsData)
         self.assertRequestValid(
@@ -137,10 +164,6 @@ class TestUpdateDomainDNSSECExtension(XMLTestCase):
         "maxSigLife": 1222,
         "remDsData": paramsWithMultiDsData["dsData"],
         "dsData": [DSData(**addDsData), paramsWithMultiDsData["dsData"][1]],
-    }
-    updateParamsKeyData = {
-        "remKeyData": paramsWithKeyData["keyData"],
-        "keyData": [DNSSECKeyData(**addKeyData)],
     }
 
     def setUp(self) -> None:
@@ -212,7 +235,12 @@ class TestUpdateDomainDNSSECExtension(XMLTestCase):
         self.assertXMLEqual(extension.get_payload(), expected)
 
     def test_data_with_keydata(self):
-        extension = UpdateDomainDNSSECExtension(**self.updateParamsKeyData)
+
+        updateParamsKeyData = {
+        "remKeyData": paramsWithKeyData["keyData"],
+        "keyData": [DNSSECKeyData(**self.addKeyData)],
+        }
+        extension = UpdateDomainDNSSECExtension(**updateParamsKeyData)
 
         EM = ElementMaker(
             namespace=NAMESPACE.SEC_DNS, nsmap={"secDNS": NAMESPACE.SEC_DNS}
@@ -237,7 +265,42 @@ class TestUpdateDomainDNSSECExtension(XMLTestCase):
         )
 
         self.assertXMLEqual(extension.get_payload(), expected)
+    def test_data_with_mulit_keydata(self):
+        updateParamsMultiKeyData = {
+        "remKeyData": paramsWithKeyData["keyData"],
+        "keyData": [DNSSECKeyData(**self.addKeyData)],
+        }
+        extension = UpdateDomainDNSSECExtension(remKeyData=[DNSSECKeyData(**keyDataDict)], keyData=[DNSSECKeyData(**self.addKeyData), DNSSECKeyData(**keyDataDict2)])
 
+        EM = ElementMaker(
+            namespace=NAMESPACE.SEC_DNS, nsmap={"secDNS": NAMESPACE.SEC_DNS}
+        )
+        expected = EM.update(
+            EM.rem(
+                EM.keyData(
+                    EM.flags(str(keyDataDict["flags"])),
+                    EM.protocol(str(keyDataDict["protocol"])),
+                    EM.alg(str(keyDataDict["alg"])),
+                    EM.pubKey(str(keyDataDict["pubKey"])),
+                )
+            ),
+            EM.add(
+                EM.keyData(
+                    EM.flags(str(self.addKeyData["flags"])),
+                    EM.protocol(str(self.addKeyData["protocol"])),
+                    EM.alg(str(self.addKeyData["alg"])),
+                    EM.pubKey(str(self.addKeyData["pubKey"])),
+                ),
+                EM.keyData(
+                    EM.flags(str(keyDataDict2["flags"])),
+                    EM.protocol(str(keyDataDict2["protocol"])),
+                    EM.alg(str(keyDataDict2["alg"])),
+                    EM.pubKey(str(keyDataDict2["pubKey"])),
+                )
+            ),
+        )
+
+        self.assertXMLEqual(extension.get_payload(), expected)
     def test_valid_no_extension(self):
         self.assertRequestValid(UpdateDomain, self.params, schema=SCHEMA)
 
@@ -299,4 +362,22 @@ class TestDNSSECExtension(TestCase):
         )
         result = DNSSECExtension.extract(element)
         expected = DNSSECExtension(keyData=[DNSSECKeyData(**keyDataDict)])
+        self.assertEqual(result, expected)
+    def test_extract_with_multi_keyData(self):
+        element = self.EM.infData(
+            self.EM.keyData(
+                self.EM.flags(str(keyDataDict["flags"])),
+                self.EM.protocol(str(keyDataDict["protocol"])),
+                self.EM.alg(str(keyDataDict["alg"])),
+                self.EM.pubKey(str(keyDataDict["pubKey"])),
+            ),
+             self.EM.keyData(
+                self.EM.flags(str(keyDataDict2["flags"])),
+                self.EM.protocol(str(keyDataDict2["protocol"])),
+                self.EM.alg(str(keyDataDict2["alg"])),
+                self.EM.pubKey(str(keyDataDict2["pubKey"])),
+            )
+        )
+        result = DNSSECExtension.extract(element)
+        expected = DNSSECExtension(keyData=[DNSSECKeyData(**keyDataDict), DNSSECKeyData(**keyDataDict2)])
         self.assertEqual(result, expected)
