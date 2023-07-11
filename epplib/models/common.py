@@ -27,7 +27,6 @@ from lxml.etree import Element, QName, SubElement
 from epplib.constants import NAMESPACE
 from epplib.utils import ParseXMLMixin
 
-
 @unique
 class DiscloseField(str, Enum):
     """Allowed values of subelements of disclose element."""
@@ -330,7 +329,89 @@ class Dnskey(PayloadModelMixin, ExtractModelMixin):
         pub_key = cls._find_text(element, './keyset:pubKey')
 
         return cls(flags=flags, protocol=protocol, alg=alg, pub_key=pub_key)
+@dataclass
+class DNSSECKeyData(PayloadModelMixin, ExtractModelMixin):
+    """Dataclass to represent EPP keydata element.
 
+    Attributes:
+        flags: Content of the flags element.
+        protocol: Content of the protocol element.
+        alg: Content of the alg element.
+        pubKey: Content of the pubKey element.
+    """
+    namespace= NAMESPACE.SEC_DNS
+    flags: int
+    protocol: int
+    alg: int
+    pubKey: str
+
+    def get_payload(self) -> Element:
+        """Get Element representing the the model."""
+        keyData = Element(QName(self.namespace, 'keyData'),nsmap={"secDNS":self.namespace})
+        SubElement(keyData, QName(self.namespace, 'flags')).text = str(self.flags)
+        SubElement(keyData, QName(self.namespace, 'protocol')).text = str(self.protocol)
+        SubElement(keyData, QName(self.namespace, 'alg')).text = str(self.alg)
+        SubElement(keyData, QName(self.namespace, 'pubKey')).text = self.pubKey
+        return keyData
+
+    @classmethod
+    def extract(cls, element: Element) -> 'DNSSECKeyData':
+        """Extract the model from the element."""
+        flags = int(cls._find_text(element, './secDNS:flags'))
+        protocol = int(cls._find_text(element, './secDNS:protocol'))
+        alg = int(cls._find_text(element, './secDNS:alg'))
+        pubKey = cls._find_text(element, './secDNS:pubKey')
+
+        return cls(flags=flags, protocol=protocol, alg=alg, pubKey=pubKey)
+      
+@dataclass
+class DSData(PayloadModelMixin, ExtractModelMixin):
+    """Dataclass to represent EPP secdns extension dsData element.
+
+    Attributes:
+        keyTag: Content of the dsData/keyTag (an unsignedShort)
+        alg: content of dsData/alg (the alorithm value )
+        digestType: content of dsData/digestType
+        digest: content of dsData/digest
+        keyData: (optional) content of dsData/keyData element that describes the key data
+      used as input in the DS hash calculation for use in server
+      validation. 
+    """
+
+    _alias= "secDNS"
+
+    keyTag: int
+    alg: int
+    digestType: int #typically 0 or 1 but can also be 2-255
+    digest: str
+    keyData: Optional[DNSSECKeyData] =None
+
+    def get_payload(self) -> Element:
+        """Get Element representing the model."""
+        ds_data = Element( QName(NAMESPACE.SEC_DNS, "dsData"), nsmap={"secDNS":NAMESPACE.SEC_DNS})
+
+        SubElement(ds_data, QName(NAMESPACE.SEC_DNS, "keyTag")).text = str(self.keyTag)
+        SubElement(ds_data, QName(NAMESPACE.SEC_DNS, "alg")).text =str(self.alg)
+        SubElement(ds_data, QName(NAMESPACE.SEC_DNS, "digestType")).text = str(self.digestType)
+        SubElement(ds_data, QName(NAMESPACE.SEC_DNS, "digest")).text = self.digest
+
+        if not self.keyData is None:
+            ds_data.append(self.keyData.get_payload())
+
+        return ds_data
+
+    @classmethod
+    def extract(cls, element: Element) -> 'DSData':
+        """Extract the model from the element."""
+      
+        return cls(
+            keyTag=int(cls._find_text(element, f'./{cls._alias}:keyTag')),
+            alg=int(cls._find_text(element, f'./{cls._alias}:alg')),
+            digestType=int(cls._find_text(element, f'./{cls._alias}:digestType')),
+            digest=cls._find_text(element, f'./{cls._alias}:digest'),
+            keyData=cls._optional(DNSSECKeyData.extract, cls._find(element, './secDNS:keyData'))
+            )
+    
 @dataclass
 class HostObjSet(PayloadModelMixin, ExtractModelMixin):
     """Dataclass to represent EPP domain:ns element.

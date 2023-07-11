@@ -19,8 +19,8 @@
 """Module providing data models for EPP commands and responses."""
 
 from .common import (Addr, AuthInfo, ContactAddr, ContactAuthInfo, Disclose, DiscloseField, Dnskey,
-                     DomainAuthInfo, DomainContact, ExtraAddr, ExtractModelMixin, HostObjSet, HostStatus, Ident,
-                     IdentType, Ip, Ns, PayloadModelMixin, Period, PostalInfo, Statement, Status, TestResult, Unit)
+                     DomainAuthInfo, DomainContact, DSData, ExtraAddr, ExtractModelMixin, HostObjSet, HostStatus, Ident,
+                     IdentType, Ip, Ns, PayloadModelMixin, Period, PostalInfo, Statement, Status, DNSSECKeyData,TestResult, Unit)
 
 
 __all__ = [
@@ -33,6 +33,7 @@ __all__ = [
     'Dnskey',
     'DomainAuthInfo',
     'DomainContact',
+    'DSData',
     'ExtraAddr',
     'ExtractModelMixin',
     'HostObjSet',
@@ -46,6 +47,7 @@ __all__ = [
     'PostalInfo',
     'Statement',
     'Status',
+    'DNSSECKeyData',
     'TestResult',
     'Unit',
 ]

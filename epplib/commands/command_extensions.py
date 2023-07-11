@@ -18,14 +18,13 @@
 
 """Module providing EPP command extensions."""
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import ClassVar,Optional, Sequence
 from datetime import date
-from typing import ClassVar, Optional
 
 from lxml.etree import Element, QName, SubElement
-
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import ExtraAddr
+from epplib.models import ExtraAddr, DSData, DNSSECKeyData
 
 
 class CommandExtension(ABC):
@@ -54,7 +53,96 @@ class CreateContactMailingAddressExtension(CommandExtension):
         mailing.append(self.addr.get_payload())
         return create
 
+@dataclass
+class CreateDomainDNSSECExtension(CommandExtension):
+    """Sec DNS Extension for Create Domain command.
 
+    Attributes:
+        maxSigLife: Content of extension/create/secDNS/maxSigLife.
+        dsData:  Content of extension/create/secDNS/dsData.
+        keyData:  Content of extension/create/secDNS/keyData.
+    """
+
+    maxSigLife: Optional[int] =None
+    dsData: Optional[Sequence[DSData]] = None 
+    keyData: Optional[Sequence[DNSSECKeyData]] = None
+    
+    def get_payload(self) -> Element:
+        """This method is inherited and will ultimately get called on .send"""
+        create =Element(QName(NAMESPACE.SEC_DNS, "create"), nsmap={"secDNS":NAMESPACE.SEC_DNS})
+    
+        if not self.maxSigLife is None:
+            SubElement(create,QName(NAMESPACE.SEC_DNS, "maxSigLife")).text = str(self.maxSigLife)
+
+        #can't have both dsdata and keydata, one or the the other or none
+        if  not self.dsData is None:
+            for dsDataObj in self.dsData:
+                create.append(dsDataObj.get_payload())
+        elif not self.keyData is None:
+            for keyDataObj in self.keyData:
+                create.append(keyDataObj.get_payload())
+
+        return create
+@dataclass
+class UpdateDomainDNSSECExtension(CommandExtension):
+    """Sec DNS Extension for Update Domain command.
+    Attributes:
+        maxSigLife: unsigned short, content of extension/update/secDNS/maxSigLife.
+        dsData: list of DSData each will be the content of extension/update/secDNS/add/dsdata
+        keyData: list of DNSSECKeyData each will be the content of extension/update/secDNS/add/keyData
+        remDsData:  list of DSData each will be the content of extension/update/secDNS/rem/dsdata
+        remKeyData: list of DNSSECKeyData each will be the content of extension/update/secDNS/rem/keyData
+        remAllDsKeyData: boolean False does nothing, content of extension/update/secDNS/rem/all.
+    """
+
+    maxSigLife: Optional[int] =None
+    dsData: Optional[DSData] = None
+    keyData: Optional[DNSSECKeyData] =None
+    remDsData:Optional[DSData] = None 
+    remKeyData:Optional[DNSSECKeyData] =None 
+    remAllDsKeyData: Optional[bool]=False
+
+    def _make_remove_element(self, element: Element)->Element:
+        return SubElement(element,QName(NAMESPACE.SEC_DNS, "rem"))
+    def get_payload(self) -> Element:
+        """This method is inherited and will ultimately get called on .send"""
+        update =Element(QName(NAMESPACE.SEC_DNS, "update"), nsmap={"secDNS":NAMESPACE.SEC_DNS})
+    
+       
+        #remove elmements need to preceed the add elements, don't move this order
+        if self.remAllDsKeyData:
+            remAll=self._make_remove_element(update)
+            SubElement(remAll,QName(NAMESPACE.SEC_DNS, "all")).text = "true"
+
+        elif not self.remDsData is None:
+            remDsElement=self._make_remove_element(update)
+            
+            for remDsDataObj in self.remDsData:  
+                remDsElement.append(remDsDataObj.get_payload())
+        
+        elif  not self.remKeyData is None:
+            remKeyElement=self._make_remove_element(update)
+            for remKeyDataObj in self.remKeyData:
+                remKeyElement.append(remKeyDataObj.get_payload())
+        
+        if  not self.dsData is None: 
+            addElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "add"))
+
+            for dsDataObj in self.dsData:
+                addElement.append(dsDataObj.get_payload())
+
+        elif  not self.keyData is None: 
+            addElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "add"))
+
+            for keyDataObj in self.keyData:
+                addElement.append(keyDataObj.get_payload())  
+       
+        if not self.maxSigLife is None: 
+            changeElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "chg"))
+            SubElement(changeElement,QName(NAMESPACE.SEC_DNS, "maxSigLife")).text = str(self.maxSigLife)
+
+        return update
+    
 @dataclass
 class UpdateContactMailingAddressExtension(CommandExtension):
     """Mailing address extension for Update contact command.

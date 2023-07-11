@@ -4,6 +4,8 @@ from types import SimpleNamespace
 
 NAMESPACE = SimpleNamespace(
     EPP='urn:ietf:params:xml:ns:epp-1.0',
+    SEC_DNS='urn:ietf:params:xml:ns:secDNS-1.1',
+
     XSI='http://www.w3.org/2001/XMLSchema-instance',
     FRED='noop',
     NIC_CONTACT='urn:ietf:params:xml:ns:contact-1.0',
@@ -17,7 +19,8 @@ NAMESPACE = SimpleNamespace(
 
 SCHEMA_LOCATION = SimpleNamespace(
     XSI='urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
-    FRED='noop fred-1.5.0.xsd',
+    FRED='noop fred-1.5.0.xsd',   
+    SEC_DNS='urn:ietf:params:xml:ns:secDNS-1.1 secDNS-1.1.xsd',
     NIC_CONTACT='urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
     NIC_DOMAIN='urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
     NIC_ENUMVAL='noop enumval-1.2.0.xsd',
