@@ -34,19 +34,23 @@ class Transfer(Command):
     response_class = Result
     auth_info: str
 
-    def _get_transfer_payload(self, namespace: str, schema_location: str, tag: str, item: str) -> Element:
+    def _get_transfer_payload(
+        self, namespace: str, schema_location: str, tag: str, item: str
+    ) -> Element:
         """Create subelements of the command element specific for the Transfer command.
 
         Returns:
             Element with a the item to transfer.
         """
-        root = Element(QName(NAMESPACE.EPP, 'transfer'), op='request')
+        root = Element(QName(NAMESPACE.EPP, "transfer"), op="request")
 
-        item_transfer = SubElement(root, QName(namespace, 'transfer'))
-        item_transfer.set(QName(NAMESPACE.XSI, 'schemaLocation'), schema_location)
+        item_transfer = SubElement(root, QName(namespace, "transfer"))
+        item_transfer.set(QName(NAMESPACE.XSI, "schemaLocation"), schema_location)
         SubElement(item_transfer, QName(namespace, tag)).text = item
         if isinstance(self.auth_info, str):
-            SubElement(item_transfer, QName(namespace, 'authInfo')).text = self.auth_info
+            SubElement(
+                item_transfer, QName(namespace, "authInfo")
+            ).text = self.auth_info
         elif isinstance(self.auth_info, AuthInfo):
             item_transfer.append(self.auth_info.get_payload())
 
@@ -71,7 +75,9 @@ class TransferDomain(Transfer):
         Returns:
             Element with a domain to transfer.
         """
-        return self._get_transfer_payload(NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, 'name', self.name)
+        return self._get_transfer_payload(
+            NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, "name", self.name
+        )
 
 
 @dataclass
@@ -92,7 +98,9 @@ class TransferContact(Transfer):
         Returns:
             Element with a contact to transfer.
         """
-        return self._get_transfer_payload(NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, 'id', self.id)
+        return self._get_transfer_payload(
+            NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, "id", self.id
+        )
 
 
 @dataclass
@@ -113,7 +121,9 @@ class TransferKeyset(Transfer):
         Returns:
             Element with a keyset to transfer.
         """
-        return self._get_transfer_payload(NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, 'id', self.id)
+        return self._get_transfer_payload(
+            NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, "id", self.id
+        )
 
 
 @dataclass
@@ -134,4 +144,6 @@ class TransferNsset(Transfer):
         Returns:
             Element with a nsset to transfer.
         """
-        return self._get_transfer_payload(NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, 'id', self.id)
+        return self._get_transfer_payload(
+            NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, "id", self.id
+        )

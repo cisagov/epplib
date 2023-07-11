@@ -25,8 +25,19 @@ from typing import Any, ClassVar, List, Mapping, Optional, Sequence, Union
 from dateutil.parser import parse as parse_datetime
 from lxml.etree import Element
 
-from epplib.models import (ContactAuthInfo, Disclose, Dnskey, DomainAuthInfo, DomainContact, ExtractModelMixin,
-                           Ident, Ip, Ns, PostalInfo, Status)
+from epplib.models import (
+    ContactAuthInfo,
+    Disclose,
+    Dnskey,
+    DomainAuthInfo,
+    DomainContact,
+    ExtractModelMixin,
+    Ident,
+    Ip,
+    Ns,
+    PostalInfo,
+    Status,
+)
 
 
 @dataclass
@@ -56,21 +67,30 @@ class InfoResultData(ExtractModelMixin):
     tr_date: Optional[datetime]
 
     @classmethod
-    def extract(cls, element: Element) -> 'InfoResultData':
+    def extract(cls, element: Element) -> "InfoResultData":
         """Extract params for own init from the element."""
         return cls(**cls._get_params(element))
 
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
         params: Mapping[str, Any] = {
-            'roid': cls._find_text(element, f'./{cls._namespace}:roid'),
-            'statuses': [Status.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:status')],
-            'cl_id': cls._find_text(element, f'./{cls._namespace}:clID'),
-            'cr_id': cls._find_text(element, f'./{cls._namespace}:crID'),
-            'cr_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:crDate')),
-            'up_id': cls._find_text(element, f'./{cls._namespace}:upID'),
-            'up_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:upDate')),
-            'tr_date': cls._optional(parse_datetime, cls._find_text(element, f'./{cls._namespace}:trDate')),
+            "roid": cls._find_text(element, f"./{cls._namespace}:roid"),
+            "statuses": [
+                Status.extract(item)
+                for item in cls._find_all(element, f"./{cls._namespace}:status")
+            ],
+            "cl_id": cls._find_text(element, f"./{cls._namespace}:clID"),
+            "cr_id": cls._find_text(element, f"./{cls._namespace}:crID"),
+            "cr_date": cls._optional(
+                parse_datetime, cls._find_text(element, f"./{cls._namespace}:crDate")
+            ),
+            "up_id": cls._find_text(element, f"./{cls._namespace}:upID"),
+            "up_date": cls._optional(
+                parse_datetime, cls._find_text(element, f"./{cls._namespace}:upDate")
+            ),
+            "tr_date": cls._optional(
+                parse_datetime, cls._find_text(element, f"./{cls._namespace}:trDate")
+            ),
         }
         return params
 
@@ -97,7 +117,7 @@ class InfoDomainResultData(InfoResultData):
         contacts: Content of the epp/response/resData/infData/contact element.
     """
 
-    _namespace = 'domain'
+    _namespace = "domain"
 
     name: str
     registrant: Optional[str]
@@ -116,20 +136,25 @@ class InfoDomainResultData(InfoResultData):
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
         params: Mapping[str, Any] = {
-            'name': cls._find_text(element, f'./{cls._namespace}:name'),
-            'registrant': cls._find_text(element, f'./{cls._namespace}:registrant'),
-            'admins': cls._find_all_text(element, f'./{cls._namespace}:admin'),
-            'nsset': cls._find_text(element, f'./{cls._namespace}:nsset'),
-            'keyset': cls._find_text(element, f'./{cls._namespace}:keyset'),
-            'ex_date': cls._optional(cls._parse_date, cls._find_text(element, f'./{cls._namespace}:exDate')),
-            'auth_info': cls._optional(DomainAuthInfo.extract, cls._find(element, f'./{cls._namespace}:authInfo')),
+            "name": cls._find_text(element, f"./{cls._namespace}:name"),
+            "registrant": cls._find_text(element, f"./{cls._namespace}:registrant"),
+            "admins": cls._find_all_text(element, f"./{cls._namespace}:admin"),
+            "nsset": cls._find_text(element, f"./{cls._namespace}:nsset"),
+            "keyset": cls._find_text(element, f"./{cls._namespace}:keyset"),
+            "ex_date": cls._optional(
+                cls._parse_date, cls._find_text(element, f"./{cls._namespace}:exDate")
+            ),
+            "auth_info": cls._optional(
+                DomainAuthInfo.extract,
+                cls._find(element, f"./{cls._namespace}:authInfo"),
+            ),
         }
-        ns = cls._find(element, f'./{InfoDomainResultData._namespace}:ns')
-        contacts = cls._find_all(element, f'./{cls._namespace}:contact')
+        ns = cls._find(element, f"./{InfoDomainResultData._namespace}:ns")
+        contacts = cls._find_all(element, f"./{cls._namespace}:contact")
         if ns is not None:
-            params['hosts'] = cls._find_all_text(ns, f'./{cls._namespace}:hostObj')
+            params["hosts"] = cls._find_all_text(ns, f"./{cls._namespace}:hostObj")
         if contacts:
-            params['contacts'] = [DomainContact.extract(item) for item in contacts]
+            params["contacts"] = [DomainContact.extract(item) for item in contacts]
         return {**super()._get_params(element), **params}
 
 
@@ -149,7 +174,7 @@ class InfoHostResultData(InfoResultData):
         statuses: Content of the epp/response/resData/infData/status element.
     """
 
-    _namespace = 'host'
+    _namespace = "host"
 
     name: str
     addrs: Optional[List[Ip]] = field(default_factory=list)
@@ -157,8 +182,11 @@ class InfoHostResultData(InfoResultData):
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
         params: Mapping[str, Any] = {
-            'name': cls._find_text(element, f'./{cls._namespace}:name'),
-            'addrs': [Ip.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:addr')],
+            "name": cls._find_text(element, f"./{cls._namespace}:name"),
+            "addrs": [
+                Ip.extract(item)
+                for item in cls._find_all(element, f"./{cls._namespace}:addr")
+            ],
         }
         return {**super()._get_params(element), **params}
 
@@ -186,7 +214,7 @@ class InfoContactResultData(InfoResultData):
         notify_email: Content of the epp/response/resData/infData/notifyEmail element.
     """
 
-    _namespace = 'contact'
+    _namespace = "contact"
 
     id: str
     postal_info: PostalInfo
@@ -202,16 +230,25 @@ class InfoContactResultData(InfoResultData):
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
         params: Mapping[str, Any] = {
-            'id': cls._find_text(element, f'./{cls._namespace}:id'),
-            'postal_info': PostalInfo.extract(cls._find(element, f'./{cls._namespace}:postalInfo')),
-            'voice': cls._find_text(element, f'./{cls._namespace}:voice'),
-            'fax': cls._find_text(element, f'./{cls._namespace}:fax'),
-            'email': cls._find_text(element, f'./{cls._namespace}:email'),
-            'disclose': cls._optional(Disclose.extract, cls._find(element, f'./{cls._namespace}:disclose')),
-            'vat': cls._find_text(element, f'./{cls._namespace}:vat'),
-            'ident': cls._optional(Ident.extract, cls._find(element, f'./{cls._namespace}:ident')),
-            'notify_email': cls._find_text(element, f'./{cls._namespace}:notifyEmail'),
-            'auth_info': cls._optional(ContactAuthInfo.extract, cls._find(element, f'./{cls._namespace}:authInfo')),
+            "id": cls._find_text(element, f"./{cls._namespace}:id"),
+            "postal_info": PostalInfo.extract(
+                cls._find(element, f"./{cls._namespace}:postalInfo")
+            ),
+            "voice": cls._find_text(element, f"./{cls._namespace}:voice"),
+            "fax": cls._find_text(element, f"./{cls._namespace}:fax"),
+            "email": cls._find_text(element, f"./{cls._namespace}:email"),
+            "disclose": cls._optional(
+                Disclose.extract, cls._find(element, f"./{cls._namespace}:disclose")
+            ),
+            "vat": cls._find_text(element, f"./{cls._namespace}:vat"),
+            "ident": cls._optional(
+                Ident.extract, cls._find(element, f"./{cls._namespace}:ident")
+            ),
+            "notify_email": cls._find_text(element, f"./{cls._namespace}:notifyEmail"),
+            "auth_info": cls._optional(
+                ContactAuthInfo.extract,
+                cls._find(element, f"./{cls._namespace}:authInfo"),
+            ),
         }
         return {**super()._get_params(element), **params}
 
@@ -233,7 +270,7 @@ class InfoKeysetResultData(InfoResultData):
         techs: Content of the epp/response/resData/infData/tech elements.
     """
 
-    _namespace = 'keyset'
+    _namespace = "keyset"
 
     id: str
     dnskeys: Sequence[Dnskey]
@@ -243,10 +280,13 @@ class InfoKeysetResultData(InfoResultData):
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
         params: Mapping[str, Any] = {
-            'id': cls._find_text(element, f'./{cls._namespace}:id'),
-            'dnskeys': [Dnskey.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:dnskey')],
-            'techs': cls._find_all_text(element, f'./{cls._namespace}:tech'),
-            'auth_info': cls._find_text(element, f'./{cls._namespace}:authInfo'),
+            "id": cls._find_text(element, f"./{cls._namespace}:id"),
+            "dnskeys": [
+                Dnskey.extract(item)
+                for item in cls._find_all(element, f"./{cls._namespace}:dnskey")
+            ],
+            "techs": cls._find_all_text(element, f"./{cls._namespace}:tech"),
+            "auth_info": cls._find_text(element, f"./{cls._namespace}:authInfo"),
         }
         return {**super()._get_params(element), **params}
 
@@ -269,7 +309,7 @@ class InfoNssetResultData(InfoResultData):
         reportlevel: Content of the epp/response/resData/infData/reportlevel elements.
     """
 
-    _namespace = 'nsset'
+    _namespace = "nsset"
 
     id: str
     nss: Sequence[Ns]
@@ -280,10 +320,15 @@ class InfoNssetResultData(InfoResultData):
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
         params: Mapping[str, Any] = {
-            'id': cls._find_text(element, f'./{cls._namespace}:id'),
-            'nss': [Ns.extract(item) for item in cls._find_all(element, f'./{cls._namespace}:ns')],
-            'techs': cls._find_all_text(element, f'./{cls._namespace}:tech'),
-            'reportlevel': int(cls._find_text(element, f'./{cls._namespace}:reportlevel')),
-            'auth_info': cls._find_text(element, f'./{cls._namespace}:authInfo'),
+            "id": cls._find_text(element, f"./{cls._namespace}:id"),
+            "nss": [
+                Ns.extract(item)
+                for item in cls._find_all(element, f"./{cls._namespace}:ns")
+            ],
+            "techs": cls._find_all_text(element, f"./{cls._namespace}:tech"),
+            "reportlevel": int(
+                cls._find_text(element, f"./{cls._namespace}:reportlevel")
+            ),
+            "auth_info": cls._find_text(element, f"./{cls._namespace}:authInfo"),
         }
         return {**super()._get_params(element), **params}

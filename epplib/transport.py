@@ -85,8 +85,16 @@ class SocketTransport(Transport):
     HEADER_SIZE = 4
     CHUNK_SIZE = 1024
 
-    def __init__(self, hostname: str, port: int = 700, *, cert_file: Optional[PathType] = None,
-                 key_file: Optional[PathType] = None, password: Optional[str] = None, verify: bool = True):
+    def __init__(
+        self,
+        hostname: str,
+        port: int = 700,
+        *,
+        cert_file: Optional[PathType] = None,
+        key_file: Optional[PathType] = None,
+        password: Optional[str] = None,
+        verify: bool = True
+    ):
         self.hostname = hostname
         self.port = port
         self.cert_file = cert_file
@@ -100,7 +108,9 @@ class SocketTransport(Transport):
         """Open the connection to the EPP server."""
         context = ssl.create_default_context()
         if self.cert_file is not None:
-            context.load_cert_chain(certfile=self.cert_file, keyfile=self.key_file, password=self.password)
+            context.load_cert_chain(
+                certfile=self.cert_file, keyfile=self.key_file, password=self.password
+            )
         if not self.verify:
             _LOGGER.warning("Verification of the peer certificate is disabled.")
             context.check_hostname = False
@@ -124,13 +134,13 @@ class SocketTransport(Transport):
             TransportError: When an error occurs while sending the data.
         """
         if self.socket is None:
-            raise TransportError('Not connected to the server.')
-        message_length = (len(message) + self.HEADER_SIZE).to_bytes(4, 'big')
+            raise TransportError("Not connected to the server.")
+        message_length = (len(message) + self.HEADER_SIZE).to_bytes(4, "big")
         try:
             self.socket.sendall(message_length + message)
         except OSError as error:
             _LOGGER.debug("Error in send: %r", error)
-            raise TransportError('Socket closed.') from error
+            raise TransportError("Socket closed.") from error
 
     def receive(self) -> bytes:
         """Receive data from the server.
@@ -142,21 +152,23 @@ class SocketTransport(Transport):
             TransportError: When an error occurs while receiving the data.
         """
         if self.socket is None:
-            raise TransportError('Not connected to the server.')
+            raise TransportError("Not connected to the server.")
 
         try:
             header = self.socket.recv(self.HEADER_SIZE)
-            expected_length = int.from_bytes(header, 'big') - self.HEADER_SIZE
+            expected_length = int.from_bytes(header, "big") - self.HEADER_SIZE
 
             response = bytes()
             while len(response) < expected_length:
-                response += self.socket.recv(min(self.CHUNK_SIZE, expected_length - len(response)))
+                response += self.socket.recv(
+                    min(self.CHUNK_SIZE, expected_length - len(response))
+                )
 
             if response:
                 return response
 
-            raise TransportError('Empty response recieved.')
+            raise TransportError("Empty response recieved.")
 
         except OSError as error:
             _LOGGER.debug("Error in receive: %r", error)
-            raise TransportError('Socket closed.') from error
+            raise TransportError("Socket closed.") from error

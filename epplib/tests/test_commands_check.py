@@ -25,10 +25,10 @@ from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
 
 class TestCheckDomain(XMLTestCase):
-    domains = ['domain.cz', 'other.com']
+    domains = ["domain.cz", "other.com"]
 
     def test_valid(self):
-        self.assertRequestValid(CheckDomain, {'names': self.domains})
+        self.assertRequestValid(CheckDomain, {"names": self.domains})
 
     def test_data(self):
         root = fromstring(CheckDomain(self.domains).xml())
@@ -37,7 +37,11 @@ class TestCheckDomain(XMLTestCase):
             EM.command(
                 EM.check(
                     domain.check(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
                         *[domain.name(item) for item in self.domains]
                     )
                 )
@@ -47,10 +51,10 @@ class TestCheckDomain(XMLTestCase):
 
 
 class TestCheckContact(XMLTestCase):
-    contacts = ['CID-MYOWN', 'CID-NONE']
+    contacts = ["CID-MYOWN", "CID-NONE"]
 
     def test_valid(self):
-        self.assertRequestValid(CheckContact, {'ids': self.contacts})
+        self.assertRequestValid(CheckContact, {"ids": self.contacts})
 
     def test_data(self):
         root = fromstring(CheckContact(self.contacts).xml())
@@ -59,7 +63,11 @@ class TestCheckContact(XMLTestCase):
             EM.command(
                 EM.check(
                     contact.check(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_CONTACT
+                        },
                         *[contact.id(item) for item in self.contacts]
                     )
                 )
@@ -69,10 +77,10 @@ class TestCheckContact(XMLTestCase):
 
 
 class TestCheckNsset(XMLTestCase):
-    nssets = ['NID-MYNSSET', 'NID-NONE']
+    nssets = ["NID-MYNSSET", "NID-NONE"]
 
     def test_valid(self):
-        self.assertRequestValid(CheckNsset, {'ids': self.nssets})
+        self.assertRequestValid(CheckNsset, {"ids": self.nssets})
 
     def test_data(self):
         root = fromstring(CheckNsset(self.nssets).xml())
@@ -81,7 +89,11 @@ class TestCheckNsset(XMLTestCase):
             EM.command(
                 EM.check(
                     nsset.check(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_NSSET
+                        },
                         *[nsset.id(item) for item in self.nssets]
                     )
                 )
@@ -91,10 +103,10 @@ class TestCheckNsset(XMLTestCase):
 
 
 class TestCheckKeyset(XMLTestCase):
-    keysets = ['KID-MYKEYSET', 'KID-NONE']
+    keysets = ["KID-MYKEYSET", "KID-NONE"]
 
     def test_valid(self):
-        self.assertRequestValid(CheckKeyset, {'ids': self.keysets})
+        self.assertRequestValid(CheckKeyset, {"ids": self.keysets})
 
     def test_data(self):
         root = fromstring(CheckKeyset(self.keysets).xml())
@@ -103,7 +115,11 @@ class TestCheckKeyset(XMLTestCase):
             EM.command(
                 EM.check(
                     keyset.check(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_KEYSET
+                        },
                         *[keyset.id(item) for item in self.keysets]
                     )
                 )

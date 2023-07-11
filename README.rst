@@ -70,3 +70,29 @@ Fred EPP library is tested with Fred and isn't guaranteed to work with anything 
 
     constants.NAMESPACE = NAMESPACE
     constants.SCHEMA_LOCATION = SCHEMA_LOCATION
+
+
+Testing Code Locally
+====================
+gather dependencies
+1. install python 3.10 or newer
+2. optional setup up virtual envirornment
+    -make virtual envirornment in the the terminal with:
+     `python -m venv env`
+    - activate the virtual envirornment in the terminal with:
+     `source env/bin/activate``
+3. install python dependencies
+    `python -m pip install -r requirements.txt``
+
+
+To run all the unittests in the library, open terminal and navigate to the outerdirectory where this readme is located. Then run
+`python -m unittest`
+
+To run unittests on a single file modify the above command by adding the name of the file to test such as:
+`python3 -m unittest ./epplib/tests/tests_ietf/test_extensions.py`
+
+
+Optional Code formatter
+====================
+Simply use the built in `black` code formatter that which will catch common linting issues
+Run it using "black ."

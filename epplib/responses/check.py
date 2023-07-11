@@ -20,8 +20,13 @@
 
 from dataclasses import dataclass
 
-from epplib.models.check import (CheckContactResultData, CheckDomainResultData, CheckHostResultData,
-                                 CheckKeysetResultData, CheckNssetResultData)
+from epplib.models.check import (
+    CheckContactResultData,
+    CheckDomainResultData,
+    CheckHostResultData,
+    CheckKeysetResultData,
+    CheckNssetResultData,
+)
 from epplib.responses.base import Result
 
 
@@ -37,7 +42,7 @@ class CheckDomainResult(Result[CheckDomainResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './domain:chkData/domain:cd'
+    _res_data_path = "./domain:chkData/domain:cd"
     _res_data_class = CheckDomainResultData
 
 
@@ -53,7 +58,7 @@ class CheckContactResult(Result[CheckContactResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './contact:chkData/contact:cd'
+    _res_data_path = "./contact:chkData/contact:cd"
     _res_data_class = CheckContactResultData
 
 
@@ -69,7 +74,7 @@ class CheckHostResult(Result[CheckHostResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './host:chkData/host:cd'
+    _res_data_path = "./host:chkData/host:cd"
     _res_data_class = CheckHostResultData
 
 
@@ -85,7 +90,7 @@ class CheckNssetResult(Result[CheckNssetResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './nsset:chkData/nsset:cd'
+    _res_data_path = "./nsset:chkData/nsset:cd"
     _res_data_class = CheckNssetResultData
 
 
@@ -101,5 +106,5 @@ class CheckKeysetResult(Result[CheckKeysetResultData]):
         sv_tr_id: Content of the epp/response/trID/svTRID element.
     """
 
-    _res_data_path = './keyset:chkData/keyset:cd'
+    _res_data_path = "./keyset:chkData/keyset:cd"
     _res_data_class = CheckKeysetResultData

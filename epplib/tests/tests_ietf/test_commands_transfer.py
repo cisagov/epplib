@@ -27,11 +27,11 @@ from epplib.tests.tests_ietf.constants import NAMESPACE, SCHEMA_LOCATION, SCHEMA
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
 
-@patch('epplib.commands.transfer.NAMESPACE', NAMESPACE)
-@patch('epplib.commands.transfer.SCHEMA_LOCATION', SCHEMA_LOCATION)
-@patch('epplib.models.common.DomainAuthInfo.namespace', NAMESPACE.NIC_DOMAIN)
+@patch("epplib.commands.transfer.NAMESPACE", NAMESPACE)
+@patch("epplib.commands.transfer.SCHEMA_LOCATION", SCHEMA_LOCATION)
+@patch("epplib.models.common.DomainAuthInfo.namespace", NAMESPACE.NIC_DOMAIN)
 class TestTransferDomain(XMLTestCase):
-    params = {'name': 'trdomain.cz', 'auth_info': DomainAuthInfo(pw='2fooBAR123fooBaz')}
+    params = {"name": "trdomain.cz", "auth_info": DomainAuthInfo(pw="2fooBAR123fooBaz")}
 
     def test_valid(self):
         self.assertRequestValid(TransferDomain, self.params, schema=SCHEMA)
@@ -43,24 +43,28 @@ class TestTransferDomain(XMLTestCase):
             EM.command(
                 EM.transfer(
                     domain.transfer(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        domain.name(self.params['name']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
+                        domain.name(self.params["name"]),
                         domain.authInfo(
-                            domain.pw(self.params['auth_info'].pw),
+                            domain.pw(self.params["auth_info"].pw),
                         ),
                     ),
-                    op='request',
+                    op="request",
                 )
             )
         )
         self.assertXMLEqual(root, expected)
 
 
-@patch('epplib.commands.transfer.NAMESPACE', NAMESPACE)
-@patch('epplib.commands.transfer.SCHEMA_LOCATION', SCHEMA_LOCATION)
-@patch('epplib.models.common.ContactAuthInfo.namespace', NAMESPACE.NIC_CONTACT)
+@patch("epplib.commands.transfer.NAMESPACE", NAMESPACE)
+@patch("epplib.commands.transfer.SCHEMA_LOCATION", SCHEMA_LOCATION)
+@patch("epplib.models.common.ContactAuthInfo.namespace", NAMESPACE.NIC_CONTACT)
 class TestTransferContact(XMLTestCase):
-    params = {'id': 'CID-TRCONT', 'auth_info': ContactAuthInfo(pw='2fooBAR123fooBaz')}
+    params = {"id": "CID-TRCONT", "auth_info": ContactAuthInfo(pw="2fooBAR123fooBaz")}
 
     def test_valid(self):
         self.assertRequestValid(TransferContact, self.params, schema=SCHEMA)
@@ -72,15 +76,18 @@ class TestTransferContact(XMLTestCase):
             EM.command(
                 EM.transfer(
                     contact.transfer(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
-                        contact.id(self.params['id']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_CONTACT
+                        },
+                        contact.id(self.params["id"]),
                         contact.authInfo(
-                            contact.pw(self.params['auth_info'].pw),
+                            contact.pw(self.params["auth_info"].pw),
                         ),
                     ),
-                    op='request',
+                    op="request",
                 )
             )
         )
         self.assertXMLEqual(root, expected)
-

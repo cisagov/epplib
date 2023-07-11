@@ -52,12 +52,12 @@ class CreateDomainResultData(ExtractModelMixin):
     ex_date: Optional[date] = None
 
     @classmethod
-    def extract(cls, element: Element) -> 'CreateDomainResultData':
+    def extract(cls, element: Element) -> "CreateDomainResultData":
         """Extract params for own init from the element."""
         params = (
-            cls._find_text(element, './domain:name'),
-            parse_datetime(cls._find_text(element, './domain:crDate')),
-            cls._optional(cls._parse_date, cls._find_text(element, './domain:exDate')),
+            cls._find_text(element, "./domain:name"),
+            parse_datetime(cls._find_text(element, "./domain:crDate")),
+            cls._optional(cls._parse_date, cls._find_text(element, "./domain:exDate")),
         )
         return cls(*params)
 
@@ -74,14 +74,16 @@ class CreateHostResultData(ExtractModelMixin):
     name: str
     cr_date: datetime
 
-    _namespace_prefix: ClassVar[Optional[str]] = 'host'
+    _namespace_prefix: ClassVar[Optional[str]] = "host"
 
     @classmethod
-    def extract(cls, element: Element) -> 'CreateHostResultData':
+    def extract(cls, element: Element) -> "CreateHostResultData":
         """Extract params for own init from the element."""
         params = (
-            cls._find_text(element, './{}:name'.format(cls._namespace_prefix)),
-            parse_datetime(cls._find_text(element, './{}:crDate'.format(cls._namespace_prefix))),
+            cls._find_text(element, "./{}:name".format(cls._namespace_prefix)),
+            parse_datetime(
+                cls._find_text(element, "./{}:crDate".format(cls._namespace_prefix))
+            ),
         )
         return cls(*params)
 
@@ -101,11 +103,13 @@ class CreateNonDomainResultData(ExtractModelMixin):
     _namespace_prefix: ClassVar[Optional[str]] = None
 
     @classmethod
-    def extract(cls, element: Element) -> 'CreateNonDomainResultData':
+    def extract(cls, element: Element) -> "CreateNonDomainResultData":
         """Extract params for own init from the element."""
         params = (
-            cls._find_text(element, './{}:id'.format(cls._namespace_prefix)),
-            parse_datetime(cls._find_text(element, './{}:crDate'.format(cls._namespace_prefix))),
+            cls._find_text(element, "./{}:id".format(cls._namespace_prefix)),
+            parse_datetime(
+                cls._find_text(element, "./{}:crDate".format(cls._namespace_prefix))
+            ),
         )
         return cls(*params)
 
@@ -119,7 +123,7 @@ class CreateContactResultData(CreateNonDomainResultData):
         cr_date: Content of the epp/response/resData/creData/crDate element.
     """
 
-    _namespace_prefix: ClassVar[Optional[str]] = 'contact'
+    _namespace_prefix: ClassVar[Optional[str]] = "contact"
 
 
 @dataclass
@@ -131,7 +135,7 @@ class CreateNssetResultData(CreateNonDomainResultData):
         cr_date: Content of the epp/response/resData/creData/crDate element.
     """
 
-    _namespace_prefix: ClassVar[Optional[str]] = 'nsset'
+    _namespace_prefix: ClassVar[Optional[str]] = "nsset"
 
 
 @dataclass
@@ -143,4 +147,4 @@ class CreateKeysetResultData(CreateNonDomainResultData):
         cr_date: Content of the epp/response/resData/creData/crDate element.
     """
 
-    _namespace_prefix: ClassVar[Optional[str]] = 'keyset'
+    _namespace_prefix: ClassVar[Optional[str]] = "keyset"

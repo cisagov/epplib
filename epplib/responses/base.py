@@ -21,7 +21,19 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, ClassVar, Generic, List, Mapping, Optional, Sequence, Type, TypeVar, Union, cast
+from typing import (
+    Any,
+    ClassVar,
+    Generic,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+)
 
 from dateutil.parser import parse as parse_datetime
 from dateutil.relativedelta import relativedelta
@@ -36,11 +48,13 @@ from epplib.utils import ParseXMLMixin, safe_parse
 
 LOGGER = logging.getLogger(__name__)
 
-T = TypeVar('T', bound=ExtractModelMixin)
-ResponseT = TypeVar('ResponseT', bound='Response')
-ResultT = TypeVar('ResultT', bound='Result')
+T = TypeVar("T", bound=ExtractModelMixin)
+ResponseT = TypeVar("ResponseT", bound="Response")
+ResultT = TypeVar("ResultT", bound="Result")
 
-GreetingPayload = Mapping[str, Union[None, Sequence[str], Sequence[Statement], datetime, relativedelta, str]]
+GreetingPayload = Mapping[
+    str, Union[None, Sequence[str], Sequence[Statement], datetime, relativedelta, str]
+]
 
 
 class Response(ParseXMLMixin, ABC):
@@ -57,7 +71,9 @@ class Response(ParseXMLMixin, ABC):
         pass  # pragma: no cover
 
     @classmethod
-    def parse(cls: Type[ResponseT], raw_response: bytes, schema: Optional[XMLSchema] = None) -> ResponseT:
+    def parse(
+        cls: Type[ResponseT], raw_response: bytes, schema: Optional[XMLSchema] = None
+    ) -> ResponseT:
         """Parse the xml response into the dataclass.
 
         Args:
@@ -78,12 +94,16 @@ class Response(ParseXMLMixin, ABC):
         if schema is not None:
             schema.assertValid(root)
 
-        if root.tag != QName(NAMESPACE.EPP, 'epp'):
+        if root.tag != QName(NAMESPACE.EPP, "epp"):
             raise ValueError('Root element has to be "epp". Found: {}'.format(root.tag))
 
         payload = root[0]
         if payload.tag != cls._payload_tag:
-            raise ValueError('Expected {} tag. Found {} instead.'.format(cls._payload_tag, payload.tag))
+            raise ValueError(
+                "Expected {} tag. Found {} instead.".format(
+                    cls._payload_tag, payload.tag
+                )
+            )
         try:
             data = cls._extract_payload(payload)
         except Exception as exception:
@@ -117,7 +137,7 @@ class Greeting(Response):
         expiry: Content of the epp/greeting/expiry element.
     """
 
-    _payload_tag: ClassVar = QName(NAMESPACE.EPP, 'greeting')
+    _payload_tag: ClassVar = QName(NAMESPACE.EPP, "greeting")
 
     sv_id: str
     sv_date: str
@@ -130,7 +150,9 @@ class Greeting(Response):
     expiry: Optional[str]
 
     @classmethod
-    def parse(cls, raw_response: bytes, schema: Optional[XMLSchema] = None) -> 'Greeting':
+    def parse(
+        cls, raw_response: bytes, schema: Optional[XMLSchema] = None
+    ) -> "Greeting":
         """Parse the xml response into the Greeting dataclass.
 
         Args:
@@ -147,19 +169,22 @@ class Greeting(Response):
             element: Child element of the epp element.
         """
         data = {
-            'sv_id': cls._find_text(element, './epp:svID'),
-            'sv_date': cls._find_text(element, './epp:svDate'),
-
-            'versions': cls._find_all_text(element, './epp:svcMenu/epp:version'),
-            'langs': cls._find_all_text(element, './epp:svcMenu/epp:lang'),
-            'obj_uris': cls._find_all_text(element, './epp:svcMenu/epp:objURI'),
-
-            'ext_uris': cls._find_all_text(element, './epp:svcMenu/epp:svcExtension/epp:extURI'),
-
-            'access': cls._find_child(element, './epp:dcp/epp:access'),
-
-            'statements': [Statement.extract(item) for item in cls._find_all(element, './epp:dcp/epp:statement')],
-            'expiry': cls._extract_expiry(element.find('./epp:dcp/epp:expiry', namespaces=cls._NAMESPACES))
+            "sv_id": cls._find_text(element, "./epp:svID"),
+            "sv_date": cls._find_text(element, "./epp:svDate"),
+            "versions": cls._find_all_text(element, "./epp:svcMenu/epp:version"),
+            "langs": cls._find_all_text(element, "./epp:svcMenu/epp:lang"),
+            "obj_uris": cls._find_all_text(element, "./epp:svcMenu/epp:objURI"),
+            "ext_uris": cls._find_all_text(
+                element, "./epp:svcMenu/epp:svcExtension/epp:extURI"
+            ),
+            "access": cls._find_child(element, "./epp:dcp/epp:access"),
+            "statements": [
+                Statement.extract(item)
+                for item in cls._find_all(element, "./epp:dcp/epp:statement")
+            ],
+            "expiry": cls._extract_expiry(
+                element.find("./epp:dcp/epp:expiry", namespaces=cls._NAMESPACES)
+            ),
         }
 
         return data
@@ -187,18 +212,24 @@ class Greeting(Response):
         tag = element[0].tag
         text = element[0].text
 
-        if tag == QName(NAMESPACE.EPP, 'absolute'):
+        if tag == QName(NAMESPACE.EPP, "absolute"):
             try:
                 return parse_datetime(text)
             except ValueError as exception:
-                raise ParsingError('Could not parse "{}" as absolute expiry.'.format(text)) from exception
-        elif tag == QName(NAMESPACE.EPP, 'relative'):
+                raise ParsingError(
+                    'Could not parse "{}" as absolute expiry.'.format(text)
+                ) from exception
+        elif tag == QName(NAMESPACE.EPP, "relative"):
             try:
                 return cls._parse_duration(text)
             except ValueError as exception:
-                raise ParsingError('Could not parse "{}" as relative expiry.'.format(text)) from exception
+                raise ParsingError(
+                    'Could not parse "{}" as relative expiry.'.format(text)
+                ) from exception
         else:
-            raise ValueError('Expected expiry specification. Found "{}" instead.'.format(tag))
+            raise ValueError(
+                'Expected expiry specification. Found "{}" instead.'.format(tag)
+            )
 
 
 @dataclass
@@ -218,12 +249,12 @@ class MsgQ(ParseXMLMixin):
     msg: Optional[PollMessage]
 
     @classmethod
-    def extract(cls, element: Element) -> 'MsgQ':
+    def extract(cls, element: Element) -> "MsgQ":
         """Extract MsgQ from the element."""
-        count = cls._optional(int, cls._find_attrib(element, '.', 'count'))
-        id = cls._find_attrib(element, '.', 'id')
-        q_date = cls._optional(parse_datetime, cls._find_text(element, './epp:qDate'))
-        msg = cls._extract_message(cls._find(element, './epp:msg'))
+        count = cls._optional(int, cls._find_attrib(element, ".", "count"))
+        id = cls._find_attrib(element, ".", "id")
+        q_date = cls._optional(parse_datetime, cls._find_text(element, "./epp:qDate"))
+        msg = cls._extract_message(cls._find(element, "./epp:msg"))
         return cls(count=count, id=id, q_date=q_date, msg=msg)
 
     @classmethod
@@ -234,7 +265,11 @@ class MsgQ(ParseXMLMixin):
             message_element = element[0]
             message_class = POLL_MESSAGE_TYPES.get(message_element.tag, None)
             if message_class is None:
-                LOGGER.info('Could not find class to extract poll message {}.'.format(message_element.tag))
+                LOGGER.info(
+                    "Could not find class to extract poll message {}.".format(
+                        message_element.tag
+                    )
+                )
                 return None
             else:
                 return message_class.extract(message_element)
@@ -254,7 +289,7 @@ class Result(Response, Generic[T]):
         msg_q: Content of the epp/response/msgQ element.
     """
 
-    _payload_tag: ClassVar = QName(NAMESPACE.EPP, 'response')
+    _payload_tag: ClassVar = QName(NAMESPACE.EPP, "response")
     _res_data_class: ClassVar[Optional[Type[ExtractModelMixin]]] = None
     _res_data_path: ClassVar[Optional[str]] = None
 
@@ -267,7 +302,9 @@ class Result(Response, Generic[T]):
     msg_q: Optional[MsgQ] = None
 
     @classmethod
-    def parse(cls: Type[ResultT], raw_response: bytes, schema: Optional[XMLSchema] = None) -> ResultT:
+    def parse(
+        cls: Type[ResultT], raw_response: bytes, schema: Optional[XMLSchema] = None
+    ) -> ResultT:
         """Parse the xml response into the Result dataclass.
 
         Args:
@@ -284,13 +321,17 @@ class Result(Response, Generic[T]):
             element: Child element of the epp element.
         """
         payload_data = {
-            'code': cls._optional(int, cls._find_attrib(element, './epp:result', 'code')),
-            'msg': cls._find_text(element, './epp:result/epp:msg'),
-            'res_data': cls._extract_data(cls._find(element, './epp:resData')),
-            'cl_tr_id': cls._find_text(element, './epp:trID/epp:clTRID'),
-            'sv_tr_id': cls._find_text(element, './epp:trID/epp:svTRID'),
-            'extensions': cls._extract_extensions(cls._find(element, './epp:extension')),
-            'msg_q': cls._extract_message(cls._find(element, './epp:msgQ')),
+            "code": cls._optional(
+                int, cls._find_attrib(element, "./epp:result", "code")
+            ),
+            "msg": cls._find_text(element, "./epp:result/epp:msg"),
+            "res_data": cls._extract_data(cls._find(element, "./epp:resData")),
+            "cl_tr_id": cls._find_text(element, "./epp:trID/epp:clTRID"),
+            "sv_tr_id": cls._find_text(element, "./epp:trID/epp:svTRID"),
+            "extensions": cls._extract_extensions(
+                cls._find(element, "./epp:extension")
+            ),
+            "msg_q": cls._extract_message(cls._find(element, "./epp:msgQ")),
         }
         return payload_data
 
@@ -301,7 +342,11 @@ class Result(Response, Generic[T]):
         Args:
             element: resData epp element.
         """
-        if (element is None) or (cls._res_data_path is None) or (cls._res_data_class is None):
+        if (
+            (element is None)
+            or (cls._res_data_path is None)
+            or (cls._res_data_class is None)
+        ):
             data = None
         else:
             data = []
@@ -311,13 +356,19 @@ class Result(Response, Generic[T]):
         return data
 
     @classmethod
-    def _extract_extensions(cls, element: Optional[Element]) -> Sequence[ResponseExtension]:
+    def _extract_extensions(
+        cls, element: Optional[Element]
+    ) -> Sequence[ResponseExtension]:
         data = []
         if element is not None:
             for child in element:
                 extension_class = EXTENSIONS.get(child.tag, None)
                 if extension_class is None:
-                    LOGGER.warning('Could not find class to extract extension {}.'.format(child.tag))
+                    LOGGER.warning(
+                        "Could not find class to extract extension {}.".format(
+                            child.tag
+                        )
+                    )
                 else:
                     data.append(extension_class.extract(child))
         return data

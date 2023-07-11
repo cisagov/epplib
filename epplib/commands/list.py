@@ -49,25 +49,25 @@ class List(FredExtCommand):
 class ListDomains(List):
     """List domain command."""
 
-    tag = 'listDomains'
+    tag = "listDomains"
 
 
 class ListContacts(List):
     """List domain command."""
 
-    tag = 'listContacts'
+    tag = "listContacts"
 
 
 class ListKeysets(List):
     """List domain command."""
 
-    tag = 'listKeysets'
+    tag = "listKeysets"
 
 
 class ListNssets(List):
     """List domain command."""
 
-    tag = 'listNssets'
+    tag = "listNssets"
 
 
 class ListBy(FredExtCommand):
@@ -90,7 +90,9 @@ class ListBy(FredExtCommand):
         """
         root = super()._get_extension_payload(tr_id)
         command = Element(QName(NAMESPACE.FRED, self.command_tag))
-        SubElement(command, QName(NAMESPACE.FRED, self.item_tag)).text = self._get_item_id()
+        SubElement(
+            command, QName(NAMESPACE.FRED, self.item_tag)
+        ).text = self._get_item_id()
         root.insert(0, command)
 
         return root
@@ -100,8 +102,8 @@ class ListBy(FredExtCommand):
 class ListDomainsByContact(ListBy):
     """List domains by contact command."""
 
-    command_tag = 'domainsByContact'
-    item_tag = 'id'
+    command_tag = "domainsByContact"
+    item_tag = "id"
 
     id: str
 
@@ -114,8 +116,8 @@ class ListDomainsByContact(ListBy):
 class ListDomainsByNsset(ListBy):
     """List domains by nsset command."""
 
-    command_tag = 'domainsByNsset'
-    item_tag = 'id'
+    command_tag = "domainsByNsset"
+    item_tag = "id"
 
     id: str
 
@@ -128,8 +130,8 @@ class ListDomainsByNsset(ListBy):
 class ListDomainsByKeyset(ListBy):
     """List domains by keyset command."""
 
-    command_tag = 'domainsByKeyset'
-    item_tag = 'id'
+    command_tag = "domainsByKeyset"
+    item_tag = "id"
 
     id: str
 
@@ -142,8 +144,8 @@ class ListDomainsByKeyset(ListBy):
 class ListNssetsByContact(ListBy):
     """List nssets by contact command."""
 
-    command_tag = 'nssetsByContact'
-    item_tag = 'id'
+    command_tag = "nssetsByContact"
+    item_tag = "id"
 
     id: str
 
@@ -156,8 +158,8 @@ class ListNssetsByContact(ListBy):
 class ListKeysetsByContact(ListBy):
     """List keysets by contact command."""
 
-    command_tag = 'keysetsByContact'
-    item_tag = 'id'
+    command_tag = "keysetsByContact"
+    item_tag = "id"
 
     id: str
 
@@ -170,8 +172,8 @@ class ListKeysetsByContact(ListBy):
 class ListNssetsByNs(ListBy):
     """List nssets by ns command."""
 
-    command_tag = 'nssetsByNs'
-    item_tag = 'name'
+    command_tag = "nssetsByNs"
+    item_tag = "name"
 
     name: str
 
@@ -192,6 +194,6 @@ class GetResults(FredExtCommand):
             Element with get results payload.
         """
         root = super()._get_extension_payload(tr_id)
-        root.insert(0, Element(QName(NAMESPACE.FRED, 'getResults')))
+        root.insert(0, Element(QName(NAMESPACE.FRED, "getResults")))
 
         return root

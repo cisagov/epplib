@@ -27,17 +27,18 @@ from epplib.responses.extensions import EnumInfoExtension, MailingAddressExtensi
 
 
 class TestEnumInfoExtension(TestCase):
-
     EM = ElementMaker(namespace=NAMESPACE.NIC_ENUMVAL)
 
     def test_extract_empty(self):
         element = self.EM.infData()
-        self.assertEqual(EnumInfoExtension.extract(element), EnumInfoExtension(None, None))
+        self.assertEqual(
+            EnumInfoExtension.extract(element), EnumInfoExtension(None, None)
+        )
 
     def test_extract(self):
         element = self.EM.infData(
-            self.EM.valExDate('2018-01-02'),
-            self.EM.publish('0'),
+            self.EM.valExDate("2018-01-02"),
+            self.EM.publish("0"),
         )
         result = EnumInfoExtension.extract(element)
         expected = EnumInfoExtension(date(2018, 1, 2), False)
@@ -45,11 +46,12 @@ class TestEnumInfoExtension(TestCase):
 
 
 class TestMailingAddressExtension(TestCase):
-
     EM = ElementMaker(namespace=NAMESPACE.NIC_EXTRA_ADDR)
 
     def test_extract(self):
-        addr = ExtraAddr(street=['Dlouha 24'], city='Lysa nad Labem', pc='28922', cc='CZ')
+        addr = ExtraAddr(
+            street=["Dlouha 24"], city="Lysa nad Labem", pc="28922", cc="CZ"
+        )
         element = self.EM.infData(self.EM.mailing(addr.get_payload()))
         result = MailingAddressExtension.extract(element)
         expected = MailingAddressExtension(addr=addr)

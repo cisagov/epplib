@@ -25,10 +25,10 @@ from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
 
 class TestDeleteDomain(XMLTestCase):
-    domain = 'domain.cz'
+    domain = "domain.cz"
 
     def test_valid(self):
-        self.assertRequestValid(DeleteDomain, {'name': self.domain})
+        self.assertRequestValid(DeleteDomain, {"name": self.domain})
 
     def test_data(self):
         root = fromstring(DeleteDomain(self.domain).xml())
@@ -37,8 +37,12 @@ class TestDeleteDomain(XMLTestCase):
             EM.command(
                 EM.delete(
                     domain.delete(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        domain.name(self.domain)
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
+                        domain.name(self.domain),
                     )
                 )
             )
@@ -47,10 +51,10 @@ class TestDeleteDomain(XMLTestCase):
 
 
 class TestDeleteContact(XMLTestCase):
-    contact = 'CID-MYOWN'
+    contact = "CID-MYOWN"
 
     def test_valid(self):
-        self.assertRequestValid(DeleteContact, {'id': self.contact})
+        self.assertRequestValid(DeleteContact, {"id": self.contact})
 
     def test_data(self):
         root = fromstring(DeleteContact(self.contact).xml())
@@ -59,8 +63,12 @@ class TestDeleteContact(XMLTestCase):
             EM.command(
                 EM.delete(
                     contact.delete(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
-                        contact.id(self.contact)
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_CONTACT
+                        },
+                        contact.id(self.contact),
                     )
                 )
             )
@@ -69,10 +77,10 @@ class TestDeleteContact(XMLTestCase):
 
 
 class TestDeleteKeyset(XMLTestCase):
-    keyset = 'KID-MYOWN'
+    keyset = "KID-MYOWN"
 
     def test_valid(self):
-        self.assertRequestValid(DeleteKeyset, {'id': self.keyset})
+        self.assertRequestValid(DeleteKeyset, {"id": self.keyset})
 
     def test_data(self):
         root = fromstring(DeleteKeyset(self.keyset).xml())
@@ -81,8 +89,12 @@ class TestDeleteKeyset(XMLTestCase):
             EM.command(
                 EM.delete(
                     keyset.delete(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
-                        keyset.id(self.keyset)
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_KEYSET
+                        },
+                        keyset.id(self.keyset),
                     )
                 )
             )
@@ -91,10 +103,10 @@ class TestDeleteKeyset(XMLTestCase):
 
 
 class TestDeleteNsset(XMLTestCase):
-    nsset = 'NID-MYOWN'
+    nsset = "NID-MYOWN"
 
     def test_valid(self):
-        self.assertRequestValid(DeleteNsset, {'id': self.nsset})
+        self.assertRequestValid(DeleteNsset, {"id": self.nsset})
 
     def test_data(self):
         root = fromstring(DeleteNsset(self.nsset).xml())
@@ -103,8 +115,12 @@ class TestDeleteNsset(XMLTestCase):
             EM.command(
                 EM.delete(
                     nsset.delete(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
-                        nsset.id(self.nsset)
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_NSSET
+                        },
+                        nsset.id(self.nsset),
                     )
                 )
             )

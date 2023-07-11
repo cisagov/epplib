@@ -27,14 +27,16 @@ from epplib.tests.tests_ietf.constants import NAMESPACE, SCHEMA_LOCATION, SCHEMA
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
 
-@patch('epplib.commands.info.NAMESPACE', NAMESPACE)
-@patch('epplib.commands.info.SCHEMA_LOCATION', SCHEMA_LOCATION)
-@patch('epplib.models.common.DomainAuthInfo.namespace', NAMESPACE.NIC_DOMAIN)
+@patch("epplib.commands.info.NAMESPACE", NAMESPACE)
+@patch("epplib.commands.info.SCHEMA_LOCATION", SCHEMA_LOCATION)
+@patch("epplib.models.common.DomainAuthInfo.namespace", NAMESPACE.NIC_DOMAIN)
 class TestInfoDomain(XMLTestCase):
-
     def setUp(self) -> None:
         """Setup params."""
-        self.params = {'name': 'mydoma.in', 'auth_info': DomainAuthInfo(pw='2fooBAR123fooBaz')}
+        self.params = {
+            "name": "mydoma.in",
+            "auth_info": DomainAuthInfo(pw="2fooBAR123fooBaz"),
+        }
 
     def test_valid(self):
         self.assertRequestValid(InfoDomain, self.params, schema=SCHEMA)
@@ -46,10 +48,14 @@ class TestInfoDomain(XMLTestCase):
             EM.command(
                 EM.info(
                     domain.info(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        domain.name(self.params['name']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
+                        domain.name(self.params["name"]),
                         domain.authInfo(
-                            domain.pw(self.params['auth_info'].pw),
+                            domain.pw(self.params["auth_info"].pw),
                         ),
                     )
                 )
@@ -58,15 +64,16 @@ class TestInfoDomain(XMLTestCase):
         self.assertXMLEqual(root, expected)
 
 
-@patch('epplib.commands.info.NAMESPACE', NAMESPACE)
-@patch('epplib.commands.info.SCHEMA_LOCATION', SCHEMA_LOCATION)
-@patch('epplib.models.common.ContactAuthInfo.namespace', NAMESPACE.NIC_CONTACT)
+@patch("epplib.commands.info.NAMESPACE", NAMESPACE)
+@patch("epplib.commands.info.SCHEMA_LOCATION", SCHEMA_LOCATION)
+@patch("epplib.models.common.ContactAuthInfo.namespace", NAMESPACE.NIC_CONTACT)
 class TestInfoContact(XMLTestCase):
-
     def setUp(self) -> None:
         """Setup params."""
-        self.params = {'id': 'CID-MYCONTACT', 'auth_info': ContactAuthInfo(pw='2fooBAR123fooBaz')}
-
+        self.params = {
+            "id": "CID-MYCONTACT",
+            "auth_info": ContactAuthInfo(pw="2fooBAR123fooBaz"),
+        }
 
     def test_valid(self):
         self.assertRequestValid(InfoContact, self.params, schema=SCHEMA)
@@ -78,11 +85,13 @@ class TestInfoContact(XMLTestCase):
             EM.command(
                 EM.info(
                     contact.info(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
-                        contact.id(self.params['id']),
-                        contact.authInfo(
-                            contact.pw(self.params['auth_info'].pw)
-                        ),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_CONTACT
+                        },
+                        contact.id(self.params["id"]),
+                        contact.authInfo(contact.pw(self.params["auth_info"].pw)),
                     )
                 )
             )
@@ -91,10 +100,9 @@ class TestInfoContact(XMLTestCase):
 
 
 class TestInfoHost(XMLTestCase):
-
     def setUp(self) -> None:
         """Setup params."""
-        self.params = {'name': 'ns1.mydoma.in'}
+        self.params = {"name": "ns1.mydoma.in"}
 
     def test_valid(self):
         self.assertRequestValid(InfoHost, self.params, schema=SCHEMA)
@@ -106,8 +114,12 @@ class TestInfoHost(XMLTestCase):
             EM.command(
                 EM.info(
                     host.info(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_HOST},
-                        host.name(self.params['name']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_HOST
+                        },
+                        host.name(self.params["name"]),
                     )
                 )
             )

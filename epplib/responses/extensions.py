@@ -42,7 +42,7 @@ class ResponseExtension(ABC):
 
     @classmethod
     @abstractmethod
-    def extract(cls, element: Element) -> 'ResponseExtension':
+    def extract(cls, element: Element) -> "ResponseExtension":
         """Extract the extension content from the element.
 
         Args:
@@ -65,16 +65,16 @@ class EnumInfoExtension(ParseXMLMixin, ResponseExtension):
 
     _NAMESPACES: ClassVar[Mapping[str, str]] = {
         **ParseXMLMixin._NAMESPACES,
-        'enumval': NAMESPACE.NIC_ENUMVAL,
+        "enumval": NAMESPACE.NIC_ENUMVAL,
     }
 
-    tag = QName(NAMESPACE.NIC_ENUMVAL, 'infData')
+    tag = QName(NAMESPACE.NIC_ENUMVAL, "infData")
 
     val_ex_date: Optional[date]
     publish: Optional[bool]
 
     @classmethod
-    def extract(cls, element: Element) -> 'EnumInfoExtension':
+    def extract(cls, element: Element) -> "EnumInfoExtension":
         """Extract the extension content from the element.
 
         Args:
@@ -83,8 +83,12 @@ class EnumInfoExtension(ParseXMLMixin, ResponseExtension):
         Returns:
             Dataclass representing the extension.
         """
-        val_ex_date = cls._optional(cls._parse_date, cls._find_text(element, './enumval:valExDate'))
-        publish = cls._optional(cls._str_to_bool, cls._find_text(element, './enumval:publish'))
+        val_ex_date = cls._optional(
+            cls._parse_date, cls._find_text(element, "./enumval:valExDate")
+        )
+        publish = cls._optional(
+            cls._str_to_bool, cls._find_text(element, "./enumval:publish")
+        )
         return cls(val_ex_date=val_ex_date, publish=publish)
 
 
@@ -98,16 +102,16 @@ class MailingAddressExtension(ParseXMLMixin, ResponseExtension):
 
     _NAMESPACES: ClassVar[Mapping[str, str]] = {
         **ParseXMLMixin._NAMESPACES,
-        'extra-addr': NAMESPACE.NIC_EXTRA_ADDR,
+        "extra-addr": NAMESPACE.NIC_EXTRA_ADDR,
     }
 
     # The whole mailing address is wrapped into an infData element.
-    tag = QName(NAMESPACE.NIC_EXTRA_ADDR, 'infData')
+    tag = QName(NAMESPACE.NIC_EXTRA_ADDR, "infData")
 
     addr: ExtraAddr
 
     @classmethod
-    def extract(cls, element: Element) -> 'MailingAddressExtension':
+    def extract(cls, element: Element) -> "MailingAddressExtension":
         """Extract the extension content from the element.
 
         Args:
@@ -116,8 +120,11 @@ class MailingAddressExtension(ParseXMLMixin, ResponseExtension):
         Returns:
             Dataclass representing the extension.
         """
-        addr = ExtraAddr.extract(cls._find(element, './extra-addr:mailing/extra-addr:addr'))
+        addr = ExtraAddr.extract(
+            cls._find(element, "./extra-addr:mailing/extra-addr:addr")
+        )
         return cls(addr=addr)
+
 
 @dataclass
 class DNSSECExtension(ParseXMLMixin, ResponseExtension):
@@ -131,18 +138,18 @@ class DNSSECExtension(ParseXMLMixin, ResponseExtension):
 
     _NAMESPACES: ClassVar[Mapping[str, str]] = {
         **ParseXMLMixin._NAMESPACES,
-        'secDNS': NAMESPACE.SEC_DNS,
+        "secDNS": NAMESPACE.SEC_DNS,
     }
 
     # The whole sec dns address is wrapped into an infData element.
-    tag = QName(NAMESPACE.SEC_DNS, 'infData')
+    tag = QName(NAMESPACE.SEC_DNS, "infData")
 
-    maxSigLife: Optional[int] =None
-    dsData: Optional[Sequence[DSData]] = None 
+    maxSigLife: Optional[int] = None
+    dsData: Optional[Sequence[DSData]] = None
     keyData: Optional[Sequence[DNSSECKeyData]] = None
 
     @classmethod
-    def extract(cls, element: Element) -> 'DNSSECExtension':
+    def extract(cls, element: Element) -> "DNSSECExtension":
         """Extract the extension content from the element.
 
         Args:
@@ -151,20 +158,30 @@ class DNSSECExtension(ParseXMLMixin, ResponseExtension):
         Returns:
             Dataclass representing the extension.
         """
-        maxSigLife = cls._optional( int,cls._find_text(element, './secDNS:maxSigLife'))
-        
-        allDsData= cls._find_all(element, './secDNS:dsData')
-        allKeyData=cls._find_all(element, './secDNS:keyData')
+        maxSigLife = cls._optional(int, cls._find_text(element, "./secDNS:maxSigLife"))
 
-        dsData = [ cls._optional(DSData.extract, dsElement) for dsElement in allDsData] if len(allDsData) > 0 else None
-        keyData=[ cls._optional(DNSSECKeyData.extract, keyElement) for keyElement in allKeyData] if len(allKeyData) > 0 else None
-        
-        return cls(maxSigLife=maxSigLife, dsData=dsData,keyData=keyData)
+        allDsData = cls._find_all(element, "./secDNS:dsData")
+        allKeyData = cls._find_all(element, "./secDNS:keyData")
 
+        dsData = (
+            [cls._optional(DSData.extract, dsElement) for dsElement in allDsData]
+            if len(allDsData) > 0
+            else None
+        )
+        keyData = (
+            [
+                cls._optional(DNSSECKeyData.extract, keyElement)
+                for keyElement in allKeyData
+            ]
+            if len(allKeyData) > 0
+            else None
+        )
+
+        return cls(maxSigLife=maxSigLife, dsData=dsData, keyData=keyData)
 
 
 EXTENSIONS: Dict[QName, Type[ResponseExtension]] = {
     EnumInfoExtension.tag: EnumInfoExtension,
     MailingAddressExtension.tag: MailingAddressExtension,
-    DNSSECExtension.tag: DNSSECExtension
+    DNSSECExtension.tag: DNSSECExtension,
 }

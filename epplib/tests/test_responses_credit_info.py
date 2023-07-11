@@ -25,18 +25,17 @@ from epplib.tests.utils import BASE_DATA_PATH, SCHEMA
 
 
 class TestCreditInfoResult(TestCase):
-
     def test_parse(self):
-        xml = (BASE_DATA_PATH / 'responses/result_credit_info.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_credit_info.xml").read_bytes()
         result = CreditInfoResult.parse(xml, SCHEMA)
         expected = [
-            CreditInfoResultData('0.2.4.e164.arpa', Decimal(66112)),
-            CreditInfoResultData('cz', Decimal(82640)),
+            CreditInfoResultData("0.2.4.e164.arpa", Decimal(66112)),
+            CreditInfoResultData("cz", Decimal(82640)),
         ]
         self.assertEqual(result.code, 1000)
         self.assertEqual(result.res_data, expected)
 
     def test_parse_error(self):
-        xml = (BASE_DATA_PATH / 'responses/result_error.xml').read_bytes()
+        xml = (BASE_DATA_PATH / "responses/result_error.xml").read_bytes()
         result = CreditInfoResult.parse(xml, SCHEMA)
         self.assertEqual(result.code, 2002)

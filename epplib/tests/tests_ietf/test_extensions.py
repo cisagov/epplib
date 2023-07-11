@@ -42,9 +42,9 @@ paramsWithKeyData: Mapping[str, Any] = {
     "maxSigLife": 3215,
     "keyData": [DNSSECKeyData(**keyDataDict)],
 }
-paramsWithMultiKeyData:  Mapping[str, Any] = {
+paramsWithMultiKeyData: Mapping[str, Any] = {
     "maxSigLife": 3215,
-    "keyData": [DNSSECKeyData(**keyDataDict),DNSSECKeyData(**keyDataDict2)],
+    "keyData": [DNSSECKeyData(**keyDataDict), DNSSECKeyData(**keyDataDict2)],
 }
 paramsWithMultiDsData: Mapping[str, Any] = {
     "maxSigLife": 3215,
@@ -111,7 +111,7 @@ class TestCreateDomainDNSSecExtension(XMLTestCase):
         )
 
         self.assertXMLEqual(extension.get_payload(), expected)
-    
+
     def test_data_with_multi_keyData(self):
         extension = CreateDomainDNSSECExtension(**paramsWithMultiKeyData)
 
@@ -135,7 +135,7 @@ class TestCreateDomainDNSSecExtension(XMLTestCase):
         )
 
         self.assertXMLEqual(extension.get_payload(), expected)
-    
+
     def test_valid(self):
         extension = CreateDomainDNSSECExtension(**paramsWithMultiDsData)
         self.assertRequestValid(
@@ -235,10 +235,9 @@ class TestUpdateDomainDNSSECExtension(XMLTestCase):
         self.assertXMLEqual(extension.get_payload(), expected)
 
     def test_data_with_keydata(self):
-
         updateParamsKeyData = {
-        "remKeyData": paramsWithKeyData["keyData"],
-        "keyData": [DNSSECKeyData(**self.addKeyData)],
+            "remKeyData": paramsWithKeyData["keyData"],
+            "keyData": [DNSSECKeyData(**self.addKeyData)],
         }
         extension = UpdateDomainDNSSECExtension(**updateParamsKeyData)
 
@@ -265,12 +264,16 @@ class TestUpdateDomainDNSSECExtension(XMLTestCase):
         )
 
         self.assertXMLEqual(extension.get_payload(), expected)
+
     def test_data_with_mulit_keydata(self):
         updateParamsMultiKeyData = {
-        "remKeyData": paramsWithKeyData["keyData"],
-        "keyData": [DNSSECKeyData(**self.addKeyData)],
+            "remKeyData": paramsWithKeyData["keyData"],
+            "keyData": [DNSSECKeyData(**self.addKeyData)],
         }
-        extension = UpdateDomainDNSSECExtension(remKeyData=[DNSSECKeyData(**keyDataDict)], keyData=[DNSSECKeyData(**self.addKeyData), DNSSECKeyData(**keyDataDict2)])
+        extension = UpdateDomainDNSSECExtension(
+            remKeyData=[DNSSECKeyData(**keyDataDict)],
+            keyData=[DNSSECKeyData(**self.addKeyData), DNSSECKeyData(**keyDataDict2)],
+        )
 
         EM = ElementMaker(
             namespace=NAMESPACE.SEC_DNS, nsmap={"secDNS": NAMESPACE.SEC_DNS}
@@ -296,11 +299,12 @@ class TestUpdateDomainDNSSECExtension(XMLTestCase):
                     EM.protocol(str(keyDataDict2["protocol"])),
                     EM.alg(str(keyDataDict2["alg"])),
                     EM.pubKey(str(keyDataDict2["pubKey"])),
-                )
+                ),
             ),
         )
 
         self.assertXMLEqual(extension.get_payload(), expected)
+
     def test_valid_no_extension(self):
         self.assertRequestValid(UpdateDomain, self.params, schema=SCHEMA)
 
@@ -363,6 +367,7 @@ class TestDNSSECExtension(TestCase):
         result = DNSSECExtension.extract(element)
         expected = DNSSECExtension(keyData=[DNSSECKeyData(**keyDataDict)])
         self.assertEqual(result, expected)
+
     def test_extract_with_multi_keyData(self):
         element = self.EM.infData(
             self.EM.keyData(
@@ -371,13 +376,15 @@ class TestDNSSECExtension(TestCase):
                 self.EM.alg(str(keyDataDict["alg"])),
                 self.EM.pubKey(str(keyDataDict["pubKey"])),
             ),
-             self.EM.keyData(
+            self.EM.keyData(
                 self.EM.flags(str(keyDataDict2["flags"])),
                 self.EM.protocol(str(keyDataDict2["protocol"])),
                 self.EM.alg(str(keyDataDict2["alg"])),
                 self.EM.pubKey(str(keyDataDict2["pubKey"])),
-            )
+            ),
         )
         result = DNSSECExtension.extract(element)
-        expected = DNSSECExtension(keyData=[DNSSECKeyData(**keyDataDict), DNSSECKeyData(**keyDataDict2)])
+        expected = DNSSECExtension(
+            keyData=[DNSSECKeyData(**keyDataDict), DNSSECKeyData(**keyDataDict2)]
+        )
         self.assertEqual(result, expected)

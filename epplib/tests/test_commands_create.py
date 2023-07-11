@@ -23,22 +23,32 @@ from lxml.etree import Element, QName, fromstring
 
 from epplib.commands import CreateContact, CreateDomain, CreateKeyset, CreateNsset
 from epplib.constants import NAMESPACE, SCHEMA_LOCATION
-from epplib.models import ContactAddr, Disclose, DiscloseField, Dnskey, Ident, IdentType, Ns, Period, Unit
+from epplib.models import (
+    ContactAddr,
+    Disclose,
+    DiscloseField,
+    Dnskey,
+    Ident,
+    IdentType,
+    Ns,
+    Period,
+    Unit,
+)
 from epplib.models.create import CreatePostalInfo
 from epplib.tests.utils import EM, XMLTestCase, make_epp_root, sub_dict
 
 
 class TestCreateDomain(XMLTestCase):
     params: Dict[str, Any] = {
-        'name': 'thisdomain.cz',
-        'period': Period(2, Unit.MONTH),
-        'nsset': 'NID-MYNSSET',
-        'keyset': 'KID-MYKEYSET',
-        'registrant': 'CID-MYOWN',
-        'admins': ['CID-ADMIN1', 'CID-ADMIN2'],
-        'auth_info': '12345',
+        "name": "thisdomain.cz",
+        "period": Period(2, Unit.MONTH),
+        "nsset": "NID-MYNSSET",
+        "keyset": "KID-MYKEYSET",
+        "registrant": "CID-MYOWN",
+        "admins": ["CID-ADMIN1", "CID-ADMIN2"],
+        "auth_info": "12345",
     }
-    required = ['name', 'registrant']
+    required = ["name", "registrant"]
 
     def test_valid(self):
         self.assertRequestValid(CreateDomain, self.params)
@@ -51,15 +61,22 @@ class TestCreateDomain(XMLTestCase):
             EM.command(
                 EM.create(
                     domain.create(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        domain.name(self.params['name']),
-                        domain.period(str(self.params['period'].length), unit=self.params['period'].unit.value),
-                        domain.nsset(self.params['nsset']),
-                        domain.keyset(self.params['keyset']),
-                        domain.registrant(self.params['registrant']),
-                        domain.admin(self.params['admins'][0]),
-                        domain.admin(self.params['admins'][1]),
-                        domain.authInfo(self.params['auth_info']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
+                        domain.name(self.params["name"]),
+                        domain.period(
+                            str(self.params["period"].length),
+                            unit=self.params["period"].unit.value,
+                        ),
+                        domain.nsset(self.params["nsset"]),
+                        domain.keyset(self.params["keyset"]),
+                        domain.registrant(self.params["registrant"]),
+                        domain.admin(self.params["admins"][0]),
+                        domain.admin(self.params["admins"][1]),
+                        domain.authInfo(self.params["auth_info"]),
                     ),
                 ),
             )
@@ -73,9 +90,13 @@ class TestCreateDomain(XMLTestCase):
             EM.command(
                 EM.create(
                     domain.create(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_DOMAIN},
-                        domain.name(self.params['name']),
-                        domain.registrant(self.params['registrant']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_DOMAIN
+                        },
+                        domain.name(self.params["name"]),
+                        domain.registrant(self.params["registrant"]),
                     )
                 )
             )
@@ -85,40 +106,35 @@ class TestCreateDomain(XMLTestCase):
 
 class TestCreateContact(XMLTestCase):
     params_required: Dict[str, Any] = {
-        'id': 'CID-MYCONTACT',
-        'postal_info': CreatePostalInfo(
-            'John Doe',
-            ContactAddr(
-               ['Street 123'],
-               'City',
-               '12300',
-               'CZ'
-            ),
+        "id": "CID-MYCONTACT",
+        "postal_info": CreatePostalInfo(
+            "John Doe",
+            ContactAddr(["Street 123"], "City", "12300", "CZ"),
         ),
-        'email': 'john@doe.cz',
+        "email": "john@doe.cz",
     }
 
     params_full: Dict[str, Any] = {
-        'id': 'CID-MYCONTACT',
-        'postal_info': CreatePostalInfo(
-            'John Doe',
+        "id": "CID-MYCONTACT",
+        "postal_info": CreatePostalInfo(
+            "John Doe",
             ContactAddr(
-               ['Door 42', 'Street 123'],
-               'City',
-               '12300',
-               'CZ',
-               'Province',
+                ["Door 42", "Street 123"],
+                "City",
+                "12300",
+                "CZ",
+                "Province",
             ),
-            'Company X Ltd.',
+            "Company X Ltd.",
         ),
-        'voice': '+420.222123456',
-        'fax': '+420.222123457',
-        'email': 'john@doe.cz',
-        'auth_info': 'trnpwd',
-        'disclose': Disclose(True, set([DiscloseField.VAT, DiscloseField.EMAIL])),
-        'vat': '1312112029',
-        'ident': Ident(IdentType.OP, '12345'),
-        'notify_email': 'notify-john@doe.cz',
+        "voice": "+420.222123456",
+        "fax": "+420.222123457",
+        "email": "john@doe.cz",
+        "auth_info": "trnpwd",
+        "disclose": Disclose(True, set([DiscloseField.VAT, DiscloseField.EMAIL])),
+        "vat": "1312112029",
+        "ident": Ident(IdentType.OP, "12345"),
+        "notify_email": "notify-john@doe.cz",
     }
 
     def test_valid(self):
@@ -132,18 +148,26 @@ class TestCreateContact(XMLTestCase):
             EM.command(
                 EM.create(
                     contact.create(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
-                        contact.id(self.params_required['id']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_CONTACT
+                        },
+                        contact.id(self.params_required["id"]),
                         contact.postalInfo(
-                            contact.name(self.params_required['postal_info'].name),
+                            contact.name(self.params_required["postal_info"].name),
                             contact.addr(
-                                contact.street(self.params_required['postal_info'].addr.street[0]),
-                                contact.city(self.params_required['postal_info'].addr.city),
-                                contact.pc(self.params_required['postal_info'].addr.pc),
-                                contact.cc(self.params_required['postal_info'].addr.cc),
+                                contact.street(
+                                    self.params_required["postal_info"].addr.street[0]
+                                ),
+                                contact.city(
+                                    self.params_required["postal_info"].addr.city
+                                ),
+                                contact.pc(self.params_required["postal_info"].addr.pc),
+                                contact.cc(self.params_required["postal_info"].addr.cc),
                             ),
                         ),
-                        contact.email(self.params_required['email']),
+                        contact.email(self.params_required["email"]),
                     ),
                 ),
             )
@@ -154,37 +178,49 @@ class TestCreateContact(XMLTestCase):
         root = fromstring(CreateContact(**self.params_full).xml())
         contact = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
         disclose_fields = [
-            Element(QName(NAMESPACE.NIC_CONTACT, f)) for f in sorted(self.params_full['disclose'].fields)
+            Element(QName(NAMESPACE.NIC_CONTACT, f))
+            for f in sorted(self.params_full["disclose"].fields)
         ]
         expected = make_epp_root(
             EM.command(
                 EM.create(
                     contact.create(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_CONTACT},
-                        contact.id(self.params_full['id']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_CONTACT
+                        },
+                        contact.id(self.params_full["id"]),
                         contact.postalInfo(
-                            contact.name(self.params_full['postal_info'].name),
-                            contact.org(self.params_full['postal_info'].org),
+                            contact.name(self.params_full["postal_info"].name),
+                            contact.org(self.params_full["postal_info"].org),
                             contact.addr(
-                                contact.street(self.params_full['postal_info'].addr.street[0]),
-                                contact.street(self.params_full['postal_info'].addr.street[1]),
-                                contact.city(self.params_full['postal_info'].addr.city),
-                                contact.sp(self.params_full['postal_info'].addr.sp),
-                                contact.pc(self.params_full['postal_info'].addr.pc),
-                                contact.cc(self.params_full['postal_info'].addr.cc),
+                                contact.street(
+                                    self.params_full["postal_info"].addr.street[0]
+                                ),
+                                contact.street(
+                                    self.params_full["postal_info"].addr.street[1]
+                                ),
+                                contact.city(self.params_full["postal_info"].addr.city),
+                                contact.sp(self.params_full["postal_info"].addr.sp),
+                                contact.pc(self.params_full["postal_info"].addr.pc),
+                                contact.cc(self.params_full["postal_info"].addr.cc),
                             ),
                         ),
-                        contact.voice(self.params_full['voice']),
-                        contact.fax(self.params_full['fax']),
-                        contact.email(self.params_full['email']),
-                        contact.authInfo(self.params_full['auth_info']),
+                        contact.voice(self.params_full["voice"]),
+                        contact.fax(self.params_full["fax"]),
+                        contact.email(self.params_full["email"]),
+                        contact.authInfo(self.params_full["auth_info"]),
                         contact.disclose(
                             *disclose_fields,
-                            flag='1' if self.params_full['disclose'].flag else '0'
+                            flag="1" if self.params_full["disclose"].flag else "0",
                         ),
-                        contact.vat(self.params_full['vat']),
-                        contact.ident(self.params_full['ident'].value, type=self.params_full['ident'].type.value),
-                        contact.notifyEmail(self.params_full['notify_email']),
+                        contact.vat(self.params_full["vat"]),
+                        contact.ident(
+                            self.params_full["ident"].value,
+                            type=self.params_full["ident"].type.value,
+                        ),
+                        contact.notifyEmail(self.params_full["notify_email"]),
                     ),
                 ),
             )
@@ -194,16 +230,16 @@ class TestCreateContact(XMLTestCase):
 
 class TestCreateNsset(XMLTestCase):
     params: Dict[str, Any] = {
-        'id': 'NID-ANSSET',
-        'nss': [
-            Ns('ns1.domain.cz'),
-            Ns('ns2.domain.cz', ['217.31.207.130', '217.31.207.131']),
+        "id": "NID-ANSSET",
+        "nss": [
+            Ns("ns1.domain.cz"),
+            Ns("ns2.domain.cz", ["217.31.207.130", "217.31.207.131"]),
         ],
-        'tech': ['CID-TECH1', 'CID-TECH2'],
-        'auth_info': 'abc123',
-        'reportlevel': 1,
+        "tech": ["CID-TECH1", "CID-TECH2"],
+        "auth_info": "abc123",
+        "reportlevel": 1,
     }
-    required = ['id', 'nss', 'tech']
+    required = ["id", "nss", "tech"]
 
     def test_valid(self):
         self.assertRequestValid(CreateNsset, self.params)
@@ -216,13 +252,17 @@ class TestCreateNsset(XMLTestCase):
             EM.command(
                 EM.create(
                     nsset.create(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
-                        nsset.id(self.params['id']),
-                        *[ns.get_payload() for ns in self.params['nss']],
-                        nsset.tech(self.params['tech'][0]),
-                        nsset.tech(self.params['tech'][1]),
-                        nsset.authInfo(self.params['auth_info']),
-                        nsset.reportlevel(str(self.params['reportlevel'])),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_NSSET
+                        },
+                        nsset.id(self.params["id"]),
+                        *[ns.get_payload() for ns in self.params["nss"]],
+                        nsset.tech(self.params["tech"][0]),
+                        nsset.tech(self.params["tech"][1]),
+                        nsset.authInfo(self.params["auth_info"]),
+                        nsset.reportlevel(str(self.params["reportlevel"])),
                     ),
                 ),
             )
@@ -236,11 +276,15 @@ class TestCreateNsset(XMLTestCase):
             EM.command(
                 EM.create(
                     nsset.create(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_NSSET},
-                        nsset.id(self.params['id']),
-                        *[ns.get_payload() for ns in self.params['nss']],
-                        nsset.tech(self.params['tech'][0]),
-                        nsset.tech(self.params['tech'][1]),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_NSSET
+                        },
+                        nsset.id(self.params["id"]),
+                        *[ns.get_payload() for ns in self.params["nss"]],
+                        nsset.tech(self.params["tech"][0]),
+                        nsset.tech(self.params["tech"][1]),
                     ),
                 ),
             )
@@ -250,15 +294,19 @@ class TestCreateNsset(XMLTestCase):
 
 class TestCreateKeyset(XMLTestCase):
     params: Dict[str, Any] = {
-        'id': 'NID-AKEYSET',
-        'dnskeys': [
-            Dnskey(257, 3, 5, 'AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8'),
-            Dnskey(257, 3, 5, 'AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg9'),
+        "id": "NID-AKEYSET",
+        "dnskeys": [
+            Dnskey(
+                257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg8"
+            ),
+            Dnskey(
+                257, 3, 5, "AwEAAddt2AkLfYGKgiEZB5SmIF8EvrjxNMH6HtxWEA4RJ9Ao6LCWheg9"
+            ),
         ],
-        'tech': ['CID-TECH1', 'CID-TECH2'],
-        'auth_info': 'abc123',
+        "tech": ["CID-TECH1", "CID-TECH2"],
+        "auth_info": "abc123",
     }
-    required = ['id', 'dnskeys', 'tech']
+    required = ["id", "dnskeys", "tech"]
 
     def test_valid(self):
         self.assertRequestValid(CreateKeyset, self.params)
@@ -271,12 +319,16 @@ class TestCreateKeyset(XMLTestCase):
             EM.command(
                 EM.create(
                     keyset.create(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_KEYSET},
-                        keyset.id(self.params['id']),
-                        *[dk.get_payload() for dk in self.params['dnskeys']],
-                        keyset.tech(self.params['tech'][0]),
-                        keyset.tech(self.params['tech'][1]),
-                        keyset.authInfo(self.params['auth_info']),
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_KEYSET
+                        },
+                        keyset.id(self.params["id"]),
+                        *[dk.get_payload() for dk in self.params["dnskeys"]],
+                        keyset.tech(self.params["tech"][0]),
+                        keyset.tech(self.params["tech"][1]),
+                        keyset.authInfo(self.params["auth_info"]),
                     ),
                 ),
             )

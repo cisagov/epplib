@@ -51,12 +51,16 @@ class RenewDomain(Command):
         Returns:
             Element with a list of domains to renew.
         """
-        root = Element(QName(NAMESPACE.EPP, 'renew'))
+        root = Element(QName(NAMESPACE.EPP, "renew"))
 
-        item_renew = SubElement(root, QName(NAMESPACE.NIC_DOMAIN, 'renew'))
-        item_renew.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_DOMAIN)
-        SubElement(item_renew, QName(NAMESPACE.NIC_DOMAIN, 'name')).text = self.name
-        SubElement(item_renew, QName(NAMESPACE.NIC_DOMAIN, 'curExpDate')).text = str(self.cur_exp_date)
+        item_renew = SubElement(root, QName(NAMESPACE.NIC_DOMAIN, "renew"))
+        item_renew.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_DOMAIN
+        )
+        SubElement(item_renew, QName(NAMESPACE.NIC_DOMAIN, "name")).text = self.name
+        SubElement(item_renew, QName(NAMESPACE.NIC_DOMAIN, "curExpDate")).text = str(
+            self.cur_exp_date
+        )
         if self.period:
             item_renew.append(self.period.get_payload())
 

@@ -25,10 +25,10 @@ from epplib.tests.utils import EM, XMLTestCase, make_epp_root
 
 
 class TestDeleteHost(XMLTestCase):
-    host = 'domain.cz'
+    host = "domain.cz"
 
     def test_valid(self):
-        self.assertRequestValid(DeleteHost, {'name': self.host}, schema=SCHEMA)
+        self.assertRequestValid(DeleteHost, {"name": self.host}, schema=SCHEMA)
 
     def test_data(self):
         root = fromstring(DeleteHost(self.host).xml())
@@ -37,8 +37,12 @@ class TestDeleteHost(XMLTestCase):
             EM.command(
                 EM.delete(
                     host.delete(
-                        {QName(NAMESPACE.XSI, 'schemaLocation'): SCHEMA_LOCATION.NIC_HOST},
-                        host.name(self.host)
+                        {
+                            QName(
+                                NAMESPACE.XSI, "schemaLocation"
+                            ): SCHEMA_LOCATION.NIC_HOST
+                        },
+                        host.name(self.host),
                     )
                 )
             )

@@ -19,7 +19,7 @@
 """Module providing EPP command extensions."""
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import ClassVar,Optional, Sequence
+from typing import ClassVar, Optional, Sequence
 from datetime import date
 
 from lxml.etree import Element, QName, SubElement
@@ -47,11 +47,14 @@ class CreateContactMailingAddressExtension(CommandExtension):
 
     def get_payload(self) -> Element:
         """Create EPP Elements specific to CreateContactMailingAddressExtension."""
-        create = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, 'create'))
-        create.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_EXTRA_ADDR)
-        mailing = SubElement(create, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
+        create = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, "create"))
+        create.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_EXTRA_ADDR
+        )
+        mailing = SubElement(create, QName(NAMESPACE.NIC_EXTRA_ADDR, "mailing"))
         mailing.append(self.addr.get_payload())
         return create
+
 
 @dataclass
 class CreateDomainDNSSECExtension(CommandExtension):
@@ -63,19 +66,23 @@ class CreateDomainDNSSECExtension(CommandExtension):
         keyData:  Content of extension/create/secDNS/keyData.
     """
 
-    maxSigLife: Optional[int] =None
-    dsData: Optional[Sequence[DSData]] = None 
+    maxSigLife: Optional[int] = None
+    dsData: Optional[Sequence[DSData]] = None
     keyData: Optional[Sequence[DNSSECKeyData]] = None
-    
+
     def get_payload(self) -> Element:
         """This method is inherited and will ultimately get called on .send"""
-        create =Element(QName(NAMESPACE.SEC_DNS, "create"), nsmap={"secDNS":NAMESPACE.SEC_DNS})
-    
-        if not self.maxSigLife is None:
-            SubElement(create,QName(NAMESPACE.SEC_DNS, "maxSigLife")).text = str(self.maxSigLife)
+        create = Element(
+            QName(NAMESPACE.SEC_DNS, "create"), nsmap={"secDNS": NAMESPACE.SEC_DNS}
+        )
 
-        #can't have both dsdata and keydata, one or the the other or none
-        if  not self.dsData is None:
+        if not self.maxSigLife is None:
+            SubElement(create, QName(NAMESPACE.SEC_DNS, "maxSigLife")).text = str(
+                self.maxSigLife
+            )
+
+        # can't have both dsdata and keydata, one or the the other or none
+        if not self.dsData is None:
             for dsDataObj in self.dsData:
                 create.append(dsDataObj.get_payload())
         elif not self.keyData is None:
@@ -83,6 +90,8 @@ class CreateDomainDNSSECExtension(CommandExtension):
                 create.append(keyDataObj.get_payload())
 
         return create
+
+
 @dataclass
 class UpdateDomainDNSSECExtension(CommandExtension):
     """Sec DNS Extension for Update Domain command.
@@ -95,54 +104,59 @@ class UpdateDomainDNSSECExtension(CommandExtension):
         remAllDsKeyData: boolean False does nothing, content of extension/update/secDNS/rem/all.
     """
 
-    maxSigLife: Optional[int] =None
+    maxSigLife: Optional[int] = None
     dsData: Optional[DSData] = None
-    keyData: Optional[DNSSECKeyData] =None
-    remDsData:Optional[DSData] = None 
-    remKeyData:Optional[DNSSECKeyData] =None 
-    remAllDsKeyData: Optional[bool]=False
+    keyData: Optional[DNSSECKeyData] = None
+    remDsData: Optional[DSData] = None
+    remKeyData: Optional[DNSSECKeyData] = None
+    remAllDsKeyData: Optional[bool] = False
 
-    def _make_remove_element(self, element: Element)->Element:
-        return SubElement(element,QName(NAMESPACE.SEC_DNS, "rem"))
+    def _make_remove_element(self, element: Element) -> Element:
+        return SubElement(element, QName(NAMESPACE.SEC_DNS, "rem"))
+
     def get_payload(self) -> Element:
         """This method is inherited and will ultimately get called on .send"""
-        update =Element(QName(NAMESPACE.SEC_DNS, "update"), nsmap={"secDNS":NAMESPACE.SEC_DNS})
-    
-       
-        #remove elmements need to preceed the add elements, don't move this order
+        update = Element(
+            QName(NAMESPACE.SEC_DNS, "update"), nsmap={"secDNS": NAMESPACE.SEC_DNS}
+        )
+
+        # remove elmements need to preceed the add elements, don't move this order
         if self.remAllDsKeyData:
-            remAll=self._make_remove_element(update)
-            SubElement(remAll,QName(NAMESPACE.SEC_DNS, "all")).text = "true"
+            remAll = self._make_remove_element(update)
+            SubElement(remAll, QName(NAMESPACE.SEC_DNS, "all")).text = "true"
 
         elif not self.remDsData is None:
-            remDsElement=self._make_remove_element(update)
-            
-            for remDsDataObj in self.remDsData:  
+            remDsElement = self._make_remove_element(update)
+
+            for remDsDataObj in self.remDsData:
                 remDsElement.append(remDsDataObj.get_payload())
-        
-        elif  not self.remKeyData is None:
-            remKeyElement=self._make_remove_element(update)
+
+        elif not self.remKeyData is None:
+            remKeyElement = self._make_remove_element(update)
             for remKeyDataObj in self.remKeyData:
                 remKeyElement.append(remKeyDataObj.get_payload())
-        
-        if  not self.dsData is None: 
-            addElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "add"))
+
+        if not self.dsData is None:
+            addElement = SubElement(update, QName(NAMESPACE.SEC_DNS, "add"))
 
             for dsDataObj in self.dsData:
                 addElement.append(dsDataObj.get_payload())
 
-        elif  not self.keyData is None: 
-            addElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "add"))
+        elif not self.keyData is None:
+            addElement = SubElement(update, QName(NAMESPACE.SEC_DNS, "add"))
 
             for keyDataObj in self.keyData:
-                addElement.append(keyDataObj.get_payload())  
-       
-        if not self.maxSigLife is None: 
-            changeElement=SubElement(update,QName(NAMESPACE.SEC_DNS, "chg"))
-            SubElement(changeElement,QName(NAMESPACE.SEC_DNS, "maxSigLife")).text = str(self.maxSigLife)
+                addElement.append(keyDataObj.get_payload())
+
+        if not self.maxSigLife is None:
+            changeElement = SubElement(update, QName(NAMESPACE.SEC_DNS, "chg"))
+            SubElement(
+                changeElement, QName(NAMESPACE.SEC_DNS, "maxSigLife")
+            ).text = str(self.maxSigLife)
 
         return update
-    
+
+
 @dataclass
 class UpdateContactMailingAddressExtension(CommandExtension):
     """Mailing address extension for Update contact command.
@@ -156,15 +170,17 @@ class UpdateContactMailingAddressExtension(CommandExtension):
 
     def get_payload(self) -> Element:
         """Create EPP Elements specific to CreateContactMailingAddressExtension."""
-        update = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, 'update'))
-        update.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_EXTRA_ADDR)
+        update = Element(QName(NAMESPACE.NIC_EXTRA_ADDR, "update"))
+        update.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_EXTRA_ADDR
+        )
 
         if self.addr is None:
-            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, 'rem'))
-            SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
+            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, "rem"))
+            SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, "mailing"))
         else:
-            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, 'set'))
-            mailing = SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, 'mailing'))
+            action = SubElement(update, QName(NAMESPACE.NIC_EXTRA_ADDR, "set"))
+            mailing = SubElement(action, QName(NAMESPACE.NIC_EXTRA_ADDR, "mailing"))
             mailing.append(self.addr.get_payload())
         return update
 
@@ -186,12 +202,16 @@ class EnumExtension(CommandExtension):
     def get_payload(self) -> Element:
         """Create EPP Elements specific to DomainEnumExtension."""
         root = Element(QName(NAMESPACE.NIC_ENUMVAL, self.tag))
-        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_ENUMVAL)
+        root.set(QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_ENUMVAL)
         if self.val_ex_date is not None:
-            expiration_date = SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, 'valExDate'))
+            expiration_date = SubElement(
+                root, QName(NAMESPACE.NIC_ENUMVAL, "valExDate")
+            )
             expiration_date.text = str(self.val_ex_date)
         if self.publish is not None:
-            SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, 'publish')).text = str(self.publish).lower()
+            SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, "publish")).text = str(
+                self.publish
+            ).lower()
         return root
 
 
@@ -204,7 +224,7 @@ class CreateDomainEnumExtension(EnumExtension):
         publish: Content of extension/create/publish element.
     """
 
-    tag = 'create'
+    tag = "create"
 
 
 @dataclass
@@ -216,7 +236,7 @@ class RenewDomainEnumExtension(EnumExtension):
         publish: Content of extension/create/publish element.
     """
 
-    tag = 'renew'
+    tag = "renew"
 
 
 @dataclass
@@ -228,16 +248,20 @@ class UpdateDomainEnumExtension(EnumExtension):
         publish: Content of extension/create/publish element
     """
 
-    tag = 'update'
+    tag = "update"
 
     def get_payload(self) -> Element:
         """Create EPP Elements specific to UpdateDomainEnumExtension."""
         root = Element(QName(NAMESPACE.NIC_ENUMVAL, self.tag))
-        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_ENUMVAL)
-        change = SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, 'chg'))
+        root.set(QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_ENUMVAL)
+        change = SubElement(root, QName(NAMESPACE.NIC_ENUMVAL, "chg"))
         if self.val_ex_date is not None:
-            expiration_date = SubElement(change, QName(NAMESPACE.NIC_ENUMVAL, 'valExDate'))
+            expiration_date = SubElement(
+                change, QName(NAMESPACE.NIC_ENUMVAL, "valExDate")
+            )
             expiration_date.text = str(self.val_ex_date)
         if self.publish is not None:
-            SubElement(change, QName(NAMESPACE.NIC_ENUMVAL, 'publish')).text = str(self.publish).lower()
+            SubElement(change, QName(NAMESPACE.NIC_ENUMVAL, "publish")).text = str(
+                self.publish
+            ).lower()
         return root

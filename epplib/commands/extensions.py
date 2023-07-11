@@ -37,7 +37,7 @@ class Extension(Request):
         Returns:
             Element with the Extension payload.
         """
-        extension_element = Element(QName(NAMESPACE.EPP, 'extension'))
+        extension_element = Element(QName(NAMESPACE.EPP, "extension"))
         extension_element.append(self._get_extension_payload(tr_id))
 
         return extension_element
@@ -60,9 +60,9 @@ class FredExtCommand(Extension):
         Returns:
             Element with the Fred ext command payload.
         """
-        root = Element(QName(NAMESPACE.FRED, 'extcommand'))
-        root.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.FRED)
-        SubElement(root, QName(NAMESPACE.FRED, 'clTRID')).text = tr_id
+        root = Element(QName(NAMESPACE.FRED, "extcommand"))
+        root.set(QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.FRED)
+        SubElement(root, QName(NAMESPACE.FRED, "clTRID")).text = tr_id
 
         return root
 
@@ -79,7 +79,7 @@ class CreditInfoRequest(FredExtCommand):
             Element with Credit info request payload.
         """
         root = super()._get_extension_payload(tr_id)
-        root.insert(0, Element(QName(NAMESPACE.FRED, 'creditInfo')))
+        root.insert(0, Element(QName(NAMESPACE.FRED, "creditInfo")))
 
         return root
 
@@ -89,16 +89,22 @@ class SendAuthInfo(FredExtCommand):
 
     response_class = Result
 
-    def _get_auth_info_payload(self, namespace: str, location: str, tag: str, item: str, tr_id: Optional[str] = None,
-                               ) -> Element:
+    def _get_auth_info_payload(
+        self,
+        namespace: str,
+        location: str,
+        tag: str,
+        item: str,
+        tr_id: Optional[str] = None,
+    ) -> Element:
         """Create subelements of the extension element specific for send auth info.
 
         Returns:
             Element with send auth info request payload.
         """
-        fred_auth_info = Element(QName(NAMESPACE.FRED, 'sendAuthInfo'))
-        domain_auth_info = SubElement(fred_auth_info, QName(namespace, 'sendAuthInfo'))
-        domain_auth_info.set(QName(NAMESPACE.XSI, 'schemaLocation'), location)
+        fred_auth_info = Element(QName(NAMESPACE.FRED, "sendAuthInfo"))
+        domain_auth_info = SubElement(fred_auth_info, QName(namespace, "sendAuthInfo"))
+        domain_auth_info.set(QName(NAMESPACE.XSI, "schemaLocation"), location)
         SubElement(domain_auth_info, QName(namespace, tag)).text = item
         return fred_auth_info
 
@@ -126,16 +132,20 @@ class TestNsset(FredExtCommand):
             Element with test nsset request payload.
         """
         root = super()._get_extension_payload(tr_id)
-        fred_test = Element(QName(NAMESPACE.FRED, 'test'))
+        fred_test = Element(QName(NAMESPACE.FRED, "test"))
         root.insert(0, fred_test)
 
-        nsset_test = SubElement(fred_test, QName(NAMESPACE.NIC_NSSET, 'test'))
-        nsset_test.set(QName(NAMESPACE.XSI, 'schemaLocation'), SCHEMA_LOCATION.NIC_NSSET)
-        SubElement(nsset_test, QName(NAMESPACE.NIC_NSSET, 'id')).text = self.id
+        nsset_test = SubElement(fred_test, QName(NAMESPACE.NIC_NSSET, "test"))
+        nsset_test.set(
+            QName(NAMESPACE.XSI, "schemaLocation"), SCHEMA_LOCATION.NIC_NSSET
+        )
+        SubElement(nsset_test, QName(NAMESPACE.NIC_NSSET, "id")).text = self.id
         if self.level is not None:
-            SubElement(nsset_test, QName(NAMESPACE.NIC_NSSET, 'level')).text = str(self.level)
+            SubElement(nsset_test, QName(NAMESPACE.NIC_NSSET, "level")).text = str(
+                self.level
+            )
         for item in self.names:
-            SubElement(nsset_test, QName(NAMESPACE.NIC_NSSET, 'name')).text = item
+            SubElement(nsset_test, QName(NAMESPACE.NIC_NSSET, "name")).text = item
 
         return root
 
@@ -159,11 +169,7 @@ class SendAuthInfoContact(SendAuthInfo):
         """
         root = super()._get_extension_payload(tr_id)
         auth_info = self._get_auth_info_payload(
-            NAMESPACE.NIC_CONTACT,
-            SCHEMA_LOCATION.NIC_CONTACT,
-            'id',
-            self.id,
-            tr_id
+            NAMESPACE.NIC_CONTACT, SCHEMA_LOCATION.NIC_CONTACT, "id", self.id, tr_id
         )
         root.insert(0, auth_info)
         return root
@@ -188,11 +194,7 @@ class SendAuthInfoDomain(SendAuthInfo):
         """
         root = super()._get_extension_payload(tr_id)
         auth_info = self._get_auth_info_payload(
-            NAMESPACE.NIC_DOMAIN,
-            SCHEMA_LOCATION.NIC_DOMAIN,
-            'name',
-            self.name,
-            tr_id
+            NAMESPACE.NIC_DOMAIN, SCHEMA_LOCATION.NIC_DOMAIN, "name", self.name, tr_id
         )
         root.insert(0, auth_info)
         return root
@@ -217,11 +219,7 @@ class SendAuthInfoKeyset(SendAuthInfo):
         """
         root = super()._get_extension_payload(tr_id)
         auth_info = self._get_auth_info_payload(
-            NAMESPACE.NIC_KEYSET,
-            SCHEMA_LOCATION.NIC_KEYSET,
-            'id',
-            self.id,
-            tr_id
+            NAMESPACE.NIC_KEYSET, SCHEMA_LOCATION.NIC_KEYSET, "id", self.id, tr_id
         )
         root.insert(0, auth_info)
         return root
@@ -246,11 +244,7 @@ class SendAuthInfoNsset(SendAuthInfo):
         """
         root = super()._get_extension_payload(tr_id)
         auth_info = self._get_auth_info_payload(
-            NAMESPACE.NIC_NSSET,
-            SCHEMA_LOCATION.NIC_NSSET,
-            'id',
-            self.id,
-            tr_id
+            NAMESPACE.NIC_NSSET, SCHEMA_LOCATION.NIC_NSSET, "id", self.id, tr_id
         )
         root.insert(0, auth_info)
         return root

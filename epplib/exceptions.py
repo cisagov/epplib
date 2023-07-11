@@ -34,9 +34,9 @@ class ParsingError(EpplibException):
 
     def __str__(self) -> str:
         if self.raw_response is None:
-            appendix = ''
+            appendix = ""
         else:
-            appendix = 'Raw response:\n{!r}'.format(self.raw_response)
+            appendix = "Raw response:\n{!r}".format(self.raw_response)
         return super().__str__() + appendix
 
 
