@@ -90,10 +90,10 @@ class Response(ParseXMLMixin, ABC):
                 raw data received from the server to ease the debugging.
         """
         root = safe_parse(raw_response)
-
+        print("after safe parse")
         if schema is not None:
             schema.assertValid(root)
-
+            print("checked if valid")
         if root.tag != QName(NAMESPACE.EPP, "epp"):
             raise ValueError('Root element has to be "epp". Found: {}'.format(root.tag))
 
@@ -105,7 +105,9 @@ class Response(ParseXMLMixin, ABC):
                 )
             )
         try:
+            print("extracting payload")
             data = cls._extract_payload(payload)
+            print("data is %s"%data)
         except Exception as exception:
             raise ParsingError(raw_response=raw_response) from exception
 
@@ -311,6 +313,9 @@ class Result(Response, Generic[T]):
             raw_response: The raw XML response which will be parsed into the Response object.
             schema: A XML schema used to validate the parsed Response. No validation is done if schema is None.
         """
+        print("in super of parse")
+        print(raw_response)
+        print(schema)
         return super().parse(raw_response, schema)
 
     @classmethod
@@ -320,6 +325,7 @@ class Result(Response, Generic[T]):
         Args:
             element: Child element of the epp element.
         """
+        print("payload extract in Result object")
         payload_data = {
             "code": cls._optional(
                 int, cls._find_attrib(element, "./epp:result", "code")
@@ -333,6 +339,8 @@ class Result(Response, Generic[T]):
             ),
             "msg_q": cls._extract_message(cls._find(element, "./epp:msgQ")),
         }
+        print("resdata %s"%cls._extract_data(cls._find(element, "./epp:resData")))
+        print("resdata %s"%cls._extract_data(cls._find(element, "./resData")))
         return payload_data
 
     @classmethod
@@ -350,7 +358,11 @@ class Result(Response, Generic[T]):
             data = None
         else:
             data = []
+            print("IN _extract ")
+            print(cls._NAMESPACES)
+            print(cls._res_data_path)
             for item in element.findall(cls._res_data_path, namespaces=cls._NAMESPACES):
+                print(item)
                 item_data = cast(T, cls._res_data_class.extract(item))
                 data.append(item_data)
         return data

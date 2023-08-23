@@ -69,10 +69,12 @@ class InfoResultData(ExtractModelMixin):
     @classmethod
     def extract(cls, element: Element) -> "InfoResultData":
         """Extract params for own init from the element."""
+        print("calling extract")
         return cls(**cls._get_params(element))
 
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
+        print("get params")
         params: Mapping[str, Any] = {
             "roid": cls._find_text(element, f"./{cls._namespace}:roid"),
             "statuses": [
@@ -116,7 +118,7 @@ class InfoDomainResultData(InfoResultData):
         hosts: Content of the epp/response/resData/infData/ns/hostObj element.
         contacts: Content of the epp/response/resData/infData/contact element.
     """
-
+##here is where to edit
     _namespace = "domain"
 
     name: str
@@ -130,11 +132,13 @@ class InfoDomainResultData(InfoResultData):
     contacts: InitVar[Optional[List[str]]] = None
 
     def __post_init__(self, hosts, contacts) -> None:
+        print("in init")
         self.hosts = hosts or []
         self.contacts = contacts or []
 
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
+        print("mapping")
         params: Mapping[str, Any] = {
             "name": cls._find_text(element, f"./{cls._namespace}:name"),
             "registrant": cls._find_text(element, f"./{cls._namespace}:registrant"),
@@ -151,10 +155,12 @@ class InfoDomainResultData(InfoResultData):
         }
         ns = cls._find(element, f"./{InfoDomainResultData._namespace}:ns")
         contacts = cls._find_all(element, f"./{cls._namespace}:contact")
+        print(contacts)
         if ns is not None:
             params["hosts"] = cls._find_all_text(ns, f"./{cls._namespace}:hostObj")
         if contacts:
             params["contacts"] = [DomainContact.extract(item) for item in contacts]
+            print(params["contacts"])
         return {**super()._get_params(element), **params}
 
 
