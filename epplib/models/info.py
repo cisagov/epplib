@@ -153,7 +153,7 @@ class InfoDomainResultData(InfoResultData):
         contacts = cls._find_all(element, f"./{cls._namespace}:contact")
         if ns is not None:
             params["hosts"] = cls._find_all_text(ns, f"./{cls._namespace}:hostObj")
-        if contacts:
+        if contacts is not None:
             params["contacts"] = [DomainContact.extract(item) for item in contacts]
         return {**super()._get_params(element), **params}
 
