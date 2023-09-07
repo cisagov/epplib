@@ -358,7 +358,7 @@ class Result(Response, Generic[T]):
             data = None
         else:
             data = []
-            print("IN _extract ")
+            print("IN _extract printing")
             print(cls._NAMESPACES)
             print(cls._res_data_path)
             for item in element.findall(cls._res_data_path, namespaces=cls._NAMESPACES):

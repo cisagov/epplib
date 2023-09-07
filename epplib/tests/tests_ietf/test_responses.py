@@ -3,16 +3,32 @@ from pathlib import Path
 from unittest import TestCase
 
 from epplib.models import Status
-from epplib.models.common import DomainAuthInfo
+from epplib.models.common import DomainAuthInfo, DomainContact
 from epplib.models.info import InfoDomainResultData
 from epplib.responses import InfoDomainResult
-
+from dateutil.tz import tzutc
 from unittest.mock import patch 
 from epplib.tests.tests_ietf.constants import NAMESPACE, SCHEMA_LOCATION, SCHEMA
-@patch("epplib.commands.info.NAMESPACE", NAMESPACE)
-@patch("epplib.commands.info.SCHEMA_LOCATION", SCHEMA_LOCATION)
-@patch("epplib.models.common.DomainAuthInfo.namespace", NAMESPACE.NIC_DOMAIN)
+@patch("epplib.models.common.NAMESPACE", NAMESPACE)
+@patch("epplib.responses.base.NAMESPACE", NAMESPACE)
+@patch("epplib.utils.NAMESPACE", NAMESPACE)
+@patch("epplib.constants", NAMESPACE)
+@patch("epplib.constants", SCHEMA_LOCATION)
+@patch(
+    "epplib.utils.ParseXMLMixin._NAMESPACES", 
+    {
+    "epp": NAMESPACE.EPP,
+    "fred": NAMESPACE.FRED,
+    "secDNS": NAMESPACE.SEC_DNS,
+    "contact": NAMESPACE.NIC_CONTACT,
+    "domain": NAMESPACE.NIC_DOMAIN,
+    "host": NAMESPACE.NIC_HOST,
+    "keyset": NAMESPACE.NIC_KEYSET,
+    "nsset": NAMESPACE.NIC_NSSET,
+    }
+)
 class TestInfoDomainResult(TestCase):
+    maxDiff = None
     def test_parse_minimal(self):
         location= Path(__file__).parent / "data" / "infoDomain.xml"
         print(location)
@@ -23,26 +39,28 @@ class TestInfoDomainResult(TestCase):
             InfoDomainResultData(
                 name="test3.gov",
                 roid="DF1340360-GOV",
-                statuses=[Status("serverTransferProhibited", "", None),Status("inactive", "", None)],
+                statuses=[Status("serverTransferProhibited", None, None),Status("inactive", None, None)],
                 cl_id="gov2023-ote",
-                contacts=["CONT2","CONT3"],
+                contacts=[DomainContact(contact='CONT2', type='security'), DomainContact(contact='CONT3', type='tech'),],
                 registrant="TuaWnx9hnm84GCSU",
                 admins=[],
                 nsset=None,
                 keyset=None,
                 cr_id="gov2023-ote",
-                cr_date="2023-08-15T23:56:36Z",
-                up_id=None,
-                up_date="2023-08-17T02:03:19Z",
-                ex_date="2024-08-15T23:56:36Z",
+                cr_date=datetime(2023, 8, 15, 23, 56, 36, tzinfo=tzutc()),
+                up_id="gov2023-ote",
+                up_date=datetime(2023, 8, 17, 2, 3, 19, tzinfo=tzutc()),
+                ex_date=date(2024, 8, 15),
                 tr_date=None,
-                auth_info=DomainAuthInfo(pw="2fooBAR123fooBaz"),
+                auth_info=DomainAuthInfo(pw="2fooBAR123fooBaz")
             )
         ]
-        print(result)
         self.assertEqual(result.code, 1000)
         print("result.res_data")
-        print(result.res_data)        
+        print(result.res_data)
+        print("\n\n\n")
+        print(f"expected: {expected[0].contacts}")
+        print(f"result: {result.res_data[0].contacts}")        
         self.assertEqual(result.res_data, expected)
 
     # def test_parse_full(self):
