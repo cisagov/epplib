@@ -129,12 +129,12 @@ class InfoDomainResultData(InfoResultData):
     ex_date: Optional[date]
     auth_info: Optional[Union[str, DomainAuthInfo]]
     hosts: InitVar[Optional[List[str]]] = None
-    contacts: InitVar[Optional[List[str]]] = None
+    contacts: Optional[List[str]] = field(default=None, repr=True)
 
-    def __post_init__(self, hosts, contacts) -> None:
+    def __post_init__(self, hosts) -> None:
         print("in init")
         self.hosts = hosts or []
-        self.contacts = contacts or []
+        self.contacts = self.contacts or []
 
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:

@@ -28,7 +28,7 @@ from epplib.tests.tests_ietf.constants import NAMESPACE, SCHEMA_LOCATION, SCHEMA
     }
 )
 class TestInfoDomainResult(TestCase):
-    maxDiff = None
+    
     def test_parse_minimal(self):
         location= Path(__file__).parent / "data" / "infoDomain.xml"
         print(location)
@@ -60,8 +60,11 @@ class TestInfoDomainResult(TestCase):
         print(result.res_data)
         print("\n\n\n")
         print(f"expected: {expected[0].contacts}")
-        print(f"result: {result.res_data[0].contacts}")        
+        print(f"result: {result.res_data[0].contacts}")
+        # Both objects are the same        
         self.assertEqual(result.res_data, expected)
+        # Both objects have the same contacts
+        self.assertEqual(expected[0].contacts, result.res_data[0].contacts)
 
     # def test_parse_full(self):
     #     xml = (path(__file__).parent  / "responses/result_info_domain.xml").read_bytes()
