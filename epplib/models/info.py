@@ -128,12 +128,11 @@ class InfoDomainResultData(InfoResultData):
     keyset: Optional[str]
     ex_date: Optional[date]
     auth_info: Optional[Union[str, DomainAuthInfo]]
-    hosts: InitVar[Optional[List[str]]] = None
+    hosts: Optional[List[str]] = field(default=None, repr=True)
     contacts: Optional[List[str]] = field(default=None, repr=True)
 
-    def __post_init__(self, hosts) -> None:
-        print("in init")
-        self.hosts = hosts or []
+    def __post_init__(self) -> None:
+        self.hosts = self.hosts or []
         self.contacts = self.contacts or []
 
     @classmethod
@@ -158,7 +157,7 @@ class InfoDomainResultData(InfoResultData):
         print(contacts)
         if ns is not None:
             params["hosts"] = cls._find_all_text(ns, f"./{cls._namespace}:hostObj")
-        if contacts is not None:
+        if contacts is not None and contacts != []:
             params["contacts"] = [DomainContact.extract(item) for item in contacts]
             print(params["contacts"])
         return {**super()._get_params(element), **params}

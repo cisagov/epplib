@@ -61,6 +61,7 @@ class TestInfoDomainResult(TestCase):
         print("\n\n\n")
         print(f"expected: {expected[0].contacts}")
         print(f"result: {result.res_data[0].contacts}")
+        print("\n\n\n")
         # Both objects are the same...        
         self.assertEqual(result.res_data, expected)
         # Both objects have the same contacts...
