@@ -47,6 +47,7 @@ from .list import (
 from .renew import RenewDomain
 from .transfer import TransferContact, TransferDomain, TransferKeyset, TransferNsset
 from .update import UpdateContact, UpdateDomain, UpdateHost, UpdateKeyset, UpdateNsset
+from .command_extensions import CreateDomainDNSSECExtension, UpdateDomainDNSSECExtension
 
 __all__ = [
     "CheckContact",
@@ -57,6 +58,7 @@ __all__ = [
     "Command",
     "CreateContact",
     "CreateDomain",
+    "CreateDomainDNSSECExtension",
     "CreateHost",
     "CreateKeyset",
     "CreateNsset",
@@ -98,6 +100,7 @@ __all__ = [
     "TransferNsset",
     "UpdateContact",
     "UpdateDomain",
+    "UpdateDomainDNSSECExtension",
     "UpdateHost",
     "UpdateKeyset",
     "UpdateNsset",
