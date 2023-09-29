@@ -105,10 +105,10 @@ class UpdateDomainDNSSECExtension(CommandExtension):
     """
 
     maxSigLife: Optional[int] = None
-    dsData: Optional[DSData] = None
-    keyData: Optional[DNSSECKeyData] = None
-    remDsData: Optional[DSData] = None
-    remKeyData: Optional[DNSSECKeyData] = None
+    dsData: Optional[Sequence[DSData]] = None
+    keyData: Optional[Sequence[DNSSECKeyData]] = None
+    remDsData: Optional[Sequence[DSData]] = None
+    remKeyData: Optional[Sequence[DNSSECKeyData]] = None
     remAllDsKeyData: Optional[bool] = False
 
     def _make_remove_element(self, element: Element) -> Element:
