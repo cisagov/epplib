@@ -31,9 +31,7 @@ class TestInfoDomainResult(TestCase):
     
     def test_parse_minimal(self):
         location= Path(__file__).parent / "data" / "infoDomain.xml"
-        print(location)
         xml = (location).read_bytes()
-        print(xml)
         result = InfoDomainResult.parse(xml, SCHEMA)
         expected = [
             InfoDomainResultData(
@@ -55,28 +53,26 @@ class TestInfoDomainResult(TestCase):
                 auth_info=DomainAuthInfo(pw="2fooBAR123fooBaz")
             )
         ]
+        text_to_check = "DomainContact(contact='CONT2', type='security')"
+
+        # The right code is returned...
         self.assertEqual(result.code, 1000)
-        print("result.res_data")
-        print(result.res_data)
-        print("\n\n\n")
-        print(f"expected: {expected[0].contacts}")
-        print(f"result: {result.res_data[0].contacts}")
-        print("\n\n\n")
+
         # Both objects are the same...        
         self.assertEqual(result.res_data, expected)
+
         # Both objects have the same contacts...
         self.assertEqual(result.res_data[0].contacts, expected[0].contacts)
+
         # Manually checks for contacts on the returned object (Tests for optional vars)...
-        text_to_check = "DomainContact(contact='CONT2', type='security')"
         self.assertIn(text_to_check, str(result.res_data[0]))
+
         text_to_check = "DomainContact(contact='CONT3', type='tech')"
         self.assertIn(text_to_check, str(result.res_data[0]))
 
     def test_parse_minimal_no_contact(self):
         location= Path(__file__).parent / "data" / "infoDomainNoContact.xml"
-        print(location)
         xml = (location).read_bytes()
-        print(xml)
         result = InfoDomainResult.parse(xml, SCHEMA)
         expected = [
             InfoDomainResultData(
@@ -97,54 +93,17 @@ class TestInfoDomainResult(TestCase):
                 auth_info=DomainAuthInfo(pw="2fooBAR123fooBaz")
             )
         ]
+        text_to_check = "contacts=[]"
+
+        # The right code is returned...
         self.assertEqual(result.code, 1000)
-        print("result.res_data")
-        print(result.res_data)
-        print("\n\n\n")
-        print(f"expected: {expected[0].contacts}")
-        print(f"result: {result.res_data[0].contacts}")
+
         # Both objects are the same...        
         self.assertEqual(result.res_data, expected)
+
         # Both objects have the same contacts...
         self.assertEqual(result.res_data[0].contacts, expected[0].contacts)
+
         # Manually checks for contacts on the returned object (Tests for optional vars)...
-        text_to_check = "contacts=[]"
         self.assertIn(text_to_check, str(result.res_data[0]))
-
-    # def test_parse_full(self):
-    #     xml = (path(__file__).parent  / "responses/result_info_domain.xml").read_bytes()
-    #     result = InfoDomainResult.parse(xml, SCHEMA)
-    #     expected = [
-    #         InfoDomainResultData(
-    #             name="mydomain.cz",
-    #             roid="D0009907597-CZ",
-    #             statuses=[Status("ok", "Object is without restrictions", "en")],
-    #             cl_id="REG-MYREG",
-    #             registrant="CID-MYOWN",
-    #             admins=["CID-ADMIN2", "CID-ADMIN3"],
-    #             nsset="NID-MYNSSET",
-    #             keyset="KID-MYKEYSET",
-    #             cr_id="REG-MYREG",
-    #             cr_date=datetime(
-    #                 2017, 7, 11, 13, 28, 48, tzinfo=timezone(timedelta(hours=2))
-    #             ),
-    #             up_id="REG-MYREG",
-    #             up_date=datetime(
-    #                 2017, 7, 18, 10, 46, 19, tzinfo=timezone(timedelta(hours=2))
-    #             ),
-    #             ex_date=date(2020, 7, 11),
-    #             tr_date=datetime(
-    #                 2017, 7, 19, 10, 46, 19, tzinfo=timezone(timedelta(hours=2))
-    #             ),
-    #             auth_info="rvBcaTVq",
-    #         )
-    #     ]
-
-    #     self.assertEqual(result.code, 1000)
-    #     self.assertEqual(result.res_data, expected)
-
-    # def test_parse_error(self):
-    #     xml = (BASE_DATA_PATH / "responses/result_error.xml").read_bytes()
-    #     result = InfoDomainResult.parse(xml, SCHEMA)
-    #     self.assertEqual(result.code, 2002)
 
