@@ -55,16 +55,16 @@ class TestInfoDomainResult(TestCase):
         ]
         text_to_check = "DomainContact(contact='CONT2', type='security')"
 
-        # The right code is returned...
+        # The right code is returned
         self.assertEqual(result.code, 1000)
 
-        # Both objects are the same...        
+        # Both objects are the same       
         self.assertEqual(result.res_data, expected)
 
-        # Both objects have the same contacts...
+        # Both objects have the same contacts
         self.assertEqual(result.res_data[0].contacts, expected[0].contacts)
 
-        # Manually checks for contacts on the returned object (Tests for optional vars)...
+        # Manually checks for contacts on the returned object (Tests for optional vars)
         self.assertIn(text_to_check, str(result.res_data[0]))
 
         text_to_check = "DomainContact(contact='CONT3', type='tech')"
@@ -95,15 +95,15 @@ class TestInfoDomainResult(TestCase):
         ]
         text_to_check = "contacts=[]"
 
-        # The right code is returned...
+        # The right code is returned
         self.assertEqual(result.code, 1000)
 
-        # Both objects are the same...        
+        # Both objects are the same        
         self.assertEqual(result.res_data, expected)
 
-        # Both objects have the same contacts...
+        # Both objects have the same contacts
         self.assertEqual(result.res_data[0].contacts, expected[0].contacts)
 
-        # Manually checks for contacts on the returned object (Tests for optional vars)...
+        # Manually checks for contacts on the returned object (Tests for optional vars)
         self.assertIn(text_to_check, str(result.res_data[0]))
 
