@@ -90,10 +90,8 @@ class Response(ParseXMLMixin, ABC):
                 raw data received from the server to ease the debugging.
         """
         root = safe_parse(raw_response)
-
         if schema is not None:
             schema.assertValid(root)
-
         if root.tag != QName(NAMESPACE.EPP, "epp"):
             raise ValueError('Root element has to be "epp". Found: {}'.format(root.tag))
 

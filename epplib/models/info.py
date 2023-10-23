@@ -116,7 +116,6 @@ class InfoDomainResultData(InfoResultData):
         hosts: Content of the epp/response/resData/infData/ns/hostObj element.
         contacts: Content of the epp/response/resData/infData/contact element.
     """
-
     _namespace = "domain"
 
     name: str
@@ -126,12 +125,12 @@ class InfoDomainResultData(InfoResultData):
     keyset: Optional[str]
     ex_date: Optional[date]
     auth_info: Optional[Union[str, DomainAuthInfo]]
-    hosts: InitVar[Optional[List[str]]] = None
-    contacts: InitVar[Optional[List[str]]] = None
+    hosts: Optional[List[str]] = field(default=None, repr=True)
+    contacts: Optional[List[str]] = field(default=None, repr=True)
 
-    def __post_init__(self, hosts, contacts) -> None:
-        self.hosts = hosts or []
-        self.contacts = contacts or []
+    def __post_init__(self) -> None:
+        self.hosts = self.hosts or []
+        self.contacts = self.contacts or []
 
     @classmethod
     def _get_params(cls, element: Element) -> Mapping[str, Any]:
@@ -153,7 +152,7 @@ class InfoDomainResultData(InfoResultData):
         contacts = cls._find_all(element, f"./{cls._namespace}:contact")
         if ns is not None:
             params["hosts"] = cls._find_all_text(ns, f"./{cls._namespace}:hostObj")
-        if contacts:
+        if contacts is not None and contacts != []:
             params["contacts"] = [DomainContact.extract(item) for item in contacts]
         return {**super()._get_params(element), **params}
 

@@ -107,6 +107,7 @@ structure defined in the host mapping.
       <enumeration value="admin" />
       <enumeration value="billing" />
       <enumeration value="tech" />
+      <enumeration value="security" />
     </restriction>
   </simpleType>
 
