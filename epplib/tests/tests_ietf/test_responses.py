@@ -72,6 +72,7 @@ class TestInfoDomainResult(TestCase):
 
     def test_parse_minimal_no_contact(self):
         location= Path(__file__).parent / "data" / "infoDomainNoContact.xml"
+        text_to_check = "contacts=[]"
         xml = (location).read_bytes()
         result = InfoDomainResult.parse(xml, SCHEMA)
         expected = [
@@ -93,7 +94,6 @@ class TestInfoDomainResult(TestCase):
                 auth_info=DomainAuthInfo(pw="2fooBAR123fooBaz")
             )
         ]
-        text_to_check = "contacts=[]"
 
         # The right code is returned
         self.assertEqual(result.code, 1000)
