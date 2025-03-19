@@ -167,7 +167,7 @@ class TestUpdateContact(XMLTestCase):
         "fax": "+420.222123457",
         "email": "john@doe.cz",
         "auth_info": "trnpwd",
-        "disclose": Disclose(True, set((DiscloseField.VOICE,))),
+        "disclose": Disclose(True, set((DiscloseField.VOICE,DiscloseField.NAME))),
         "vat": "1312112029",
         "ident": Ident(IdentType.PASSPORT, "12345"),
         "notify_email": "notify.john@doe.cz",
