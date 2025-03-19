@@ -33,6 +33,7 @@
       <contact:authInfo>PfLyxPC4</contact:authInfo>
       <contact:disclose flag="1">
          <contact:addr/>
+         <contact:name/>
       </contact:disclose>
       <contact:vat>34567</contact:vat>
       <contact:ident type="passport">45678</contact:ident>

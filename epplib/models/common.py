@@ -40,6 +40,7 @@ class DiscloseField(str, Enum):
     VAT = "vat"
     IDENT = "ident"
     NOTIFY_EMAIL = "notifyEmail"
+    NAME = "name"
 
 
 @unique
