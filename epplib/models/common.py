@@ -33,6 +33,7 @@ class DiscloseField(str, Enum):
     """Allowed values of subelements of disclose element."""
 
     # Order matters! Elements are ordered by their position within disclose flag.
+    NAME = "name"
     ADDR = "addr"
     VOICE = "voice"
     FAX = "fax"
@@ -40,7 +41,6 @@ class DiscloseField(str, Enum):
     VAT = "vat"
     IDENT = "ident"
     NOTIFY_EMAIL = "notifyEmail"
-    NAME = "name"
 
 
 @unique
