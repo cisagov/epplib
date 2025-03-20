@@ -141,7 +141,7 @@ class TestInfoContactResult(TestCase):
                 voice="+420.12345",
                 fax="+420.23456",
                 email="email@example.com",
-                disclose=Disclose(True, {DiscloseField.ADDR, DiscloseField.NAME}),
+                disclose=Disclose(True, {DiscloseField.NAME, DiscloseField.ADDR}),
                 vat="34567",
                 ident=Ident(IdentType.PASSPORT, "45678"),
                 notify_email="notify@example.com",

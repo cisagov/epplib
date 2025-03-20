@@ -131,7 +131,7 @@ class TestCreateContact(XMLTestCase):
         "fax": "+420.222123457",
         "email": "john@doe.cz",
         "auth_info": "trnpwd",
-        "disclose": Disclose(True, set([DiscloseField.VAT, DiscloseField.EMAIL])),
+        "disclose": Disclose(True, set([DiscloseField.NAME, DiscloseField.VAT, DiscloseField.EMAIL])),
         "vat": "1312112029",
         "ident": Ident(IdentType.OP, "12345"),
         "notify_email": "notify-john@doe.cz",
