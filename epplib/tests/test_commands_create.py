@@ -131,7 +131,7 @@ class TestCreateContact(XMLTestCase):
         "fax": "+420.222123457",
         "email": "john@doe.cz",
         "auth_info": "trnpwd",
-        "disclose": Disclose(True, set([DiscloseField.NAME, DiscloseField.VAT, DiscloseField.EMAIL])),
+        "disclose": Disclose(True, set([DiscloseField.NAME, DiscloseField.EMAIL, DiscloseField.VAT])),
         "vat": "1312112029",
         "ident": Ident(IdentType.OP, "12345"),
         "notify_email": "notify-john@doe.cz",
@@ -179,7 +179,7 @@ class TestCreateContact(XMLTestCase):
         contact = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
         disclose_fields = [
             Element(QName(NAMESPACE.NIC_CONTACT, f))
-            for f in sorted(self.params_full["disclose"].fields)
+            for f in self.params_full["disclose"].fields
         ]
         expected = make_epp_root(
             EM.command(
