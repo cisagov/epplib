@@ -179,7 +179,7 @@ class TestCreateContact(XMLTestCase):
         contact = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
         disclose_fields = [
             Element(QName(NAMESPACE.NIC_CONTACT, f))
-            for f in self.params_full["disclose"].fields
+            for f in [DiscloseField.NAME, DiscloseField.EMAIL, DiscloseField.VAT]
         ]
         expected = make_epp_root(
             EM.command(
