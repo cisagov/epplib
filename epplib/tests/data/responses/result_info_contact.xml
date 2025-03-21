@@ -32,6 +32,7 @@
       <contact:trDate>2017-05-06T11:30:25+02:00</contact:trDate>
       <contact:authInfo>PfLyxPC4</contact:authInfo>
       <contact:disclose flag="1">
+         <contact:name/>
          <contact:addr/>
       </contact:disclose>
       <contact:vat>34567</contact:vat>

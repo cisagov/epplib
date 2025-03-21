@@ -123,15 +123,16 @@ class TestDisclose(XMLTestCase):
         for flag, result in data:
             with self.subTest(flag=flag):
                 disclose = Disclose(
-                    flag=flag, fields={DiscloseField.VAT, DiscloseField.EMAIL}
+                    flag=flag, fields={DiscloseField.NAME, DiscloseField.VAT, DiscloseField.EMAIL}
                 )
-                expected = EM.disclose(EM.email, EM.vat, flag=result)
+                expected = EM.disclose(EM.name, EM.email, EM.vat, flag=result)
                 self.assertXMLEqual(disclose.get_payload(), expected)
 
     def test_get_payload_order(self):
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
         disclose = Disclose(flag=True, fields=set(DiscloseField))
         expected = EM.disclose(
+            EM.name,
             EM.addr,
             EM.voice,
             EM.fax,
