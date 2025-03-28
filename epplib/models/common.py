@@ -34,6 +34,7 @@ class DiscloseField(str, Enum):
 
     # Order matters! Elements are ordered by their position within disclose flag.
     NAME = "name"
+    ORG = "org"
     ADDR = "addr"
     VOICE = "voice"
     FAX = "fax"
