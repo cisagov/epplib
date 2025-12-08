@@ -20,6 +20,8 @@ from lxml.builder import ElementMaker
 
 from epplib.constants import NAMESPACE
 from epplib.models import (
+    AddressField,
+    AddressFieldDisclose,
     ContactAddr,
     Disclose,
     DiscloseField,
@@ -29,6 +31,7 @@ from epplib.models import (
     Ns,
     Period,
     PostalInfo,
+    PostalInfoType,
     Statement,
     Status,
     TestResult,
@@ -143,6 +146,115 @@ class TestDisclose(XMLTestCase):
             flag="1",
         )
         self.assertXMLEqual(disclose.get_payload(), expected)
+
+    def test_hide_street_and_postal_code(self):
+        """Test explicitly hiding street and postal code with flag=False.
+        When flag=False, we are telling the registry these address fields should NOT be disclosed publicly.
+        """
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        disclose = Disclose(
+            flag=False,
+            fields={DiscloseField.NAME, DiscloseField.EMAIL},
+            addr_fields=[
+                AddressFieldDisclose(PostalInfoType.LOC, AddressField.STREET),
+                AddressFieldDisclose(PostalInfoType.LOC, AddressField.PC),
+            ]
+        )
+        expected = EM.disclose(
+            EM.name,
+            EM.email,
+            EM.addrField(type="loc", field="street"),
+            EM.addrField(type="loc", field="pc"),
+            flag="0",
+        )
+        self.assertXMLEqual(disclose.get_payload(), expected)
+
+    def test_disclose_city_state_country(self):
+        """Test to explicitly disclose city/state/country."""
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        disclose = Disclose(
+            flag=True,
+            fields={DiscloseField.NAME, DiscloseField.EMAIL},
+            addr_fields=[
+                AddressFieldDisclose(PostalInfoType.LOC, AddressField.CITY),
+                AddressFieldDisclose(PostalInfoType.LOC, AddressField.SP),
+                AddressFieldDisclose(PostalInfoType.LOC, AddressField.CC),
+            ]
+        )
+        expected = EM.disclose(
+            EM.name,
+            EM.email,
+            EM.addrField(type="loc", field="city"),
+            EM.addrField(type="loc", field="sp"),
+            EM.addrField(type="loc", field="cc"),
+            flag="1",
+        )
+        self.assertXMLEqual(disclose.get_payload(), expected)
+
+    def test_extract_with_addr_fields(self):
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        # Test with flag=0 (do not disclose)
+        disclose_elem_hidden = EM.disclose(
+            EM.email,
+            EM.addrField(type="loc", field="street"),
+            EM.addrField(type="int", field="pc"),
+            flag="0",
+        )
+        result_hidden = Disclose.extract(disclose_elem_hidden)
+
+        self.assertFalse(result_hidden.flag)
+        self.assertEqual(result_hidden.fields, {DiscloseField.EMAIL})
+        self.assertEqual(len(result_hidden.addr_fields), 2)
+        self.assertEqual(result_hidden.addr_fields[0].type, PostalInfoType.LOC)
+        self.assertEqual(result_hidden.addr_fields[0].field, AddressField.STREET)
+        self.assertEqual(result_hidden.addr_fields[1].type, PostalInfoType.INT)
+        self.assertEqual(result_hidden.addr_fields[1].field, AddressField.PC)
+
+        # Test with flag=1 (disclose)
+        disclose_elem = EM.disclose(
+            EM.name,
+            EM.addrField(type="loc", field="city"),
+            EM.addrField(type="loc", field="cc"),
+            flag="1",
+        )
+        result = Disclose.extract(disclose_elem)
+
+        self.assertTrue(result.flag)
+        self.assertEqual(result.fields, {DiscloseField.NAME})
+        self.assertEqual(len(result.addr_fields), 2)
+        self.assertEqual(result.addr_fields[0].type, PostalInfoType.LOC)
+        self.assertEqual(result.addr_fields[0].field, AddressField.CITY)
+        self.assertEqual(result.addr_fields[1].type, PostalInfoType.LOC)
+        self.assertEqual(result.addr_fields[1].field, AddressField.CC)
+
+
+class TestAddressFieldDisclose(XMLTestCase):
+    def test_get_payload(self):
+        """Test basic XML generation for address field disclosure."""
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        addr_field = AddressFieldDisclose(PostalInfoType.LOC, AddressField.CITY)
+        expected = EM.addrField(type="loc", field="city")
+        self.assertXMLEqual(addr_field.get_payload(), expected)
+
+    def test_extract(self):
+        """Test basic XML parsing for address field disclosure."""
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        addr_field_elem = EM.addrField(type="int", field="cc")
+        result = AddressFieldDisclose.extract(addr_field_elem)
+
+        self.assertEqual(result.type, PostalInfoType.INT)
+        self.assertEqual(result.field, AddressField.CC)
+
+    def test_roundtrip(self):
+        """Test that extraction and generation are consistent."""
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        original = EM.addrField(type="loc", field="sp")
+
+        extracted = AddressFieldDisclose.extract(original)
+        generated = extracted.get_payload()
+        re_extracted = AddressFieldDisclose.extract(generated)
+
+        self.assertEqual(extracted, re_extracted)
 
 
 class TestDnskey(XMLTestCase):

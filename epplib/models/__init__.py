@@ -20,6 +20,8 @@
 
 from .common import (
     Addr,
+    AddressField,
+    AddressFieldDisclose,
     AuthInfo,
     ContactAddr,
     ContactAuthInfo,
@@ -40,6 +42,7 @@ from .common import (
     PayloadModelMixin,
     Period,
     PostalInfo,
+    PostalInfoType,
     Statement,
     Status,
     DNSSECKeyData,
@@ -50,6 +53,8 @@ from .common import (
 
 __all__ = [
     "Addr",
+    "AddressField",
+    "AddressFieldDisclose",
     "AuthInfo",
     "ContactAddr",
     "ContactAuthInfo",
@@ -70,6 +75,7 @@ __all__ = [
     "PayloadModelMixin",
     "Period",
     "PostalInfo",
+    "PostalInfoType",
     "Statement",
     "Status",
     "DNSSECKeyData",

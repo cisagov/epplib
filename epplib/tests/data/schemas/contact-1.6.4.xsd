@@ -185,9 +185,34 @@
         <element name="vat" minOccurs="0"/>
         <element name="ident" minOccurs="0"/>
         <element name="notifyEmail" minOccurs="0"/>
+        <!-- Individual address field disclosure elements -->
+        <element name="addrField" type="contact:addrFieldType"
+         minOccurs="0" maxOccurs="unbounded"/>
       </sequence>
       <attribute name="flag" type="boolean" use="required"/>
     </complexType>
+
+    <complexType name="addrFieldType">
+      <attribute name="type" type="contact:postalInfoEnumType" use="required"/>
+      <attribute name="field" use="required">
+        <simpleType>
+          <restriction base="token">
+            <enumeration value="street"/>
+            <enumeration value="city"/>
+            <enumeration value="sp"/>
+            <enumeration value="pc"/>
+            <enumeration value="cc"/>
+          </restriction>
+        </simpleType>
+      </attribute>
+    </complexType>
+
+    <simpleType name="postalInfoEnumType">
+      <restriction base="token">
+        <enumeration value="loc"/>
+        <enumeration value="int"/>
+      </restriction>
+    </simpleType>
 
     <!--
       dislose type for info and update commands - allow disclose address

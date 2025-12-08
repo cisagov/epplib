@@ -29,6 +29,17 @@ from epplib.utils import ParseXMLMixin
 
 
 @unique
+class AddressField(str, Enum):
+    """Allowed values for address field types in addrField element."""
+
+    STREET = "street"
+    CITY = "city"
+    SP = "sp"
+    PC = "pc"
+    CC = "cc"
+
+
+@unique
 class DiscloseField(str, Enum):
     """Allowed values of subelements of disclose element."""
 
@@ -52,6 +63,14 @@ class IdentType(str, Enum):
     MPSV = "mpsv"
     ICO = "ico"
     BIRTHDAY = "birthday"
+
+
+@unique
+class PostalInfoType(str, Enum):
+    """Allowed values for postal info type attribute."""
+
+    LOC = "loc"
+    INT = "int"
 
 
 @unique
@@ -192,12 +211,47 @@ class ContactAuthInfo(AuthInfo):
 
 
 @dataclass
+class AddressFieldDisclose(PayloadModelMixin, ExtractModelMixin):
+    """Dataclass to represent EPP addrField element within disclose.
+
+    Attributes:
+        type: The type attribute (loc or int) indicating postal info type.
+        field: The field attribute indicating which address field (street, city, sp, pc, cc).
+    """
+
+    namespace = NAMESPACE.NIC_CONTACT
+
+    type: PostalInfoType
+    field: AddressField
+
+    def get_payload(self) -> Element:
+        """Get Element representing the model."""
+        addr_field = Element(
+            QName(self.namespace, "addrField"),
+            type=self.type.value,
+            field=self.field.value,
+        )
+        return addr_field
+
+    @classmethod
+    def extract(cls, element: Element) -> "AddressFieldDisclose":
+        """Extract the model from the element."""
+        type_str = cls._find_attrib(element, ".", "type")
+        field_str = cls._find_attrib(element, ".", "field")
+        return cls(
+            type=PostalInfoType(type_str),
+            field=AddressField(field_str),
+        )
+
+
+@dataclass
 class Disclose(PayloadModelMixin, ExtractModelMixin):
     """Dataclass to represent EPP disclose element.
 
     Attributes:
         flag: disclose flag attribute.
         fields: Values to be displayed as subelements of the disclose element.
+        addr_fields: Address field disclosure elements specifying which address fields to disclose.
     """
 
     namespace = NAMESPACE.NIC_CONTACT
@@ -205,6 +259,7 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
     flag: Optional[bool]
     fields: Set[DiscloseField]
     types: Optional[Mapping[DiscloseField, str]] = None
+    addr_fields: List["AddressFieldDisclose"] = field(default_factory=list)
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
@@ -216,16 +271,35 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
                 SubElement(disclose, QName(self.namespace, item.value), type=type)
             else:
                 SubElement(disclose, QName(self.namespace, item.value))
+        # Add address field disclosure elements
+        for addr_field in self.addr_fields:
+            disclose.append(addr_field.get_payload())
         return disclose
 
     @classmethod
     def extract(cls, element: Element) -> "Disclose":
         """Extract the model from the element."""
+        # Extract standard disclose fields (excludes addrField elements)
+        fields_set = set()
+        for child_name in cls._find_children(element, "."):
+            if child_name != "addrField":
+                try:
+                    fields_set.add(DiscloseField(child_name))
+                except ValueError:
+                    # Skip unknown fields
+                    pass
+
+        # Extract address field disclosure elements
+        addr_field_elements = cls._find_all(element, "./contact:addrField")
+        addr_fields = [
+            AddressFieldDisclose.extract(addr_field_elem)
+            for addr_field_elem in addr_field_elements
+        ]
+
         return cls(
             flag=cls._str_to_bool(cls._find_attrib(element, ".", "flag")),
-            fields=set(
-                DiscloseField(item) for item in cls._find_children(element, "./")
-            ),
+            fields=fields_set,
+            addr_fields=addr_fields,
         )
 
 
@@ -409,7 +483,7 @@ class DSData(PayloadModelMixin, ExtractModelMixin):
         )
         SubElement(ds_data, QName(NAMESPACE.SEC_DNS, "digest")).text = self.digest
 
-        if not self.keyData is None:
+        if self.keyData is not None:
             ds_data.append(self.keyData.get_payload())
 
         return ds_data
