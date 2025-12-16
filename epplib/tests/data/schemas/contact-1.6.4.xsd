@@ -177,17 +177,17 @@
     <complexType name="discloseType">
       <sequence>
         <element name="name" minOccurs="0"/>
-<!--        <element name="org" minOccurs="0"/> -->
-<!--        <element name="addr" minOccurs="0"/>  -->
+        <element name="org" minOccurs="0"/>
+        <element name="addr" minOccurs="0"/>
+        <!-- Individual address field disclosure elements -->
+        <element name="addrField" type="contact:addrFieldType"
+         minOccurs="0" maxOccurs="unbounded"/>
         <element name="voice" minOccurs="0"/>
         <element name="fax" minOccurs="0"/>
         <element name="email" minOccurs="0"/>
         <element name="vat" minOccurs="0"/>
         <element name="ident" minOccurs="0"/>
         <element name="notifyEmail" minOccurs="0"/>
-        <!-- Individual address field disclosure elements -->
-        <element name="addrField" type="contact:addrFieldType"
-         minOccurs="0" maxOccurs="unbounded"/>
       </sequence>
       <attribute name="flag" type="boolean" use="required"/>
     </complexType>
@@ -220,7 +220,11 @@
     <complexType name="infupdDiscloseType">
       <sequence>
         <element name="name" minOccurs="0"/>
+        <element name="org" minOccurs="0"/>
         <element name="addr" minOccurs="0"/>
+        <!-- Individual address field disclosure elements -->
+        <element name="addrField" type="contact:addrFieldType"
+         minOccurs="0" maxOccurs="unbounded"/>
         <element name="voice" minOccurs="0"/>
         <element name="fax" minOccurs="0"/>
         <element name="email" minOccurs="0"/>

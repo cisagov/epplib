@@ -126,9 +126,9 @@ class TestDisclose(XMLTestCase):
         for flag, result in data:
             with self.subTest(flag=flag):
                 disclose = Disclose(
-                    flag=flag, fields={DiscloseField.NAME, DiscloseField.VAT, DiscloseField.EMAIL}
+                    flag=flag, fields={DiscloseField.NAME, DiscloseField.ORG, DiscloseField.VAT, DiscloseField.EMAIL}
                 )
-                expected = EM.disclose(EM.name, EM.email, EM.vat, flag=result)
+                expected = EM.disclose(EM.name, EM.org, EM.email, EM.vat, flag=result)
                 self.assertXMLEqual(disclose.get_payload(), expected)
 
     def test_get_payload_order(self):
@@ -136,6 +136,7 @@ class TestDisclose(XMLTestCase):
         disclose = Disclose(flag=True, fields=set(DiscloseField))
         expected = EM.disclose(
             EM.name,
+            EM.org,
             EM.addr,
             EM.voice,
             EM.fax,
@@ -191,6 +192,32 @@ class TestDisclose(XMLTestCase):
         )
         self.assertXMLEqual(disclose.get_payload(), expected)
 
+    def test_addr_fields_order(self):
+        """Test that addr_fields are output after standard fields and in the order provided."""
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        disclose = Disclose(
+            flag=False,
+            fields={DiscloseField.NAME, DiscloseField.VOICE, DiscloseField.EMAIL},
+            addr_fields=[
+                AddressFieldDisclose(PostalInfoType.LOC, AddressField.PC),
+                AddressFieldDisclose(PostalInfoType.INT, AddressField.STREET),
+                AddressFieldDisclose(PostalInfoType.LOC, AddressField.CITY),
+                AddressFieldDisclose(PostalInfoType.INT, AddressField.CC),
+            ]
+        )
+        # Expected: standard fields first (in enum order), then addrField elements (in provided order)
+        expected = EM.disclose(
+            EM.name,
+            EM.voice,
+            EM.email,
+            EM.addrField(type="loc", field="pc"),
+            EM.addrField(type="int", field="street"),
+            EM.addrField(type="loc", field="city"),
+            EM.addrField(type="int", field="cc"),
+            flag="0",
+        )
+        self.assertXMLEqual(disclose.get_payload(), expected)
+
     def test_extract_with_addr_fields(self):
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
         # Test with flag=0 (do not disclose)
@@ -226,6 +253,36 @@ class TestDisclose(XMLTestCase):
         self.assertEqual(result.addr_fields[0].field, AddressField.CITY)
         self.assertEqual(result.addr_fields[1].type, PostalInfoType.LOC)
         self.assertEqual(result.addr_fields[1].field, AddressField.CC)
+
+    def test_infupd_disclose_type(self):
+        """Test infupdDiscloseType with addrField."""
+        EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
+        disclose = Disclose(
+            flag=True,
+            fields={DiscloseField.EMAIL},
+            addr_fields=[
+                AddressFieldDisclose(PostalInfoType.LOC, AddressField.CITY),
+            ]
+        )
+
+        expected = EM.disclose(
+            EM.email,
+            EM.addrField(type="loc", field="city"),
+            flag="1",
+        )
+        self.assertXMLEqual(disclose.get_payload(), expected)
+
+        disclose_elem = EM.disclose(
+            EM.email,
+            EM.addrField(type="loc", field="city"),
+            flag="1",
+        )
+        result = Disclose.extract(disclose_elem)
+        self.assertTrue(result.flag)
+        self.assertEqual(result.fields, {DiscloseField.EMAIL})
+        self.assertEqual(len(result.addr_fields), 1)
+        self.assertEqual(result.addr_fields[0].type, PostalInfoType.LOC)
+        self.assertEqual(result.addr_fields[0].field, AddressField.CITY)
 
 
 class TestAddressFieldDisclose(XMLTestCase):

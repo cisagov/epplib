@@ -45,6 +45,7 @@ class DiscloseField(str, Enum):
 
     # Order matters! Elements are ordered by their position within disclose flag.
     NAME = "name"
+    ORG = "org"
     ADDR = "addr"
     VOICE = "voice"
     FAX = "fax"
@@ -69,6 +70,8 @@ class IdentType(str, Enum):
 class PostalInfoType(str, Enum):
     """Allowed values for postal info type attribute."""
 
+    # loc = localized address
+    # int = internationalized address
     LOC = "loc"
     INT = "int"
 
