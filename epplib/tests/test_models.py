@@ -163,9 +163,9 @@ class TestDisclose(XMLTestCase):
         )
         expected = EM.disclose(
             EM.name,
-            EM.email,
             EM.addrField(type="loc", field="street"),
             EM.addrField(type="loc", field="pc"),
+            EM.email,
             flag="0",
         )
         self.assertXMLEqual(disclose.get_payload(), expected)
@@ -184,10 +184,10 @@ class TestDisclose(XMLTestCase):
         )
         expected = EM.disclose(
             EM.name,
-            EM.email,
             EM.addrField(type="loc", field="city"),
             EM.addrField(type="loc", field="sp"),
             EM.addrField(type="loc", field="cc"),
+            EM.email,
             flag="1",
         )
         self.assertXMLEqual(disclose.get_payload(), expected)
@@ -197,7 +197,7 @@ class TestDisclose(XMLTestCase):
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
         disclose = Disclose(
             flag=False,
-            fields={DiscloseField.NAME, DiscloseField.VOICE, DiscloseField.EMAIL},
+            fields={DiscloseField.NAME, DiscloseField.ADDR, DiscloseField.VOICE, DiscloseField.EMAIL},
             addr_fields=[
                 AddressFieldDisclose(PostalInfoType.LOC, AddressField.PC),
                 AddressFieldDisclose(PostalInfoType.INT, AddressField.STREET),
@@ -208,12 +208,13 @@ class TestDisclose(XMLTestCase):
         # Expected: standard fields first (in enum order), then addrField elements (in provided order)
         expected = EM.disclose(
             EM.name,
-            EM.voice,
-            EM.email,
+            EM.addr,
             EM.addrField(type="loc", field="pc"),
             EM.addrField(type="int", field="street"),
             EM.addrField(type="loc", field="city"),
             EM.addrField(type="int", field="cc"),
+            EM.voice,
+            EM.email,
             flag="0",
         )
         self.assertXMLEqual(disclose.get_payload(), expected)
@@ -266,8 +267,8 @@ class TestDisclose(XMLTestCase):
         )
 
         expected = EM.disclose(
-            EM.email,
             EM.addrField(type="loc", field="city"),
+            EM.email,
             flag="1",
         )
         self.assertXMLEqual(disclose.get_payload(), expected)

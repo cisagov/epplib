@@ -268,15 +268,29 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
         """Get Element representing the model."""
         flag = "1" if self.flag else "0"
         disclose = Element(QName(self.namespace, "disclose"), flag=flag)
+        addr_fields_added = False
+        addr_index = tuple(DiscloseField).index(DiscloseField.ADDR)
+
         for item in sorted(self.fields, key=tuple(DiscloseField).index):
+            # If ADDR isn't present, insert addr_fields before first field after ADDR
+            if (not addr_fields_added) and (tuple(DiscloseField).index(item) > addr_index):
+                for addr_field in self.addr_fields:
+                    disclose.append(addr_field.get_payload())
+                addr_fields_added = True
+
+            # Emit the current standard field
             if self.types and item in self.types:
-                type = self.types[item]
-                SubElement(disclose, QName(self.namespace, item.value), type=type)
+                t = self.types[item]
+                SubElement(disclose, QName(self.namespace, item.value), type=t)
             else:
                 SubElement(disclose, QName(self.namespace, item.value))
-        # Add address field disclosure elements
-        for addr_field in self.addr_fields:
-            disclose.append(addr_field.get_payload())
+
+            # If ADDR is present, insert addr_fields immediately after it
+            if (not addr_fields_added) and (item == DiscloseField.ADDR):
+                for addr_field in self.addr_fields:
+                    disclose.append(addr_field.get_payload())
+                addr_fields_added = True
+
         return disclose
 
     @classmethod
