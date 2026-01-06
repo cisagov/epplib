@@ -20,8 +20,6 @@
 
 from .common import (
     Addr,
-    AddressField,
-    AddressFieldDisclose,
     AuthInfo,
     ContactAddr,
     ContactAuthInfo,
@@ -53,8 +51,6 @@ from .common import (
 
 __all__ = [
     "Addr",
-    "AddressField",
-    "AddressFieldDisclose",
     "AuthInfo",
     "ContactAddr",
     "ContactAuthInfo",
