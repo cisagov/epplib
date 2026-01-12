@@ -34,13 +34,30 @@ class DiscloseField(str, Enum):
 
     # Order matters! Elements are ordered by their position within disclose flag.
     NAME = "name"
+    ORG = "org"
     ADDR = "addr"
+    STREET = "street"
+    CITY = "city"
+    SP = "sp"
+    PC = "pc"
+    CC = "cc"
     VOICE = "voice"
     FAX = "fax"
     EMAIL = "email"
     VAT = "vat"
     IDENT = "ident"
     NOTIFY_EMAIL = "notifyEmail"
+
+    @classmethod
+    def is_addr_field(cls, field: "DiscloseField") -> bool:
+        """Check if a field is an address field."""
+        return field in [
+            cls.STREET,
+            cls.CITY,
+            cls.SP,
+            cls.PC,
+            cls.CC,
+        ]
 
 
 @unique
@@ -52,6 +69,16 @@ class IdentType(str, Enum):
     MPSV = "mpsv"
     ICO = "ico"
     BIRTHDAY = "birthday"
+
+
+@unique
+class PostalInfoType(str, Enum):
+    """Allowed values for postal info type attribute."""
+
+    # loc = localized address
+    # int = internationalized address
+    LOC = "loc"
+    INT = "int"
 
 
 @unique
@@ -198,6 +225,7 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
     Attributes:
         flag: disclose flag attribute.
         fields: Values to be displayed as subelements of the disclose element.
+        types: A mapping of field types.
     """
 
     namespace = NAMESPACE.NIC_CONTACT
@@ -210,22 +238,58 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
         """Get Element representing the model."""
         flag = "1" if self.flag else "0"
         disclose = Element(QName(self.namespace, "disclose"), flag=flag)
-        for item in sorted(self.fields, key=tuple(DiscloseField).index):
-            if self.types and item in self.types:
-                type = self.types[item]
-                SubElement(disclose, QName(self.namespace, item.value), type=type)
+
+        ordered_fields = list(DiscloseField)
+        for item in sorted(self.fields, key=ordered_fields.index):
+            # Address-specific fields are rendered as <addrField> elements
+            if DiscloseField.is_addr_field(item):
+                addr_field_attrs = {"field": item.value}
+                if self.types and item in self.types:
+                    addr_field_attrs["type"] = self.types[item]
+                SubElement(disclose, QName(self.namespace, "addrField"), **addr_field_attrs)
+            # All other fields are rendered as elements with the same name as the field
             else:
-                SubElement(disclose, QName(self.namespace, item.value))
+                element_attrs = {}
+                if self.types and item in self.types:
+                    element_attrs["type"] = self.types[item]
+                SubElement(disclose, QName(self.namespace, item.value), **element_attrs)
+
         return disclose
 
     @classmethod
     def extract(cls, element: Element) -> "Disclose":
         """Extract the model from the element."""
+        fields_set = set()
+        types = {}
+
+        for child in element:
+            qname = QName(child)
+            # If the element is <addrField>, the field name is in the "field" attribute
+            if qname.localname == "addrField":
+                field_name = child.get("field")
+                try:
+                    field = DiscloseField(field_name)
+                    fields_set.add(field)
+                    if "type" in child.attrib:
+                        types[field] = child.get("type")
+                except ValueError:
+                    # Skip unknown fields
+                    pass
+            # Otherwise, the field name is the element's tag name
+            else:
+                try:
+                    field = DiscloseField(qname.localname)
+                    fields_set.add(field)
+                    if "type" in child.attrib:
+                        types[field] = child.get("type")
+                except ValueError:
+                    # Skip unknown fields
+                    pass
+
         return cls(
             flag=cls._str_to_bool(cls._find_attrib(element, ".", "flag")),
-            fields=set(
-                DiscloseField(item) for item in cls._find_children(element, "./")
-            ),
+            fields=fields_set,
+            types=types if types else None,
         )
 
 
@@ -409,7 +473,7 @@ class DSData(PayloadModelMixin, ExtractModelMixin):
         )
         SubElement(ds_data, QName(NAMESPACE.SEC_DNS, "digest")).text = self.digest
 
-        if not self.keyData is None:
+        if self.keyData is not None:
             ds_data.append(self.keyData.get_payload())
 
         return ds_data
@@ -689,6 +753,7 @@ class HostStatus(PayloadModelMixin, ExtractModelMixin):
 class TestResult(ExtractModelMixin):
     """Represent result element in Technical check result poll message."""
 
+    __test__ = False
     testname: str
     status: Optional[bool]
     note: Optional[str]
