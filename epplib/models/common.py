@@ -660,7 +660,10 @@ class PostalInfo(PayloadModelMixin, ExtractModelMixin):
         if self.type is not None:
             postal_info.set("type", self.type)
         if self.org is not None:
-            SubElement(postal_info, QName(self.namespace, "org")).text = self.org
+            org_element = SubElement(postal_info, QName(self.namespace, "org"))
+            org_element.text = self.org
+            if self.type is not None:
+                org_element.set("type", self.type)
         if self.addr:
             postal_info.append(self.addr.get_payload())
 
