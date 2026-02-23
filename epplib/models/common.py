@@ -238,20 +238,34 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
         """Get Element representing the model."""
         flag = "1" if self.flag else "0"
         disclose = Element(QName(self.namespace, "disclose"), flag=flag)
+        typed_fields = {
+            DiscloseField.NAME,
+            DiscloseField.ORG,
+            DiscloseField.ADDR,
+            DiscloseField.STREET,
+            DiscloseField.CITY,
+            DiscloseField.SP,
+            DiscloseField.PC,
+            DiscloseField.CC,
+        }
+        effective_types = dict(self.types) if self.types else {}
+        for field in self.fields:
+            if field in typed_fields:
+                effective_types.setdefault(field, PostalInfoType.LOC.value)
 
         ordered_fields = list(DiscloseField)
         for item in sorted(self.fields, key=ordered_fields.index):
             # Address-specific fields are rendered as <addrField> elements
             if DiscloseField.is_addr_field(item):
                 addr_field_attrs = {"field": item.value}
-                if self.types and item in self.types:
-                    addr_field_attrs["type"] = self.types[item]
+                if item in effective_types:
+                    addr_field_attrs["type"] = effective_types[item]
                 SubElement(disclose, QName(self.namespace, "addrField"), **addr_field_attrs)
             # All other fields are rendered as elements with the same name as the field
             else:
                 element_attrs = {}
-                if self.types and item in self.types:
-                    element_attrs["type"] = self.types[item]
+                if item in effective_types:
+                    element_attrs["type"] = effective_types[item]
                 SubElement(disclose, QName(self.namespace, item.value), **element_attrs)
 
         return disclose
