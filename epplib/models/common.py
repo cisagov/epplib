@@ -59,6 +59,20 @@ class DiscloseField(str, Enum):
             cls.CC,
         ]
 
+    @classmethod
+    def is_typed_field(cls, field: "DiscloseField") -> bool:
+        """Check if a field supports the postalInfo type attribute."""
+        return field in [
+            cls.NAME,
+            cls.ORG,
+            cls.ADDR,
+            cls.STREET,
+            cls.CITY,
+            cls.SP,
+            cls.PC,
+            cls.CC,
+        ]
+
 
 @unique
 class IdentType(str, Enum):
@@ -238,34 +252,29 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
         """Get Element representing the model."""
         flag = "1" if self.flag else "0"
         disclose = Element(QName(self.namespace, "disclose"), flag=flag)
-        typed_fields = {
-            DiscloseField.NAME,
-            DiscloseField.ORG,
-            DiscloseField.ADDR,
-            DiscloseField.STREET,
-            DiscloseField.CITY,
-            DiscloseField.SP,
-            DiscloseField.PC,
-            DiscloseField.CC,
-        }
         effective_types = dict(self.types) if self.types else {}
-        for field in self.fields:
-            if field in typed_fields:
-                effective_types.setdefault(field, PostalInfoType.LOC.value)
+        for disclose_field in self.fields:
+            if DiscloseField.is_typed_field(disclose_field):
+                # Certain custom addrField disclose fields require a type attribute. If the type is not provided,
+                # use "loc" as the default value. Adding support to epplib to default these new custom field
+                # values allows for independent deployment from manage.get.gov client.
+                effective_types.setdefault(disclose_field, PostalInfoType.LOC.value)
 
         ordered_fields = list(DiscloseField)
+        missing_type = object()
         for item in sorted(self.fields, key=ordered_fields.index):
+            field_type = effective_types.get(item, missing_type)
             # Address-specific fields are rendered as <addrField> elements
             if DiscloseField.is_addr_field(item):
                 addr_field_attrs = {"field": item.value}
-                if item in effective_types:
-                    addr_field_attrs["type"] = effective_types[item]
+                if field_type is not missing_type:
+                    addr_field_attrs["type"] = field_type
                 SubElement(disclose, QName(self.namespace, "addrField"), **addr_field_attrs)
             # All other fields are rendered as elements with the same name as the field
             else:
                 element_attrs = {}
-                if item in effective_types:
-                    element_attrs["type"] = effective_types[item]
+                if field_type is not missing_type:
+                    element_attrs["type"] = field_type
                 SubElement(disclose, QName(self.namespace, item.value), **element_attrs)
 
         return disclose
