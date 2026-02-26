@@ -252,18 +252,14 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
         """Get Element representing the model."""
         flag = "1" if self.flag else "0"
         disclose = Element(QName(self.namespace, "disclose"), flag=flag)
-        effective_types = dict(self.types) if self.types else {}
-        for disclose_field in self.fields:
-            if DiscloseField.is_typed_field(disclose_field):
-                # Certain custom addrField disclose fields require a type attribute. If the type is not provided,
-                # use "loc" as the default value. Adding support to epplib to default these new custom field
-                # values allows for independent deployment from manage.get.gov client.
-                effective_types.setdefault(disclose_field, PostalInfoType.LOC.value)
-
+        types = self.types if self.types else {}
         ordered_fields = list(DiscloseField)
         missing_type = object()
         for item in sorted(self.fields, key=ordered_fields.index):
-            field_type = effective_types.get(item, missing_type)
+            field_type = types.get(item, missing_type)
+            if field_type is missing_type and DiscloseField.is_typed_field(item):
+                # Typed disclose fields default to "loc" when caller omits the type.
+                field_type = PostalInfoType.LOC.value
             # Address-specific fields are rendered as <addrField> elements
             if DiscloseField.is_addr_field(item):
                 addr_field_attrs = {"field": item.value}
