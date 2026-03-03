@@ -250,16 +250,40 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
+        """
+        First, check for missing type attributes for fields that require them,
+        and raise an error if any are missing.
+        """
+        ordered_fields = list(DiscloseField)
+        sorted_fields = sorted(self.fields, key=ordered_fields.index)
+        types = self.types or {}
+        missing_typed_fields = [
+            field
+            for field in sorted_fields
+            if DiscloseField.is_typed_field(field) and field not in types
+        ]
+        if missing_typed_fields:
+            missing_names = ", ".join(field.value for field in missing_typed_fields)
+            example_mapping = ", ".join(
+                f"{field.value}={PostalInfoType.LOC.value}"
+                for field in missing_typed_fields
+            )
+            raise ValueError(
+                "Missing disclose type for field(s): {}. Update the request to pass "
+                "a type for each listed field in the disclose types mapping, "
+                'for example: {}. Valid values are "{}" and "{}".'.format(
+                    missing_names,
+                    example_mapping,
+                    PostalInfoType.LOC.value,
+                    PostalInfoType.INT.value,
+                )
+            )
+
         flag = "1" if self.flag else "0"
         disclose = Element(QName(self.namespace, "disclose"), flag=flag)
-        types = self.types if self.types else {}
-        ordered_fields = list(DiscloseField)
         missing_type = object()
-        for item in sorted(self.fields, key=ordered_fields.index):
+        for item in sorted_fields:
             field_type = types.get(item, missing_type)
-            if field_type is missing_type and DiscloseField.is_typed_field(item):
-                # Typed disclose fields default to "loc" when caller omits the type.
-                field_type = PostalInfoType.LOC.value
             # Address-specific fields are rendered as <addrField> elements
             if DiscloseField.is_addr_field(item):
                 addr_field_attrs = {"field": item.value}

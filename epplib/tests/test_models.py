@@ -123,23 +123,52 @@ class TestDisclose(XMLTestCase):
         for flag, result in data:
             with self.subTest(flag=flag):
                 disclose = Disclose(
-                    flag=flag, fields={DiscloseField.NAME, DiscloseField.ORG, DiscloseField.VAT, DiscloseField.EMAIL}
+                    flag=flag,
+                    fields={
+                        DiscloseField.NAME,
+                        DiscloseField.ORG,
+                        DiscloseField.VAT,
+                        DiscloseField.EMAIL,
+                    },
+                    types={
+                        DiscloseField.NAME: "loc",
+                        DiscloseField.ORG: "int",
+                    },
                 )
-                expected = EM.disclose(EM.name, EM.org, EM.email, EM.vat, flag=result)
+                expected = EM.disclose(
+                    EM.name(type="loc"),
+                    EM.org(type="int"),
+                    EM.email,
+                    EM.vat,
+                    flag=result,
+                )
                 self.assertXMLEqual(disclose.get_payload(), expected)
 
     def test_get_payload_order(self):
         EM = ElementMaker(namespace=NAMESPACE.NIC_CONTACT)
-        disclose = Disclose(flag=True, fields=set(DiscloseField))
+        disclose = Disclose(
+            flag=True,
+            fields=set(DiscloseField),
+            types={
+                DiscloseField.NAME: "loc",
+                DiscloseField.ORG: "loc",
+                DiscloseField.ADDR: "loc",
+                DiscloseField.STREET: "loc",
+                DiscloseField.CITY: "loc",
+                DiscloseField.SP: "loc",
+                DiscloseField.PC: "loc",
+                DiscloseField.CC: "loc",
+            },
+        )
         expected = EM.disclose(
-            EM.name,
-            EM.org,
-            EM.addr,
-            EM.addrField(field="street"),
-            EM.addrField(field="city"),
-            EM.addrField(field="sp"),
-            EM.addrField(field="pc"),
-            EM.addrField(field="cc"),
+            EM.name(type="loc"),
+            EM.org(type="loc"),
+            EM.addr(type="loc"),
+            EM.addrField(type="loc", field="street"),
+            EM.addrField(type="loc", field="city"),
+            EM.addrField(type="loc", field="sp"),
+            EM.addrField(type="loc", field="pc"),
+            EM.addrField(type="loc", field="cc"),
             EM.voice,
             EM.fax,
             EM.email,
@@ -158,10 +187,14 @@ class TestDisclose(XMLTestCase):
         disclose = Disclose(
             flag=False,
             fields={DiscloseField.NAME, DiscloseField.EMAIL, DiscloseField.STREET, DiscloseField.PC},
-            types={DiscloseField.STREET: "loc", DiscloseField.PC: "loc"}
+            types={
+                DiscloseField.NAME: "loc",
+                DiscloseField.STREET: "loc",
+                DiscloseField.PC: "loc",
+            },
         )
         expected = EM.disclose(
-            EM.name,
+            EM.name(type="loc"),
             EM.addrField(type="loc", field="street"),
             EM.addrField(type="loc", field="pc"),
             EM.email,
@@ -175,10 +208,15 @@ class TestDisclose(XMLTestCase):
         disclose = Disclose(
             flag=True,
             fields={DiscloseField.NAME, DiscloseField.EMAIL, DiscloseField.CITY, DiscloseField.SP, DiscloseField.CC},
-            types={DiscloseField.CITY: "loc", DiscloseField.SP: "loc", DiscloseField.CC: "loc"}
+            types={
+                DiscloseField.NAME: "loc",
+                DiscloseField.CITY: "loc",
+                DiscloseField.SP: "loc",
+                DiscloseField.CC: "loc",
+            },
         )
         expected = EM.disclose(
-            EM.name,
+            EM.name(type="loc"),
             EM.addrField(type="loc", field="city"),
             EM.addrField(type="loc", field="sp"),
             EM.addrField(type="loc", field="cc"),
@@ -194,13 +232,19 @@ class TestDisclose(XMLTestCase):
             flag=False,
             fields={DiscloseField.NAME, DiscloseField.ADDR, DiscloseField.VOICE, DiscloseField.EMAIL, DiscloseField.PC,
                     DiscloseField.STREET, DiscloseField.CITY, DiscloseField.CC},
-            types={DiscloseField.PC: "loc", DiscloseField.STREET: "int", DiscloseField.CITY: "loc",
-                   DiscloseField.CC: "int"}
+            types={
+                DiscloseField.NAME: "loc",
+                DiscloseField.ADDR: "int",
+                DiscloseField.PC: "loc",
+                DiscloseField.STREET: "int",
+                DiscloseField.CITY: "loc",
+                DiscloseField.CC: "int",
+            },
         )
         # Expected: standard fields first (in enum order), then addrField elements (in provided order)
         expected = EM.disclose(
-            EM.name,
-            EM.addr,
+            EM.name(type="loc"),
+            EM.addr(type="int"),
             EM.addrField(type="int", field="street"),
             EM.addrField(type="loc", field="city"),
             EM.addrField(type="loc", field="pc"),
@@ -264,6 +308,21 @@ class TestDisclose(XMLTestCase):
         self.assertTrue(result.flag)
         self.assertEqual(result.fields, {DiscloseField.EMAIL, DiscloseField.CITY})
         self.assertEqual(result.types, {DiscloseField.CITY: "loc"})
+
+    def test_get_payload_missing_typed_field_type_raises(self):
+        disclose = Disclose(
+            flag=True,
+            fields={DiscloseField.NAME, DiscloseField.ORG, DiscloseField.EMAIL},
+        )
+
+        with self.assertRaisesRegex(
+            ValueError,
+            (
+                r"Missing disclose type for field\(s\): name, org\. "
+                r"Update the request to pass a type for each listed field"
+            ),
+        ):
+            disclose.get_payload()
 
 
 class TestDnskey(XMLTestCase):
