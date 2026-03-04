@@ -250,18 +250,31 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
 
     def get_payload(self) -> Element:
         """Get Element representing the model."""
-        """
-        First, check for missing type attributes for fields that require them,
-        and raise an error if any are missing.
-        """
-        ordered_fields = list(DiscloseField)
-        sorted_fields = sorted(self.fields, key=ordered_fields.index)
+        flag = "1" if self.flag else "0"
+        disclose = Element(QName(self.namespace, "disclose"), flag=flag)
         types = self.types or {}
-        missing_typed_fields = [
-            field
-            for field in sorted_fields
-            if DiscloseField.is_typed_field(field) and field not in types
-        ]
+        missing_type = object()
+        missing_typed_fields = []
+        ordered_fields = list(DiscloseField)
+        for item in sorted(self.fields, key=ordered_fields.index):
+            field_type = types.get(item, missing_type)
+            if field_type is missing_type and DiscloseField.is_typed_field(item):
+                missing_typed_fields.append(item)
+                # Skip ahead to next item to report all missing types at once.
+                continue
+            # Address-specific fields are rendered as <addrField> elements
+            if DiscloseField.is_addr_field(item):
+                addr_field_attrs = {"field": item.value}
+                if field_type is not missing_type:
+                    addr_field_attrs["type"] = field_type
+                SubElement(disclose, QName(self.namespace, "addrField"), **addr_field_attrs)
+            # All other fields are rendered as elements with the same name as the field
+            else:
+                element_attrs = {}
+                if field_type is not missing_type:
+                    element_attrs["type"] = field_type
+                SubElement(disclose, QName(self.namespace, item.value), **element_attrs)
+
         if missing_typed_fields:
             missing_names = ", ".join(field.value for field in missing_typed_fields)
             example_mapping = ", ".join(
@@ -278,24 +291,6 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
                     PostalInfoType.INT.value,
                 )
             )
-
-        flag = "1" if self.flag else "0"
-        disclose = Element(QName(self.namespace, "disclose"), flag=flag)
-        missing_type = object()
-        for item in sorted_fields:
-            field_type = types.get(item, missing_type)
-            # Address-specific fields are rendered as <addrField> elements
-            if DiscloseField.is_addr_field(item):
-                addr_field_attrs = {"field": item.value}
-                if field_type is not missing_type:
-                    addr_field_attrs["type"] = field_type
-                SubElement(disclose, QName(self.namespace, "addrField"), **addr_field_attrs)
-            # All other fields are rendered as elements with the same name as the field
-            else:
-                element_attrs = {}
-                if field_type is not missing_type:
-                    element_attrs["type"] = field_type
-                SubElement(disclose, QName(self.namespace, item.value), **element_attrs)
 
         return disclose
 
