@@ -253,26 +253,23 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
         flag = "1" if self.flag else "0"
         disclose = Element(QName(self.namespace, "disclose"), flag=flag)
         types = self.types or {}
-        missing_type = object()
         missing_typed_fields = []
         ordered_fields = list(DiscloseField)
         for item in sorted(self.fields, key=ordered_fields.index):
-            field_type = types.get(item, missing_type)
-            if field_type is missing_type and DiscloseField.is_typed_field(item):
+            if item not in types and DiscloseField.is_typed_field(item):
                 missing_typed_fields.append(item)
                 # Skip ahead to next item to report all missing types at once.
                 continue
             # Address-specific fields are rendered as <addrField> elements
             if DiscloseField.is_addr_field(item):
                 addr_field_attrs = {"field": item.value}
-                if field_type is not missing_type:
-                    addr_field_attrs["type"] = field_type
+                addr_field_attrs["type"] = self.types.get(item)
                 SubElement(disclose, QName(self.namespace, "addrField"), **addr_field_attrs)
             # All other fields are rendered as elements with the same name as the field
             else:
                 element_attrs = {}
-                if field_type is not missing_type:
-                    element_attrs["type"] = field_type
+                if DiscloseField.is_typed_field(item):
+                    element_attrs["type"] = self.types.get(item)
                 SubElement(disclose, QName(self.namespace, item.value), **element_attrs)
 
         if missing_typed_fields:
