@@ -59,6 +59,20 @@ class DiscloseField(str, Enum):
             cls.CC,
         ]
 
+    @classmethod
+    def is_typed_field(cls, field: "DiscloseField") -> bool:
+        """Check if a field supports the postalInfo type attribute."""
+        return field in [
+            cls.NAME,
+            cls.ORG,
+            cls.ADDR,
+            cls.STREET,
+            cls.CITY,
+            cls.SP,
+            cls.PC,
+            cls.CC,
+        ]
+
 
 @unique
 class IdentType(str, Enum):
@@ -238,21 +252,42 @@ class Disclose(PayloadModelMixin, ExtractModelMixin):
         """Get Element representing the model."""
         flag = "1" if self.flag else "0"
         disclose = Element(QName(self.namespace, "disclose"), flag=flag)
-
+        types = self.types or {}
+        missing_typed_fields = []
         ordered_fields = list(DiscloseField)
         for item in sorted(self.fields, key=ordered_fields.index):
+            if item not in types and DiscloseField.is_typed_field(item):
+                missing_typed_fields.append(item)
+                # Skip ahead to next item to report all missing types at once.
+                continue
             # Address-specific fields are rendered as <addrField> elements
             if DiscloseField.is_addr_field(item):
                 addr_field_attrs = {"field": item.value}
-                if self.types and item in self.types:
-                    addr_field_attrs["type"] = self.types[item]
+                addr_field_attrs["type"] = self.types.get(item)
                 SubElement(disclose, QName(self.namespace, "addrField"), **addr_field_attrs)
             # All other fields are rendered as elements with the same name as the field
             else:
                 element_attrs = {}
-                if self.types and item in self.types:
-                    element_attrs["type"] = self.types[item]
+                if DiscloseField.is_typed_field(item):
+                    element_attrs["type"] = self.types.get(item)
                 SubElement(disclose, QName(self.namespace, item.value), **element_attrs)
+
+        if missing_typed_fields:
+            missing_names = ", ".join(field.value for field in missing_typed_fields)
+            example_mapping = ", ".join(
+                f"{field.value}={PostalInfoType.LOC.value}"
+                for field in missing_typed_fields
+            )
+            raise ValueError(
+                "Missing disclose type for field(s): {}. Update the request to pass "
+                "a type for each listed field in the disclose types mapping, "
+                'for example: {}. Valid values are "{}" and "{}".'.format(
+                    missing_names,
+                    example_mapping,
+                    PostalInfoType.LOC.value,
+                    PostalInfoType.INT.value,
+                )
+            )
 
         return disclose
 
